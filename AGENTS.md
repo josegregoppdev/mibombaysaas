@@ -68,19 +68,39 @@ com.josegregoppdev.mibombay
 - `TenantFilter` limpia el contexto al final de cada request
 - Aislamiento por `tenantId` en cada entidad del dominio
 
-## Seguridad
+## Seguridad (OWASP Top 10)
 
-- `BCryptPasswordEncoder` con strength 12
+### A01: Broken Access Control
+- CSRF habilitado por defecto (Spring Security)
+- Logout invalida sesión y borra JSESSIONID
+- Máximo 1 sesión por usuario
+- DTOs evitan mass assignment (no exponen campos sensibles al binding)
+- `@InitBinder` es innecesario porque los DTOs no tienen setters no deseados
+
+### A02: Cryptographic Failures
+- `BCryptPasswordEncoder` con strength 12 para passwords
+- Documento del encargado hasheado con BCrypt (no reversible)
+- Contraseñas temporales generadas con `SecureRandom`
+
+### A03: Injection
+- Thymeleaf escapa HTML automáticamente (XSS)
+- JPA/Spring Data usa prepared statements (SQL injection)
+- `@Valid` en DTOs para validar entrada de datos
+
+### A05: Security Misconfiguration
+- Session timeout: 10 minutos de inactividad
+- Session fixation: `.sessionFixation().migrateSession()`
+- Sesión expirada redirige a `/login?expired=true` con mensaje
+- Headers HTTP: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`
+- Perfiles de config: dev/prod separados
+- `.gitignore` ignora properties con secrets
+
+### A07: Identification & Authentication Failures
+- BCrypt para passwords
+- Email único global
 - Roles: `ADMIN`, `CAJERO` (enum `Rol`)
 - Al crear empresa: se crea admin (con password del form) y cajero (password temporal generada)
 - Campo `debeCambiarPassword` fuerza cambio de contraseña al primer login del cajero
-- Email único global (no se pide subdominio en login)
-- Documento del encargado hasheado con BCrypt
-- **Session timeout**: 10 minutos de inactividad
-- **Session fixation**: `.sessionFixation().migrateSession()`
-- **Sesión expirada**: redirige a `/login?expired=true` con mensaje al usuario
-- **Máximo 1 sesión** por usuario
-- **Headers HTTP**: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`
 
 ## Properties
 
@@ -90,6 +110,29 @@ com.josegregoppdev.mibombay
 - `application.properties.example` — plantilla para GitHub (se sube)
 
 Los archivos de properties reales están en `.gitignore`.
+
+## Tests
+
+- JUnit 5 + Mockito (`spring-boot-starter-test` incluido)
+- Test Data Factory en `testdata/TestDataFactory.java` (provee objetos preconstruidos)
+- Servicios con lógica: tests unitarios con `@ExtendWith(MockitoExtension.class)`
+- Servicios sin dependencias: tests directos (sin mocks)
+
+### Tests actuales
+
+| Clase | Tests |
+|---|---|
+| `RegistroEmpresaServiceTest` | 4 |
+| `PasswordGeneratorServiceTest` | 8 |
+| `CustomUserDetailsServiceTest` | 4 |
+| Total | 16 |
+
+```bash
+./mvnw test
+./mvnw test -Dtest=RegistroEmpresaServiceTest
+./mvnw test -Dtest=PasswordGeneratorServiceTest
+./mvnw test -Dtest=CustomUserDetailsServiceTest
+```
 
 ## Frontend
 
@@ -136,6 +179,7 @@ Layout con sidebar izquierda (`col-md-3`) + contenido principal (`col-md-9`). Si
 - **MapStruct**: `@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)` en interfaces dentro de `mapper/`
 - **Entidades**: sin validaciones Javax/Jakarta, solo anotaciones JPA
 - **Validaciones**: en los DTOs, no en las entidades
+- **Tests**: usar `TestDataFactory` para construir objetos de prueba
 - Plantillas Thymeleaf van en `src/main/resources/templates/`
 - Assets estáticos van en `src/main/resources/static/`
 - Responder y comunicar en español con el usuario
