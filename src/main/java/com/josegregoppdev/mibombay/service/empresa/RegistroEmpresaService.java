@@ -1,5 +1,8 @@
 package com.josegregoppdev.mibombay.service.empresa;
 
+import com.josegregoppdev.mibombay.dto.empresa.EmpresaDTORequest;
+import com.josegregoppdev.mibombay.dto.empresa.EmpresaDTOResponse;
+import com.josegregoppdev.mibombay.mapper.empresa.EmpresaMapper;
 import com.josegregoppdev.mibombay.model.empresa.Empresa;
 import com.josegregoppdev.mibombay.model.usuario.Rol;
 import com.josegregoppdev.mibombay.model.usuario.Usuario;
@@ -22,56 +25,56 @@ public class RegistroEmpresaService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final PasswordGeneratorService passwordGeneratorService;
+    private final EmpresaMapper empresaMapper;
 
     @Transactional
-    public RegistroEmpresaResultado registrar(Empresa empresa) {
-        validarSubdominio(empresa.getSubdominio());
-        validarEmailEncargado(empresa.getEmailEncargado());
-        validarPasswords(empresa.getPasswordEncargado(), empresa.getConfirmarPasswordEncargado());
+    public EmpresaDTOResponse registrar(EmpresaDTORequest dto) {
+        validarSubdominio(dto.getSubdominio());
+        validarEmailEncargado(dto.getEmailEncargado());
+        validarPasswords(dto.getPasswordEncargado(), dto.getConfirmarPasswordEncargado());
 
         String tenantId = generarTenantId();
+
+        Empresa empresa = empresaMapper.toEntity(dto);
         empresa.setTenantId(tenantId);
         empresa.setActivo(true);
-        empresa.setDocumentoEncargadoHash(passwordEncoder.encode(empresa.getDocumentoEncargado()));
-
+        empresa.setDocumentoEncargadoHash(passwordEncoder.encode(dto.getDocumentoEncargado()));
         empresaRepository.save(empresa);
 
         Usuario admin = Usuario.builder()
                 .tenantId(tenantId)
-                .email(empresa.getEmailEncargado())
-                .passwordHash(passwordEncoder.encode(empresa.getPasswordEncargado()))
-                .nombreCompleto(empresa.getNombreEncargado())
-                .telefono(empresa.getTelefonoEncargado())
+                .email(dto.getEmailEncargado())
+                .passwordHash(passwordEncoder.encode(dto.getPasswordEncargado()))
+                .nombreCompleto(dto.getNombreEncargado())
+                .telefono(dto.getTelefonoEncargado())
                 .documentoHash(empresa.getDocumentoEncargadoHash())
                 .rol(Rol.ADMIN)
                 .activo(true)
                 .debeCambiarPassword(false)
                 .ultimoCambioPassword(LocalDateTime.now())
                 .build();
-
         usuarioRepository.save(admin);
 
         String passwordCajero = passwordGeneratorService.generarPasswordTemporal();
-        String emailCajero = generarEmailCajero(empresa.getEmailEncargado());
+        String emailCajero = generarEmailCajero(dto.getEmailEncargado());
 
         Usuario cajero = Usuario.builder()
                 .tenantId(tenantId)
                 .email(emailCajero)
                 .passwordHash(passwordEncoder.encode(passwordCajero))
-                .nombreCompleto("Cajero " + empresa.getNombre())
+                .nombreCompleto("Cajero " + dto.getNombre())
                 .documentoHash(empresa.getDocumentoEncargadoHash())
                 .rol(Rol.CAJERO)
                 .activo(true)
                 .debeCambiarPassword(true)
                 .build();
-
         usuarioRepository.save(cajero);
 
-        return new RegistroEmpresaResultado(
-                empresa,
-                emailCajero,
-                passwordCajero
-        );
+        return EmpresaDTOResponse.builder()
+                .nombreEmpresa(dto.getNombre())
+                .emailCajero(emailCajero)
+                .passwordCajero(passwordCajero)
+                .build();
     }
 
     private void validarSubdominio(String subdominio) {
@@ -102,12 +105,5 @@ public class RegistroEmpresaService {
             return "cajero_" + emailAdmin;
         }
         return emailAdmin.substring(0, atIndex) + "_cajero" + emailAdmin.substring(atIndex);
-    }
-
-    public record RegistroEmpresaResultado(
-            Empresa empresa,
-            String emailCajero,
-            String passwordCajero
-    ) {
     }
 }

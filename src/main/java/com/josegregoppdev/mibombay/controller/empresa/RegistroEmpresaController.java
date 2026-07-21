@@ -1,8 +1,8 @@
 package com.josegregoppdev.mibombay.controller.empresa;
 
-import com.josegregoppdev.mibombay.model.empresa.Empresa;
+import com.josegregoppdev.mibombay.dto.empresa.EmpresaDTORequest;
+import com.josegregoppdev.mibombay.dto.empresa.EmpresaDTOResponse;
 import com.josegregoppdev.mibombay.service.empresa.RegistroEmpresaService;
-import com.josegregoppdev.mibombay.service.empresa.RegistroEmpresaService.RegistroEmpresaResultado;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -22,12 +22,12 @@ public class RegistroEmpresaController {
 
     @GetMapping
     public String mostrarFormulario(Model model) {
-        model.addAttribute("empresa", new Empresa());
+        model.addAttribute("empresaRequest", new EmpresaDTORequest());
         return "registro";
     }
 
     @PostMapping
-    public String procesarRegistro(@Valid @ModelAttribute("empresa") Empresa empresa,
+    public String procesarRegistro(@Valid @ModelAttribute("empresaRequest") EmpresaDTORequest empresaRequest,
                                    BindingResult bindingResult,
                                    Model model) {
         if (bindingResult.hasErrors()) {
@@ -35,7 +35,7 @@ public class RegistroEmpresaController {
         }
 
         try {
-            RegistroEmpresaResultado resultado = registroEmpresaService.registrar(empresa);
+            EmpresaDTOResponse resultado = registroEmpresaService.registrar(empresaRequest);
             model.addAttribute("resultado", resultado);
             return "registro-exitoso";
         } catch (IllegalArgumentException e) {

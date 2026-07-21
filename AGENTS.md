@@ -22,6 +22,7 @@ No hay comandos separados de lint/typecheck — la compilación (`./mvnw compile
 - Spring Security, Spring Data JPA, Bean Validation
 - MySQL (driver incluido, requiere configuración en `application-dev.properties`)
 - Lombok (procesador de anotaciones configurado en `pom.xml` — usar `@Data`, `@Builder`, etc.)
+- **MapStruct 1.6.3** (mapeo DTO ↔ Entidad, procesador configurado en `pom.xml`)
 
 ## Estructura del Proyecto
 
@@ -34,9 +35,15 @@ com.josegregoppdev.mibombay
 │   ├── audit/                 # AuditableEntity (timestamps automáticos)
 │   ├── tenant/                # TenantContext, TenantFilter
 │   └── exception/             # GlobalExceptionHandler
-├── model/                     # entidades JPA
+├── model/                     # entidades JPA (sin validaciones, solo JPA)
 │   ├── usuario/               # Usuario, Rol
 │   └── empresa/               # Empresa
+├── dto/                       # DTOs con validaciones
+│   ├── empresa/               # EmpresaDTORequest, EmpresaDTOResponse
+│   └── usuario/               # UsuarioDTORequest, UsuarioDTOResponse
+├── mapper/                    # Mappers MapStruct
+│   ├── empresa/               # EmpresaMapper
+│   └── usuario/               # UsuarioMapper
 ├── repository/                # repositorios Spring Data JPA
 │   ├── usuario/               # UsuarioRepository
 │   └── empresa/               # EmpresaRepository
@@ -69,10 +76,15 @@ com.josegregoppdev.mibombay
 - Campo `debeCambiarPassword` fuerza cambio de contraseña al primer login del cajero
 - Email único global (no se pide subdominio en login)
 - Documento del encargado hasheado con BCrypt
+- **Session timeout**: 10 minutos de inactividad
+- **Session fixation**: `.sessionFixation().migrateSession()`
+- **Sesión expirada**: redirige a `/login?expired=true` con mensaje al usuario
+- **Máximo 1 sesión** por usuario
+- **Headers HTTP**: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`
 
 ## Properties
 
-- `application.properties` — base, carga perfil activo
+- `application.properties` — base, carga perfil activo + session timeout
 - `application-dev.properties` — configuración local (MySQL local, logs)
 - `application-prod.properties` — configuración producción (variables de entorno)
 - `application.properties.example` — plantilla para GitHub (se sube)
@@ -120,6 +132,10 @@ Layout con sidebar izquierda (`col-md-3`) + contenido principal (`col-md-9`). Si
 ## Convenciones
 
 - Usar anotaciones Lombok en entidades/DTOs para reducir boilerplate
+- **DTOs**: `EmpresaDTORequest`/`EmpresaDTOResponse` para empresa, `UsuarioDTORequest`/`UsuarioDTOResponse` para usuario. El resto simple `@RequestParam` sin DTO
+- **MapStruct**: `@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)` en interfaces dentro de `mapper/`
+- **Entidades**: sin validaciones Javax/Jakarta, solo anotaciones JPA
+- **Validaciones**: en los DTOs, no en las entidades
 - Plantillas Thymeleaf van en `src/main/resources/templates/`
 - Assets estáticos van en `src/main/resources/static/`
 - Responder y comunicar en español con el usuario
