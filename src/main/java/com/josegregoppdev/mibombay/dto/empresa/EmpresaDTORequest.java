@@ -15,6 +15,7 @@ public class EmpresaDTORequest {
 
     @NotBlank(message = "El nombre de la empresa es obligatorio")
     @Size(max = 150)
+    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\\s.,'’&-]+$", message = "El nombre contiene caracteres no permitidos")
     private String nombre;
 
     @NotBlank(message = "El subdominio es obligatorio")
@@ -27,18 +28,22 @@ public class EmpresaDTORequest {
     @Size(max = 150)
     private String correo;
 
+    @Pattern(regexp = "^[+]?[\\d\\s()-]{6,30}$", message = "El teléfono contiene caracteres no permitidos")
     @Size(max = 30)
     private String telefono;
 
     @NotBlank(message = "La dirección es obligatoria")
     @Size(max = 255)
+    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\\s.,#°/\\-'’()]+$", message = "La dirección contiene caracteres no permitidos")
     private String direccion;
 
     @NotBlank(message = "El nombre del encargado es obligatorio")
     @Size(max = 150)
+    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s'’.-]+$", message = "El nombre del encargado contiene caracteres no permitidos")
     private String nombreEncargado;
 
     @NotBlank(message = "El documento es obligatorio")
+    @Pattern(regexp = "^[a-zA-Z0-9-]+$", message = "El documento solo permite letras, números y guiones")
     private String documentoEncargado;
 
     @NotBlank(message = "El email del encargado es obligatorio")
@@ -52,6 +57,7 @@ public class EmpresaDTORequest {
     @NotBlank(message = "La confirmación de contraseña es obligatoria")
     private String confirmarPasswordEncargado;
 
+    @Pattern(regexp = "^[+]?[\\d\\s()-]{6,30}$", message = "El teléfono contiene caracteres no permitidos")
     @Size(max = 30)
     private String telefonoEncargado;
 }
