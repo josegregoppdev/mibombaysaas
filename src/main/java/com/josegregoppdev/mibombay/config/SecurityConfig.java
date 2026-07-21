@@ -43,6 +43,8 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .sessionManagement(session -> session
+                        .sessionFixation().migrateSession()
+                        .invalidSessionUrl("/login?expired=true")
                         .maximumSessions(1)
                         .maxSessionsPreventsLogin(false)
                 );

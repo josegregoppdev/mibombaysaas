@@ -11,7 +11,11 @@ public class LoginController {
     @GetMapping("/login")
     public String login(@RequestParam(required = false) String error,
                         @RequestParam(required = false) String logout,
+                        @RequestParam(required = false) String expired,
                         Model model) {
+        if (expired != null) {
+            model.addAttribute("error", "Tu sesión ha expirado. Por favor inicia sesión nuevamente.");
+        }
         if (error != null) {
             model.addAttribute("error", "Email o contraseña incorrectos");
         }
