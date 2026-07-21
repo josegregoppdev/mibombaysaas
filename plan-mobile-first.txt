@@ -1,0 +1,46 @@
+# PLAN MOBILE-FIRST — MiBombay
+
+## Objetivo
+Sistema diseñado primero para teléfono, luego para tablet/desktop (mobile-first).
+Restaurantes pequeños usan el celular como herramienta principal.
+
+## Diagnóstico actual (21 Julio 2026)
+
+| Página | Mobile hoy | Acción requerida |
+|---|---|---|
+| Landing | ✅ Bien | Retoques mínimos |
+| Login / Auth Cards | ✅ Bien | Sin cambios |
+| Registro | ✅ Bien | Sin cambios |
+| Dashboard | ❌ Sidebar ocupa 25% del ancho en celular | Rehacer con Offcanvas |
+| CSS media queries | Solo 3 reglas en `max-width: 768px` | Reescribir mobile-first con `min-width` |
+
+## Implementación
+
+### 1. Dashboard — Sidebar como Offcanvas (Bootstrap 5)
+- Sidebar actual se oculta en mobile con `d-none d-md-block`
+- Agregar Offcanvas (slide-in desde izquierda) con botón hamburguesa en cabecera
+- En `md+` el sidebar permanece fijo como está ahora
+- Referencia: https://getbootstrap.com/docs/5.3/components/offcanvas/
+
+### 2. CSS Mobile-First
+- Cambiar reglas `@media (max-width: 768px)` por `@media (min-width: 768px)` con estilos de desktop como override
+- Ajustar padding/márgenes del dashboard para mobile
+- Garantizar visual correcta desde 320px
+
+### 3. Touch targets (accesibilidad táctil)
+- Botones y enlaces con mínimo 44x44px en mobile
+
+## Archivos a modificar
+
+| Archivo | Cambio |
+|---|---|
+| `templates/fragments/sidebar.html` | Agregar offcanvas + botón toggle |
+| `templates/dashboard.html` | Reestructurar grid con `col-12` + `col-md-3/col-md-9` |
+| `static/css/styles.css` | Reescribir media queries a mobile-first |
+| `templates/fragments/layout.html` | Ajuste menor si es necesario |
+| `static/js/app.js` | Soporte para offcanvas si es necesario |
+
+## Notas
+- Bootstrap 5.3 ya incluye Offcanvas — no requiere dependencias extra
+- Usar `data-bs-toggle="offcanvas"` para el toggle sin JS manual
+- Probar en Chrome DevTools con viewports de 320px, 375px, 768px, 1024px, 1440px

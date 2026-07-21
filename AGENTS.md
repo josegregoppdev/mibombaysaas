@@ -86,6 +86,8 @@ com.josegregoppdev.mibombay
 - Thymeleaf escapa HTML automáticamente (XSS)
 - JPA/Spring Data usa prepared statements (SQL injection)
 - `@Valid` en DTOs para validar entrada de datos
+- `@Pattern` en campos de texto para bloquear caracteres maliciosos (`< > " &`)
+- Patrones usados en DTOs: nombres solo letras/espacios/puntos, documento alfanumérico+guiones, teléfono dígitos+`+()-`, rol solo `ADMIN|CAJERO`, dirección con caracteres seguros
 
 ### A05: Security Misconfiguration
 - Session timeout: 10 minutos de inactividad
@@ -183,3 +185,11 @@ Layout con sidebar izquierda (`col-md-3`) + contenido principal (`col-md-9`). Si
 - Plantillas Thymeleaf van en `src/main/resources/templates/`
 - Assets estáticos van en `src/main/resources/static/`
 - Responder y comunicar en español con el usuario
+
+## Pendiente para próxima sesión
+
+Mobile-First responsive:
+- Ver `plan-mobile-first.txt` para el plan completo
+- Dashboard: convertir sidebar en Offcanvas de Bootstrap 5.3
+- CSS: reescribir media queries a mobile-first (`min-width`)
+- Touch targets: mínimo 44x44px en mobile

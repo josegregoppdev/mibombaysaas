@@ -29,9 +29,10 @@ Cada restaurante opera como un tenant aislado con su propio `tenantId`, garantiz
 - **Multi-tenant** — Aislamiento de datos por empresa con `tenantId`
 - **Auto-registro** — Los clientes crean su empresa y empiezan a usar el sistema inmediatamente
 - **Roles y permisos** — Sistema de roles (`ADMIN`, `CAJERO`) con Spring Security
-- **Seguridad robusta** — BCrypt (strength 12), cambio de contraseña forzado, sesiones seguras
-- **UI moderna** — Bootstrap 5.3 con diseño responsivo y paleta personalizada
+- **Seguridad OWASP Top 10** — BCrypt (strength 12), `@Valid` + `@Pattern` anti-inyección, Thymeleaf XSS escape, sesiones seguras, CSRF
+- **UI moderna** — Bootstrap 5.3 con diseño responsivo mobile-first y paleta personalizada
 - **Arquitectura escalable** — Preparado para futuras funcionalidades (mesas, menú, pedidos, reportes)
+- **16+ tests unitarios** — JUnit 5 + Mockito con TestDataFactory
 
 ---
 
@@ -48,6 +49,7 @@ Cada restaurante opera como un tenant aislado con su propio `tenantId`, garantiz
 | **Bootstrap** | 5.3 | Framework CSS (via CDN) |
 | **Bootstrap Icons** | 1.11+ | Iconografía (via CDN) |
 | **Lombok** | - | Reducción de boilerplate |
+| **MapStruct** | 1.6.3 | Mapeo DTO ↔ Entidad |
 | **Maven** | - | Gestión de dependencias |
 
 ---
@@ -182,14 +184,35 @@ El sistema utiliza **aislamiento por `tenantId`** en cada entidad del dominio:
 
 ---
 
-## Seguridad
+## Seguridad (OWASP Top 10)
 
-- **Contraseñas**: BCrypt con strength 12
-- **Documento del encargado**: Hasheado con BCrypt (no reversible)
-- **Roles**: `ADMIN` y `CAJERO` (enum `Rol`)
-- **Cambio de contraseña forzado**: El cajero debe cambiar su contraseña temporal al primer login
-- **Email único global**: No se permite el mismo email en diferentes empresas
-- **Sesiones**: Configuración de sesión única por usuario
+### A01 — Broken Access Control
+- CSRF habilitado por defecto
+- Logout invalida sesión y borra JSESSIONID
+- Máximo 1 sesión por usuario
+- DTOs evitan mass assignment
+
+### A02 — Cryptographic Failures
+- BCryptPasswordEncoder con strength 12
+- Documento del encargado hasheado con BCrypt
+- Contraseñas temporales generadas con `SecureRandom`
+
+### A03 — Injection
+- Thymeleaf escapa HTML automáticamente (XSS)
+- JPA/Spring Data usa prepared statements (SQL injection)
+- `@Valid` en DTOs con `@Pattern` para bloquear caracteres maliciosos (`< > " &`)
+
+### A05 — Security Misconfiguration
+- Session timeout: 10 minutos de inactividad
+- Session fixation mitigation: `migrateSession()`
+- Headers: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`
+- Perfiles de configuración dev/prod separados
+
+### A07 — Identification & Authentication Failures
+- BCrypt para passwords
+- Email único global
+- Roles: `ADMIN` y `CAJERO` (enum `Rol`)
+- Cambio de contraseña forzado al primer login del cajero
 
 ---
 
@@ -216,6 +239,9 @@ El sistema utiliza **aislamiento por `tenantId`** en cada entidad del dominio:
 
 ## Roadmap
 
+- [x] Seguridad OWASP Top 10 (A01-A07)
+- [x] DTOs con validación + MapStruct
+- [ ] Mobile-First responsive design (Offcanvas sidebar)
 - [ ] Gestión de mesas (estados, asignación de meseros)
 - [ ] Menú digital (categorías, productos, precios)
 - [ ] Sistema de pedidos (toma de pedidos, estados)
