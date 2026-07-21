@@ -1,0 +1,47 @@
+<nav th:fragment="sidebar" class="mb-sidebar">
+    <div class="mb-sidebar-header">
+        <h6 class="mb-0">Navegación</h6>
+    </div>
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link active" th:href="@{/dashboard}">
+                <i class="bi bi-speedometer2 me-2"></i>
+                Dashboard
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link disabled" href="#">
+                <i class="bi bi-grid-3x3-gap me-2"></i>
+                Mesas
+                <span class="badge bg-secondary ms-auto">Pronto</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link disabled" href="#">
+                <i class="bi bi-book me-2"></i>
+                Menú
+                <span class="badge bg-secondary ms-auto">Pronto</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link disabled" href="#">
+                <i class="bi bi-receipt me-2"></i>
+                Pedidos
+                <span class="badge bg-secondary ms-auto">Pronto</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link disabled" href="#">
+                <i class="bi bi-graph-up me-2"></i>
+                Reportes
+                <span class="badge bg-secondary ms-auto">Pronto</span>
+            </a>
+        </li>
+        <li class="nav-item mt-3">
+            <a class="nav-link" th:href="@{/cambiar-password}">
+                <i class="bi bi-key me-2"></i>
+                Cambiar contraseña
+            </a>
+        </li>
+    </ul>
+</nav>
