@@ -43,6 +43,21 @@ public class TestDataFactory {
                 .build();
     }
 
+    public static Usuario crearSuperAdmin() {
+        return Usuario.builder()
+                .id(3L)
+                .tenantId("SUPER_ADMIN")
+                .email("SuperAdministrador")
+                .passwordHash("$2a$12$hashSuperAdmin")
+                .nombreCompleto("SuperAdministrador")
+                .documentoHash("$2a$12$hashDoc")
+                .rol(Rol.SUPER_ADMINISTRADOR)
+                .activo(true)
+                .debeCambiarPassword(false)
+                .ultimoCambioPassword(LocalDateTime.now())
+                .build();
+    }
+
     public static Usuario crearAdmin() {
         return Usuario.builder()
                 .id(1L)

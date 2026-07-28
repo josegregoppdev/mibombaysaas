@@ -1,6 +1,7 @@
 package com.josegregoppdev.mibombay.service.usuario;
 
 import com.josegregoppdev.mibombay.common.tenant.TenantContext;
+import com.josegregoppdev.mibombay.model.usuario.Rol;
 import com.josegregoppdev.mibombay.model.usuario.Usuario;
 import com.josegregoppdev.mibombay.repository.usuario.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,13 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("Usuario inactivo: " + email);
         }
 
-        TenantContext.set(usuario.getTenantId());
+        if (usuario.getRol() != Rol.SUPER_ADMINISTRADOR) {
+            String tenantFromSubdomain = TenantContext.get();
+            if (tenantFromSubdomain != null && !tenantFromSubdomain.equals(usuario.getTenantId())) {
+                throw new UsernameNotFoundException("Acceso denegado a este restaurante");
+            }
+            TenantContext.set(usuario.getTenantId());
+        }
 
         return new User(
                 usuario.getEmail(),

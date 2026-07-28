@@ -1,6 +1,6 @@
 package com.josegregoppdev.mibombay.controller.dashboard;
 
-import com.josegregoppdev.mibombay.model.empresa.Empresa;
+import com.josegregoppdev.mibombay.model.usuario.Rol;
 import com.josegregoppdev.mibombay.model.usuario.Usuario;
 import com.josegregoppdev.mibombay.repository.empresa.EmpresaRepository;
 import com.josegregoppdev.mibombay.repository.usuario.UsuarioRepository;
@@ -32,7 +32,11 @@ public class DashboardController {
             return "redirect:/cambiar-password";
         }
 
-        Empresa empresa = empresaRepository.findByTenantId(usuario.getTenantId())
+        if (usuario.getRol() == Rol.SUPER_ADMINISTRADOR) {
+            return "redirect:/admin/dashboard";
+        }
+
+        var empresa = empresaRepository.findByTenantId(usuario.getTenantId())
                 .orElseThrow(() -> new IllegalStateException("Empresa no encontrada"));
 
         model.addAttribute("usuario", usuario);

@@ -11,6 +11,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import jakarta.servlet.http.Cookie;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -19,6 +22,7 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationSuccessHandler loginSuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -26,20 +30,20 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/registro", "/login", "/css/**", "/js/**", "/images/**", "/error").permitAll()
                         .requestMatchers("/cambiar-password").authenticated()
+                        .requestMatchers("/admin/**").hasRole("SUPER_ADMINISTRADOR")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/dashboard", true)
+                        .successHandler(loginSuccessHandler)
                         .failureUrl("/login?error=true")
                         .permitAll()
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout=true")
+                        .logoutSuccessHandler(logoutSuccessHandler())
                         .invalidateHttpSession(true)
-                        .deleteCookies("JSESSIONID")
                         .permitAll()
                 )
                 .sessionManagement(session -> session
@@ -62,5 +66,37 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public LogoutSuccessHandler logoutSuccessHandler() {
+        return (request, response, authentication) -> {
+            String serverName = request.getServerName();
+
+            String baseDomain;
+            if (serverName != null && serverName.split("\\.").length > 2) {
+                baseDomain = serverName.substring(serverName.indexOf('.') + 1);
+            } else {
+                baseDomain = serverName != null ? serverName : "lvh.me";
+            }
+
+            Cookie cookie = new Cookie("JSESSIONID", null);
+            cookie.setPath("/");
+            cookie.setDomain(baseDomain);
+            cookie.setMaxAge(0);
+            response.addCookie(cookie);
+
+            Cookie cookieSinDomain = new Cookie("JSESSIONID", null);
+            cookieSinDomain.setPath("/");
+            cookieSinDomain.setMaxAge(0);
+            response.addCookie(cookieSinDomain);
+
+            int port = request.getServerPort();
+            String scheme = request.getScheme();
+            String redirect = scheme + "://" + baseDomain
+                    + (port == 80 || port == 443 ? "" : ":" + port)
+                    + "/login?logout=true";
+            response.sendRedirect(redirect);
+        };
     }
 }

@@ -54,19 +54,27 @@ com.josegregoppdev.mibombay
 │   ├── landing/               # LandingController
 │   ├── auth/                  # LoginController, PasswordChangeController
 │   ├── empresa/               # RegistroEmpresaController
-│   └── dashboard/             # DashboardController
+│   ├── dashboard/             # DashboardController
+│   └── admin/                 # AdminController
 └── config/                    # configuraciones Spring
     ├── SecurityConfig.java
-    └── PasswordEncoderConfig.java
+    ├── PasswordEncoderConfig.java
+    ├── DatosInicialesConfig.java
+    └── LoginSuccessHandler.java
 ```
 
 ## Arquitectura Multi-Tenant
 
 - Cada empresa tiene un `tenantId` único (formato: `tnt_` + UUID)
-- Campo `subdominio` en `Empresa` preparado para futuros subdominios
+- Campo `subdominio` en `Empresa` identifica al restaurante (ej: `1`, `mirestaurante`)
 - `TenantContext` (ThreadLocal) mantiene el tenant actual del request
+- `TenantFilter` extrae el subdominio del `Host` header (funciona con lvh.me para dev y mibombay.com para prod), busca `Empresa` por subdominio y asigna el `tenantId` al `TenantContext`. Sin subdominio o subdominio `admin`/`www` no asigna tenant
+- `CustomUserDetailsService` valida que el tenant del usuario coincida con el tenant del subdominio
 - `TenantFilter` limpia el contexto al final de cada request
 - Aislamiento por `tenantId` en cada entidad del dominio
+- Cookie de sesión con `Domain=lvh.me` (dev) / `Domain=mibombay.com` (prod) para que sea válida entre subdominios. Configurado en `application-dev.properties` y `application-prod.properties`
+- `LoginSuccessHandler`: al autenticar, valida el subdominio del formulario, busca la empresa y redirige a `{subdominio}.{domain}/dashboard`
+- Logout borra la cookie con y sin Domain para asegurar limpieza en el navegador
 
 ## Seguridad (OWASP Top 10)
 
@@ -100,9 +108,12 @@ com.josegregoppdev.mibombay
 ### A07: Identification & Authentication Failures
 - BCrypt para passwords
 - Email único global
-- Roles: `ADMIN`, `CAJERO` (enum `Rol`)
+- Roles: `SUPER_ADMINISTRADOR`, `ADMIN`, `CAJERO` (enum `Rol`)
 - Al crear empresa: se crea admin (con password del form) y cajero (password temporal generada)
 - Campo `debeCambiarPassword` fuerza cambio de contraseña al primer login del cajero
+- SuperAdmin por defecto: `SuperAdministrador@gmail.com` / `Mora.Kristoff_26123009` (se crea automáticamente al iniciar)
+- SuperAdmin accede a `/admin/dashboard` con listado de empresas y estado activo/inactivo
+- Restaurante demo creado automáticamente con subdominio `1` — admin: `demo@mibombay.com` / `demo1234`, cajero: `demo_cajero@mibombay.com` (password temporal)
 
 ## Properties
 

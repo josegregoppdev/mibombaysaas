@@ -33,9 +33,18 @@
                                 <span th:text="${mensaje}">Mensaje</span>
                             </div>
                             
-                            <form th:action="@{/login}" method="post">
+                                <form th:action="@{/login}" method="post">
                                 <div class="form-floating mb-3">
-                                    <input type="email" class="form-control" id="username" name="username" placeholder="nombre@ejemplo.com" required autofocus>
+                                    <input type="text" class="form-control" id="subdominio" name="subdominio" placeholder="ej: 1, mirestaurante" required autofocus>
+                                    <label for="subdominio">Subdominio del restaurante</label>
+                                    <div class="form-text text-muted">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Ej: <code>1</code> para el restaurante demo
+                                    </div>
+                                </div>
+
+                                <div class="form-floating mb-3">
+                                    <input type="email" class="form-control" id="username" name="username" placeholder="nombre@ejemplo.com" required>
                                     <label for="username">Email</label>
                                 </div>
                                 
