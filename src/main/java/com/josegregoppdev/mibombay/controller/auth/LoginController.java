@@ -24,4 +24,17 @@ public class LoginController {
         }
         return "login";
     }
+
+    @GetMapping("/admin/login")
+    public String adminLogin(@RequestParam(required = false) String error,
+                             @RequestParam(required = false) String expired,
+                             Model model) {
+        if (expired != null) {
+            model.addAttribute("error", "Tu sesión ha expirado. Por favor inicia sesión nuevamente.");
+        }
+        if (error != null) {
+            model.addAttribute("error", "Email o contraseña incorrectos");
+        }
+        return "admin/login";
+    }
 }
