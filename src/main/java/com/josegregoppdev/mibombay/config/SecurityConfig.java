@@ -31,6 +31,7 @@ public class SecurityConfig {
                         .requestMatchers("/", "/registro", "/login", "/admin/login", "/css/**", "/js/**", "/images/**", "/error").permitAll()
                         .requestMatchers("/cambiar-password").authenticated()
                         .requestMatchers("/admin/**").hasRole("SUPER_ADMINISTRADOR")
+                        .requestMatchers("/ingrediente/**").hasAnyRole("ADMIN", "SUPER_ADMINISTRADOR")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

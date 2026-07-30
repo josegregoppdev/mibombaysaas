@@ -11,28 +11,12 @@
 <body class="mb-dashboard">
     <div th:replace="~{fragments/navbar :: navbar}"></div>
 
+    <div th:replace="~{fragments/sidebar-admin :: sidebarAdminOffcanvas}"></div>
+
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-3 col-lg-2 mb-sidebar-col">
-                <nav class="mb-sidebar">
-                    <div class="mb-sidebar-header">
-                        <h6 class="mb-0">Admin</h6>
-                    </div>
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link active" th:href="@{/admin/dashboard}">
-                                <i class="bi bi-speedometer2 me-2"></i>
-                                Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" th:href="@{/admin/empresas}">
-                                <i class="bi bi-building me-2"></i>
-                                Empresas
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
+            <div class="col-md-3 col-lg-2 d-none d-md-block mb-sidebar-col">
+                <div th:replace="~{fragments/sidebar-admin :: sidebarAdminInline}"></div>
             </div>
 
             <main class="col-md-9 col-lg-10 mb-main-col">
