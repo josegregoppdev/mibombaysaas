@@ -5,6 +5,7 @@ import com.josegregoppdev.mibombay.model.ingrediente.UnidadMedida;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -42,12 +43,15 @@ public class IngredienteDTO {
     private UnidadMedida unidadMedida;
 
     @PositiveOrZero(message = "El costo unitario no puede ser negativo")
+    @Digits(integer = 8, fraction = 4, message = "Máximo 8 dígitos enteros y 4 decimales")
     private BigDecimal costoUnitarioActual;
 
     @PositiveOrZero(message = "El stock actual no puede ser negativo")
+    @Digits(integer = 8, fraction = 4, message = "Máximo 8 dígitos enteros y 4 decimales")
     private BigDecimal stockActual;
 
     @PositiveOrZero(message = "El stock mínimo no puede ser negativo")
+    @Digits(integer = 8, fraction = 4, message = "Máximo 8 dígitos enteros y 4 decimales")
     private BigDecimal stockMinimo;
 
     private Boolean activo;

@@ -3,12 +3,14 @@ package com.josegregoppdev.mibombay.model.ingrediente;
 public enum Categoria {
     CARNES("Carnes"),
     LACTEOS("Lácteos"),
+    PANES("Panes"),
     VERDURAS("Verduras"),
     FRUTAS("Frutas"),
     GRANOS("Granos"),
     CONDIMENTOS("Condimentos"),
     BEBIDAS("Bebidas"),
     OTROS("Otros");
+
 
     private final String displayName;
 

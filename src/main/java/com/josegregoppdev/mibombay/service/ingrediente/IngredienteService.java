@@ -2,7 +2,9 @@ package com.josegregoppdev.mibombay.service.ingrediente;
 
 import com.josegregoppdev.mibombay.dto.ingrediente.IngredienteDTO;
 import com.josegregoppdev.mibombay.mapper.ingrediente.IngredienteMapper;
+import com.josegregoppdev.mibombay.model.ingrediente.Categoria;
 import com.josegregoppdev.mibombay.model.ingrediente.Ingrediente;
+import com.josegregoppdev.mibombay.model.ingrediente.UnidadMedida;
 import com.josegregoppdev.mibombay.repository.ingrediente.IngredienteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,28 +20,41 @@ public class IngredienteService {
     private final IngredienteMapper ingredienteMapper;
 
     @Transactional(readOnly = true)
-    public Page<IngredienteDTO> listar(String tenantId, Pageable pageable) {
-        return ingredienteRepository.findByTenantId(tenantId, pageable)
+    public Page<IngredienteDTO> obtenerIngredientesPaginados(String tenantId, String nombre,
+                                                              Categoria categoria,
+                                                              UnidadMedida unidadMedida,
+                                                              Pageable pageable) {
+        String nombreParam = (nombre != null && !nombre.isBlank()) ? nombre : null;
+        return ingredienteRepository.findByFilters(tenantId, nombreParam, categoria, unidadMedida, pageable)
                 .map(ingredienteMapper::toDto);
     }
 
     @Transactional(readOnly = true)
-    public Page<IngredienteDTO> listarActivos(String tenantId, Pageable pageable) {
+    public Page<IngredienteDTO> obtenerIngredientesPaginados(String tenantId, Pageable pageable) {
+        return obtenerIngredientesPaginados(tenantId, null, null, null, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<IngredienteDTO> obtenerIngredientesActivosPaginados(String tenantId, Pageable pageable) {
         return ingredienteRepository.findByTenantIdAndActivoTrue(tenantId, pageable)
                 .map(ingredienteMapper::toDto);
     }
 
     @Transactional(readOnly = true)
-    public IngredienteDTO obtenerPorId(Long id, String tenantId) {
+    public IngredienteDTO obtenerIngredientePorId(Long id, String tenantId) {
         Ingrediente ingrediente = ingredienteRepository.findByIdAndTenantId(id, tenantId)
                 .orElseThrow(() -> new IllegalArgumentException("Ingrediente no encontrado"));
         return ingredienteMapper.toDto(ingrediente);
     }
 
     @Transactional
-    public IngredienteDTO crear(IngredienteDTO dto, String tenantId) {
+    public IngredienteDTO crearNuevoIngrediente(IngredienteDTO dto, String tenantId) {
         if (ingredienteRepository.existsByCodigoAndTenantId(dto.getCodigo(), tenantId)) {
             throw new IllegalArgumentException("Ya existe un ingrediente con ese código");
+        }
+
+        if (ingredienteRepository.existsByNombreAndTenantId(dto.getNombre(), tenantId)) {
+            throw new IllegalArgumentException("Ya existe un ingrediente con ese nombre");
         }
 
         Ingrediente ingrediente = ingredienteMapper.toEntity(dto);
@@ -50,13 +65,18 @@ public class IngredienteService {
     }
 
     @Transactional
-    public IngredienteDTO actualizar(Long id, IngredienteDTO dto, String tenantId) {
+    public IngredienteDTO actualizarIngredienteExistente(Long id, IngredienteDTO dto, String tenantId) {
         Ingrediente ingrediente = ingredienteRepository.findByIdAndTenantId(id, tenantId)
                 .orElseThrow(() -> new IllegalArgumentException("Ingrediente no encontrado"));
 
         if (!ingrediente.getCodigo().equals(dto.getCodigo())
                 && ingredienteRepository.existsByCodigoAndTenantId(dto.getCodigo(), tenantId)) {
             throw new IllegalArgumentException("Ya existe un ingrediente con ese código");
+        }
+
+        if (!ingrediente.getNombre().equals(dto.getNombre())
+                && ingredienteRepository.existsByNombreAndTenantId(dto.getNombre(), tenantId)) {
+            throw new IllegalArgumentException("Ya existe un ingrediente con ese nombre");
         }
 
         ingrediente.setCodigo(dto.getCodigo());
@@ -72,10 +92,10 @@ public class IngredienteService {
     }
 
     @Transactional
-    public void desactivar(Long id, String tenantId) {
+    public void cambiarEstadoActivoDelIngrediente(Long id, String tenantId) {
         Ingrediente ingrediente = ingredienteRepository.findByIdAndTenantId(id, tenantId)
                 .orElseThrow(() -> new IllegalArgumentException("Ingrediente no encontrado"));
-        ingrediente.setActivo(false);
+        ingrediente.setActivo(!ingrediente.getActivo());
         ingredienteRepository.save(ingrediente);
     }
 }

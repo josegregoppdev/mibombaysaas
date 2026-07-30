@@ -83,7 +83,7 @@
 
                                 <div class="col-md-4">
                                     <label for="costoUnitarioActual" class="form-label">Costo unitario</label>
-                                    <input type="number" step="0.0001" min="0" class="form-control" id="costoUnitarioActual"
+                                    <input type="number" step="0.0001" min="0" max="99999999.9999" class="form-control" id="costoUnitarioActual"
                                            th:field="*{costoUnitarioActual}"
                                            th:classappend="${#fields.hasErrors('costoUnitarioActual')} ? 'is-invalid'"
                                            placeholder="0.00">
@@ -92,7 +92,7 @@
 
                                 <div class="col-md-4">
                                     <label for="stockActual" class="form-label">Stock actual</label>
-                                    <input type="number" step="0.0001" min="0" class="form-control" id="stockActual"
+                                    <input type="number" step="0.0001" min="0" max="99999999.9999" class="form-control" id="stockActual"
                                            th:field="*{stockActual}"
                                            th:classappend="${#fields.hasErrors('stockActual')} ? 'is-invalid'"
                                            placeholder="0">
@@ -101,7 +101,7 @@
 
                                 <div class="col-md-4">
                                     <label for="stockMinimo" class="form-label">Stock mínimo</label>
-                                    <input type="number" step="0.0001" min="0" class="form-control" id="stockMinimo"
+                                    <input type="number" step="0.0001" min="0" max="99999999.9999" class="form-control" id="stockMinimo"
                                            th:field="*{stockMinimo}"
                                            th:classappend="${#fields.hasErrors('stockMinimo')} ? 'is-invalid'"
                                            placeholder="0">

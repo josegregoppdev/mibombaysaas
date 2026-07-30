@@ -41,6 +41,44 @@
                     </a>
                 </div>
 
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <form th:action="@{/ingrediente}" method="get" class="row g-3 align-items-end">
+                            <div class="col-md-4">
+                                <label for="filtroNombre" class="form-label">Nombre</label>
+                                <input type="text" class="form-control" id="filtroNombre" name="nombre"
+                                       th:value="${nombre}" placeholder="Buscar por nombre...">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="filtroCategoria" class="form-label">Categoría</label>
+                                <select class="form-select" id="filtroCategoria" name="categoria">
+                                    <option value="">Todas</option>
+                                    <option th:each="cat : ${categorias}" th:value="${cat}"
+                                            th:text="${cat.displayName}"
+                                            th:selected="${cat == categoriaSeleccionada}">Categoría</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="filtroUnidad" class="form-label">Unidad</label>
+                                <select class="form-select" id="filtroUnidad" name="unidadMedida">
+                                    <option value="">Todas</option>
+                                    <option th:each="um : ${unidadesMedida}" th:value="${um}"
+                                            th:text="${um}"
+                                            th:selected="${um == unidadMedidaSeleccionada}">Unidad</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex gap-2">
+                                <button type="submit" class="btn btn-primary flex-fill">
+                                    <i class="bi bi-search me-1"></i>Filtrar
+                                </button>
+                                <a th:href="@{/ingrediente}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-lg"></i>
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-0">
                         <div class="table-responsive">
@@ -73,9 +111,11 @@
                                             <a th:href="@{/ingrediente/{id}/editar(id=${ing.id})}" class="btn btn-sm btn-outline-primary me-1">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <form th:if="${ing.activo}" th:action="@{/ingrediente/{id}/desactivar(id=${ing.id})}" method="post" class="d-inline">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Desactivar este ingrediente?')">
-                                                    <i class="bi bi-x-circle"></i>
+                                            <form th:action="@{/ingrediente/{id}/toggle-estado(id=${ing.id})}" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm" th:classappend="${ing.activo} ? 'btn-outline-danger' : 'btn-outline-success'"
+                                                        onclick="return confirm('¿Cambiar estado de este ingrediente?')">
+                                                    <i th:if="${ing.activo}" class="bi bi-x-circle"></i>
+                                                    <i th:unless="${ing.activo}" class="bi bi-check-circle"></i>
                                                 </button>
                                             </form>
                                         </td>
@@ -95,14 +135,14 @@
                 <nav th:if="${pagina.totalPages > 1}" class="mt-4">
                     <ul class="pagination justify-content-center">
                         <li class="page-item" th:classappend="${pagina.first} ? 'disabled'">
-                            <a class="page-link" th:href="@{/ingrediente(page=0)}">&laquo;</a>
+                            <a class="page-link" th:href="@{/ingrediente(page=0, nombre=${nombre}, categoria=${categoriaSeleccionada}, unidadMedida=${unidadMedidaSeleccionada})}">&laquo;</a>
                         </li>
                         <li class="page-item" th:each="i : ${#numbers.sequence(0, pagina.totalPages - 1)}"
                             th:classappend="${i == pagina.number} ? 'active'">
-                            <a class="page-link" th:href="@{/ingrediente(page=${i})}" th:text="${i + 1}">1</a>
+                            <a class="page-link" th:href="@{/ingrediente(page=${i}, nombre=${nombre}, categoria=${categoriaSeleccionada}, unidadMedida=${unidadMedidaSeleccionada})}" th:text="${i + 1}">1</a>
                         </li>
                         <li class="page-item" th:classappend="${pagina.last} ? 'disabled'">
-                            <a class="page-link" th:href="@{/ingrediente(page=${pagina.totalPages - 1})}">&raquo;</a>
+                            <a class="page-link" th:href="@{/ingrediente(page=${pagina.totalPages - 1}, nombre=${nombre}, categoria=${categoriaSeleccionada}, unidadMedida=${unidadMedidaSeleccionada})}">&raquo;</a>
                         </li>
                     </ul>
                 </nav>

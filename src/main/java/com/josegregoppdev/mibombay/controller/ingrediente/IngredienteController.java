@@ -3,6 +3,7 @@ package com.josegregoppdev.mibombay.controller.ingrediente;
 import com.josegregoppdev.mibombay.common.tenant.TenantContext;
 import com.josegregoppdev.mibombay.dto.ingrediente.IngredienteDTO;
 import com.josegregoppdev.mibombay.model.ingrediente.Categoria;
+import com.josegregoppdev.mibombay.model.ingrediente.UnidadMedida;
 import com.josegregoppdev.mibombay.service.ingrediente.IngredienteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -27,9 +29,18 @@ public class IngredienteController {
     private final IngredienteService ingredienteService;
 
     @GetMapping
-    public String listar(@PageableDefault(size = 20, sort = "nombre", direction = Sort.Direction.ASC)
+    public String listar(@RequestParam(required = false) String nombre,
+                         @RequestParam(required = false) Categoria categoria,
+                         @RequestParam(required = false) UnidadMedida unidadMedida,
+                         @PageableDefault(size = 20, sort = "nombre", direction = Sort.Direction.ASC)
                          Pageable pageable, Model model) {
-        model.addAttribute("pagina", ingredienteService.listar(tenantId(), pageable));
+        model.addAttribute("pagina", ingredienteService.obtenerIngredientesPaginados(
+                tenantId(), nombre, categoria, unidadMedida, pageable));
+        model.addAttribute("nombre", nombre);
+        model.addAttribute("categoriaSeleccionada", categoria);
+        model.addAttribute("unidadMedidaSeleccionada", unidadMedida);
+        model.addAttribute("categorias", Categoria.values());
+        model.addAttribute("unidadesMedida", UnidadMedida.values());
         return "ingrediente/listar";
     }
 
@@ -49,7 +60,7 @@ public class IngredienteController {
         }
 
         try {
-            ingredienteService.crear(dto, tenantId());
+            ingredienteService.crearNuevoIngrediente(dto, tenantId());
             redirectAttributes.addFlashAttribute("mensaje", "Ingrediente creado correctamente");
             return "redirect:/ingrediente";
         } catch (IllegalArgumentException e) {
@@ -61,7 +72,7 @@ public class IngredienteController {
     @GetMapping("/{id}/editar")
     public String mostrarEdicion(@PathVariable Long id, Model model) {
         try {
-            model.addAttribute("ingrediente", ingredienteService.obtenerPorId(id, tenantId()));
+            model.addAttribute("ingrediente", ingredienteService.obtenerIngredientePorId(id, tenantId()));
             model.addAttribute("categorias", Categoria.values());
             return "ingrediente/formulario";
         } catch (IllegalArgumentException e) {
@@ -79,7 +90,7 @@ public class IngredienteController {
         }
 
         try {
-            ingredienteService.actualizar(id, dto, tenantId());
+            ingredienteService.actualizarIngredienteExistente(id, dto, tenantId());
             redirectAttributes.addFlashAttribute("mensaje", "Ingrediente actualizado correctamente");
             return "redirect:/ingrediente";
         } catch (IllegalArgumentException e) {
@@ -88,12 +99,12 @@ public class IngredienteController {
         }
     }
 
-    @PostMapping("/{id}/desactivar")
-    public String desactivar(@PathVariable Long id,
-                             RedirectAttributes redirectAttributes) {
+    @PostMapping("/{id}/toggle-estado")
+    public String toggleEstado(@PathVariable Long id,
+                               RedirectAttributes redirectAttributes) {
         try {
-            ingredienteService.desactivar(id, tenantId());
-            redirectAttributes.addFlashAttribute("mensaje", "Ingrediente desactivado correctamente");
+            ingredienteService.cambiarEstadoActivoDelIngrediente(id, tenantId());
+            redirectAttributes.addFlashAttribute("mensaje", "Estado del ingrediente actualizado correctamente");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
