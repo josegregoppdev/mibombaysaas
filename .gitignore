@@ -42,3 +42,5 @@ src/main/resources/application-prod.properties
 ### Project Notes ###
 hoy.txt
 resumen-proyecto.txt
+plan-mobile-first.txt
+*.docx

@@ -2,10 +2,15 @@ package com.josegregoppdev.mibombay.testdata;
 
 import com.josegregoppdev.mibombay.dto.empresa.EmpresaDTORequest;
 import com.josegregoppdev.mibombay.dto.empresa.EmpresaDTOResponse;
+import com.josegregoppdev.mibombay.dto.ingrediente.IngredienteDTO;
 import com.josegregoppdev.mibombay.model.empresa.Empresa;
+import com.josegregoppdev.mibombay.model.ingrediente.Categoria;
+import com.josegregoppdev.mibombay.model.ingrediente.Ingrediente;
+import com.josegregoppdev.mibombay.model.ingrediente.UnidadMedida;
 import com.josegregoppdev.mibombay.model.usuario.Rol;
 import com.josegregoppdev.mibombay.model.usuario.Usuario;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class TestDataFactory {
@@ -97,6 +102,49 @@ public class TestDataFactory {
                 .nombreEmpresa("Mi Restaurante")
                 .emailCajero("admin_cajero@test.com")
                 .passwordCajero("TempPass123!")
+                .build();
+    }
+
+    public static IngredienteDTO crearIngredienteDTO() {
+        return IngredienteDTO.builder()
+                .codigo("CAR-001")
+                .nombre("Carne de res")
+                .categoria(Categoria.CARNES)
+                .unidadMedida(UnidadMedida.KILOGRAMO)
+                .costoUnitarioActual(new BigDecimal("15.50"))
+                .stockActual(new BigDecimal("50"))
+                .stockMinimo(new BigDecimal("10"))
+                .activo(true)
+                .build();
+    }
+
+    public static Ingrediente crearIngrediente() {
+        return Ingrediente.builder()
+                .id(1L)
+                .tenantId(TENANT_ID)
+                .codigo("CAR-001")
+                .nombre("Carne de res")
+                .categoria(Categoria.CARNES)
+                .unidadMedida(UnidadMedida.KILOGRAMO)
+                .costoUnitarioActual(new BigDecimal("15.50"))
+                .stockActual(new BigDecimal("50"))
+                .stockMinimo(new BigDecimal("10"))
+                .activo(true)
+                .build();
+    }
+
+    public static Ingrediente crearIngredienteInactivo() {
+        return Ingrediente.builder()
+                .id(2L)
+                .tenantId(TENANT_ID)
+                .codigo("PAN-001")
+                .nombre("Pan de hamburguesa")
+                .categoria(Categoria.GRANOS)
+                .unidadMedida(UnidadMedida.UNIDAD)
+                .costoUnitarioActual(new BigDecimal("1.50"))
+                .stockActual(new BigDecimal("100"))
+                .stockMinimo(new BigDecimal("20"))
+                .activo(false)
                 .build();
     }
 }
