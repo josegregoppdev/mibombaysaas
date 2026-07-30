@@ -135,10 +135,17 @@ Los archivos de properties reales están en `.gitignore`.
 
 | Clase | Tests |
 |---|---|
-| `RegistroEmpresaServiceTest` | 4 |
+| `RegistroEmpresaServiceTest` | 7 |
 | `PasswordGeneratorServiceTest` | 8 |
-| `CustomUserDetailsServiceTest` | 4 |
-| Total | 16 |
+| `CustomUserDetailsServiceTest` | 7 |
+| `LandingControllerTest` | 1 |
+| `LoginControllerTest` | 6 |
+| `PasswordChangeControllerTest` | 4 |
+| `DashboardControllerTest` | 4 |
+| `RegistroEmpresaControllerTest` | 4 |
+| `AdminControllerTest` | 2 |
+| `MibombayApplicationTests` | 1 |
+| Total | 44 |
 
 ```bash
 ./mvnw test

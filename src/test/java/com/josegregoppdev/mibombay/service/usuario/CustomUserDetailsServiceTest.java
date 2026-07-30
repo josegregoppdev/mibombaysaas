@@ -74,4 +74,39 @@ class CustomUserDetailsServiceTest {
 
         assertEquals(usuario.getTenantId(), TenantContext.get());
     }
+
+    @Test
+    void loadUserByUsername_superAdmin_noSeteaTenantContext() {
+        Usuario superAdmin = crearSuperAdmin();
+        TenantContext.set("SOME_TENANT");
+        when(usuarioRepository.findByEmail(superAdmin.getEmail())).thenReturn(Optional.of(superAdmin));
+
+        service.loadUserByUsername(superAdmin.getEmail());
+
+        assertEquals("SOME_TENANT", TenantContext.get());
+    }
+
+    @Test
+    void loadUserByUsername_tenantCoincide_ok() {
+        Usuario usuario = crearAdmin();
+        TenantContext.set(usuario.getTenantId());
+        when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
+
+        UserDetails userDetails = service.loadUserByUsername(usuario.getEmail());
+
+        assertNotNull(userDetails);
+        assertEquals(usuario.getEmail(), userDetails.getUsername());
+    }
+
+    @Test
+    void loadUserByUsername_tenantNoCoincide_lanzaExcepcion() {
+        Usuario usuario = crearAdmin();
+        TenantContext.set("tnt_otro_tenant00000000000000000000");
+        when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
+
+        UsernameNotFoundException ex = assertThrows(UsernameNotFoundException.class,
+                () -> service.loadUserByUsername(usuario.getEmail()));
+
+        assertTrue(ex.getMessage().contains("Acceso denegado"));
+    }
 }

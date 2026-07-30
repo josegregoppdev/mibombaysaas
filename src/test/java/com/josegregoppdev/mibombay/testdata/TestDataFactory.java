@@ -59,9 +59,13 @@ public class TestDataFactory {
     }
 
     public static Usuario crearAdmin() {
+        return crearAdminConTenant(TENANT_ID);
+    }
+
+    public static Usuario crearAdminConTenant(String tenantId) {
         return Usuario.builder()
                 .id(1L)
-                .tenantId(TENANT_ID)
+                .tenantId(tenantId)
                 .email("admin@test.com")
                 .passwordHash("$2a$12$hashAdmin")
                 .nombreCompleto("Juan Pérez")
