@@ -6,6 +6,13 @@ document.addEventListener('DOMContentLoaded', function() {
             bsAlert.close();
         }, 5000);
     });
+
+    document.querySelectorAll('#sidebarOffcanvas .nav-link:not(.disabled)').forEach(function(link) {
+        link.addEventListener('click', function() {
+            const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('sidebarOffcanvas'));
+            if (offcanvas) offcanvas.hide();
+        });
+    });
 });
 
 function copyToClipboard(elementId) {
@@ -13,16 +20,16 @@ function copyToClipboard(elementId) {
     if (element) {
         element.select();
         element.setSelectionRange(0, 99999);
-        
+
         try {
             document.execCommand('copy');
-            
+
             const button = element.nextElementSibling;
             const originalHTML = button.innerHTML;
             button.innerHTML = '<i class="bi bi-check"></i>';
             button.classList.add('btn-success');
             button.classList.remove('btn-outline-secondary');
-            
+
             setTimeout(function() {
                 button.innerHTML = originalHTML;
                 button.classList.remove('btn-success');

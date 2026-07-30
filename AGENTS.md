@@ -37,25 +37,31 @@ com.josegregoppdev.mibombay
 │   └── exception/             # GlobalExceptionHandler
 ├── model/                     # entidades JPA (sin validaciones, solo JPA)
 │   ├── usuario/               # Usuario, Rol
-│   └── empresa/               # Empresa
+│   ├── empresa/               # Empresa
+│   └── ingrediente/           # Categoria, Ingrediente, UnidadMedida
 ├── dto/                       # DTOs con validaciones
 │   ├── empresa/               # EmpresaDTORequest, EmpresaDTOResponse
-│   └── usuario/               # UsuarioDTORequest, UsuarioDTOResponse
+│   ├── usuario/               # UsuarioDTORequest, UsuarioDTOResponse
+│   └── ingrediente/           # CategoriaDTO, IngredienteDTO
 ├── mapper/                    # Mappers MapStruct
 │   ├── empresa/               # EmpresaMapper
-│   └── usuario/               # UsuarioMapper
+│   ├── usuario/               # UsuarioMapper
+│   └── ingrediente/           # CategoriaMapper, IngredienteMapper
 ├── repository/                # repositorios Spring Data JPA
 │   ├── usuario/               # UsuarioRepository
-│   └── empresa/               # EmpresaRepository
+│   ├── empresa/               # EmpresaRepository
+│   └── ingrediente/           # CategoriaRepository, IngredienteRepository
 ├── service/                   # lógica de negocio
 │   ├── usuario/               # CustomUserDetailsService, PasswordGeneratorService
-│   └── empresa/               # RegistroEmpresaService
+│   ├── empresa/               # RegistroEmpresaService
+│   └── ingrediente/           # CategoriaService, IngredienteService
 ├── controller/                # controladores web
 │   ├── landing/               # LandingController
 │   ├── auth/                  # LoginController, PasswordChangeController
 │   ├── empresa/               # RegistroEmpresaController
 │   ├── dashboard/             # DashboardController
-│   └── admin/                 # AdminController
+│   ├── admin/                 # AdminController
+│   └── ingrediente/           # CategoriaController, IngredienteController
 └── config/                    # configuraciones Spring
     ├── SecurityConfig.java
     ├── PasswordEncoderConfig.java

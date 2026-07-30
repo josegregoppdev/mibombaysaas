@@ -1,38 +1,22 @@
 package com.josegregoppdev.mibombay.model.ingrediente;
 
-import com.josegregoppdev.mibombay.common.audit.AuditableEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+public enum Categoria {
+    CARNES("Carnes"),
+    LACTEOS("Lácteos"),
+    VERDURAS("Verduras"),
+    FRUTAS("Frutas"),
+    GRANOS("Granos"),
+    CONDIMENTOS("Condimentos"),
+    BEBIDAS("Bebidas"),
+    OTROS("Otros");
 
-@Entity
-@Table(name = "categorias")
-@Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class Categoria extends AuditableEntity {
+    private final String displayName;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    Categoria(String displayName) {
+        this.displayName = displayName;
+    }
 
-    @Column(name = "tenant_id", nullable = false, length = 40)
-    private String tenantId;
-
-    @Column(nullable = false, length = 100)
-    private String nombre;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private Boolean activo = true;
+    public String getDisplayName() {
+        return displayName;
+    }
 }

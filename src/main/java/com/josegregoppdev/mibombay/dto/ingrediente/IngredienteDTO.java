@@ -1,5 +1,6 @@
 package com.josegregoppdev.mibombay.dto.ingrediente;
 
+import com.josegregoppdev.mibombay.model.ingrediente.Categoria;
 import com.josegregoppdev.mibombay.model.ingrediente.UnidadMedida;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -35,9 +36,7 @@ public class IngredienteDTO {
     @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\\s.,'’():;\\-]+$", message = "La descripción contiene caracteres no permitidos")
     private String descripcion;
 
-    private Long categoriaId;
-
-    private String categoriaNombre;
+    private Categoria categoria;
 
     @NotNull(message = "La unidad de medida es obligatoria")
     private UnidadMedida unidadMedida;

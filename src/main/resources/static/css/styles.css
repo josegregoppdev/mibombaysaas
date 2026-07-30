@@ -266,18 +266,8 @@ body {
     font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Courier New', monospace !important;
 }
 
-@media (max-width: 768px) {
-    .mb-sidebar {
-        min-height: auto;
-        border-right: none;
-        border-bottom: 1px solid #dee2e6;
-    }
-    
+@media (min-width: 768px) {
     .mb-main-col {
-        margin-top: 0;
-    }
-    
-    .mb-hero-title {
-        font-size: 2rem;
+        margin-top: 80px;
     }
 }

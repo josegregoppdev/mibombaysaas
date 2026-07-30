@@ -8,8 +8,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,8 +42,8 @@ public class Ingrediente extends AuditableEntity {
     @Column(length = 500)
     private String descripcion;
 
-    @ManyToOne
-    @JoinColumn(name = "categoria_id")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "categoria", length = 30)
     private Categoria categoria;
 
     @Enumerated(EnumType.STRING)
