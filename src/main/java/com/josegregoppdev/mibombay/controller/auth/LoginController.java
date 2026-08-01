@@ -14,13 +14,13 @@ public class LoginController {
                         @RequestParam(required = false) String expired,
                         Model model) {
         if (expired != null) {
-            model.addAttribute("error", "Tu sesión ha expirado. Por favor inicia sesión nuevamente.");
+            model.addAttribute("error", "Your session has expired. Please log in again.");
         }
         if (error != null) {
-            model.addAttribute("error", "Email o contraseña incorrectos");
+            model.addAttribute("error", "Incorrect email or password");
         }
         if (logout != null) {
-            model.addAttribute("mensaje", "Has cerrado sesión correctamente");
+            model.addAttribute("message", "You have logged out successfully");
         }
         return "login";
     }
@@ -30,10 +30,10 @@ public class LoginController {
                              @RequestParam(required = false) String expired,
                              Model model) {
         if (expired != null) {
-            model.addAttribute("error", "Tu sesión ha expirado. Por favor inicia sesión nuevamente.");
+            model.addAttribute("error", "Your session has expired. Please log in again.");
         }
         if (error != null) {
-            model.addAttribute("error", "Email o contraseña incorrectos");
+            model.addAttribute("error", "Incorrect email or password");
         }
         return "admin/login";
     }

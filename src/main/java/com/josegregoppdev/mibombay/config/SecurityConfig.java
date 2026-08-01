@@ -1,6 +1,6 @@
 package com.josegregoppdev.mibombay.config;
 
-import com.josegregoppdev.mibombay.service.usuario.CustomUserDetailsService;
+import com.josegregoppdev.mibombay.service.user.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,10 +28,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/registro", "/login", "/admin/login", "/css/**", "/js/**", "/images/**", "/error").permitAll()
-                        .requestMatchers("/cambiar-password").authenticated()
-                        .requestMatchers("/admin/**").hasRole("SUPER_ADMINISTRADOR")
-                        .requestMatchers("/ingrediente/**").hasAnyRole("ADMIN", "SUPER_ADMINISTRADOR")
+                        .requestMatchers("/", "/registration", "/login", "/admin/login", "/css/**", "/js/**", "/images/**", "/error").permitAll()
+                        .requestMatchers("/change-password").authenticated()
+                        .requestMatchers("/admin/**").hasRole("SUPER_ADMIN")
+                        .requestMatchers("/ingredient/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -87,10 +87,10 @@ public class SecurityConfig {
             cookie.setMaxAge(0);
             response.addCookie(cookie);
 
-            Cookie cookieSinDomain = new Cookie("JSESSIONID", null);
-            cookieSinDomain.setPath("/");
-            cookieSinDomain.setMaxAge(0);
-            response.addCookie(cookieSinDomain);
+            Cookie cookieWithoutDomain = new Cookie("JSESSIONID", null);
+            cookieWithoutDomain.setPath("/");
+            cookieWithoutDomain.setMaxAge(0);
+            response.addCookie(cookieWithoutDomain);
 
             int port = request.getServerPort();
             String scheme = request.getScheme();

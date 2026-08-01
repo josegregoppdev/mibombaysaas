@@ -1,46 +1,46 @@
-# PLAN MOBILE-FIRST — MiBombay
+# MOBILE-FIRST PLAN — MiBombay
 
-## Objetivo
-Sistema diseñado primero para teléfono, luego para tablet/desktop (mobile-first).
-Restaurantes pequeños usan el celular como herramienta principal.
+## Goal
+System designed first for phone, then for tablet/desktop (mobile-first).
+Small restaurants use the phone as their main tool.
 
-## Diagnóstico actual (21 Julio 2026)
+## Current diagnosis (July 21, 2026)
 
-| Página | Mobile hoy | Acción requerida |
+| Page | Mobile today | Action required |
 |---|---|---|
-| Landing | ✅ Bien | Retoques mínimos |
-| Login / Auth Cards | ✅ Bien | Sin cambios |
-| Registro | ✅ Bien | Sin cambios |
-| Dashboard | ❌ Sidebar ocupa 25% del ancho en celular | Rehacer con Offcanvas |
-| CSS media queries | Solo 3 reglas en `max-width: 768px` | Reescribir mobile-first con `min-width` |
+| Landing | OK | Minimal touch-ups |
+| Login / Auth Cards | OK | No changes |
+| Registration | OK | No changes |
+| Dashboard | Sidebar takes 25% width on mobile | Redo with Offcanvas |
+| CSS media queries | Only 3 rules in max-width: 768px | Rewrite mobile-first with min-width |
 
-## Implementación
+## Implementation
 
-### 1. Dashboard — Sidebar como Offcanvas (Bootstrap 5)
-- Sidebar actual se oculta en mobile con `d-none d-md-block`
-- Agregar Offcanvas (slide-in desde izquierda) con botón hamburguesa en cabecera
-- En `md+` el sidebar permanece fijo como está ahora
-- Referencia: https://getbootstrap.com/docs/5.3/components/offcanvas/
+### 1. Dashboard — Sidebar as Offcanvas (Bootstrap 5)
+- Current sidebar hides on mobile with d-none d-md-block
+- Add Offcanvas (slide-in from left) with hamburger button in header
+- On md+ sidebar remains fixed as it is now
+- Reference: https://getbootstrap.com/docs/5.3/components/offcanvas/
 
 ### 2. CSS Mobile-First
-- Cambiar reglas `@media (max-width: 768px)` por `@media (min-width: 768px)` con estilos de desktop como override
-- Ajustar padding/márgenes del dashboard para mobile
-- Garantizar visual correcta desde 320px
+- Change @media (max-width: 768px) rules to @media (min-width: 768px) with desktop overrides
+- Adjust dashboard padding/margins for mobile
+- Ensure correct visuals from 320px
 
-### 3. Touch targets (accesibilidad táctil)
-- Botones y enlaces con mínimo 44x44px en mobile
+### 3. Touch targets (accessibility)
+- Buttons and links with minimum 44x44px on mobile
 
-## Archivos a modificar
+## Files to modify
 
-| Archivo | Cambio |
+| File | Change |
 |---|---|
-| `templates/fragments/sidebar.html` | Agregar offcanvas + botón toggle |
-| `templates/dashboard.html` | Reestructurar grid con `col-12` + `col-md-3/col-md-9` |
-| `static/css/styles.css` | Reescribir media queries a mobile-first |
-| `templates/fragments/layout.html` | Ajuste menor si es necesario |
-| `static/js/app.js` | Soporte para offcanvas si es necesario |
+| templates/fragments/sidebar.html | Add offcanvas + toggle button |
+| templates/dashboard.html | Restructure grid with col-12 + col-md-3/col-md-9 |
+| static/css/styles.css | Rewrite media queries to mobile-first |
+| templates/fragments/layout.html | Minor adjustment if needed |
+| static/js/app.js | Offcanvas support if needed |
 
-## Notas
-- Bootstrap 5.3 ya incluye Offcanvas — no requiere dependencias extra
-- Usar `data-bs-toggle="offcanvas"` para el toggle sin JS manual
-- Probar en Chrome DevTools con viewports de 320px, 375px, 768px, 1024px, 1440px
+## Notes
+- Bootstrap 5.3 already includes Offcanvas — no extra dependencies needed
+- Use data-bs-toggle="offcanvas" for toggle without manual JS
+- Test in Chrome DevTools with viewports of 320px, 375px, 768px, 1024px, 1440px

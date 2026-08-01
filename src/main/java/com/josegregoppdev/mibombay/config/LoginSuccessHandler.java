@@ -1,10 +1,10 @@
 package com.josegregoppdev.mibombay.config;
 
-import com.josegregoppdev.mibombay.model.empresa.Empresa;
-import com.josegregoppdev.mibombay.model.usuario.Rol;
-import com.josegregoppdev.mibombay.model.usuario.Usuario;
-import com.josegregoppdev.mibombay.repository.empresa.EmpresaRepository;
-import com.josegregoppdev.mibombay.repository.usuario.UsuarioRepository;
+import com.josegregoppdev.mibombay.model.company.Company;
+import com.josegregoppdev.mibombay.model.user.Role;
+import com.josegregoppdev.mibombay.model.user.User;
+import com.josegregoppdev.mibombay.repository.company.CompanyRepository;
+import com.josegregoppdev.mibombay.repository.user.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -18,37 +18,37 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
-    private final UsuarioRepository usuarioRepository;
-    private final EmpresaRepository empresaRepository;
+    private final UserRepository userRepository;
+    private final CompanyRepository companyRepository;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException {
         String email = authentication.getName();
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalStateException("Usuario no encontrado"));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("User not found"));
 
-        if (usuario.getDebeCambiarPassword()) {
-            response.sendRedirect("/cambiar-password");
+        if (user.getMustChangePassword()) {
+            response.sendRedirect("/change-password");
             return;
         }
 
-        if (usuario.getRol() == Rol.SUPER_ADMINISTRADOR) {
+        if (user.getRole() == Role.SUPER_ADMIN) {
             response.sendRedirect("/admin/dashboard");
             return;
         }
 
-        String subdominioParam = request.getParameter("subdominio");
-        if (subdominioParam == null || subdominioParam.isBlank()) {
+        String subdomainParam = request.getParameter("subdomain");
+        if (subdomainParam == null || subdomainParam.isBlank()) {
             response.sendRedirect("/login?error=true");
             return;
         }
 
-        Empresa empresa = empresaRepository.findBySubdominio(subdominioParam)
+        Company company = companyRepository.findBySubdomain(subdomainParam)
                 .orElse(null);
 
-        if (empresa == null || !empresa.getTenantId().equals(usuario.getTenantId())) {
+        if (company == null || !company.getTenantId().equals(user.getTenantId())) {
             response.sendRedirect("/login?error=true");
             return;
         }
@@ -62,7 +62,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         }
         int port = request.getServerPort();
         String scheme = request.getScheme();
-        String redirect = scheme + "://" + subdominioParam + "." + domain
+        String redirect = scheme + "://" + subdomainParam + "." + domain
                 + (port == 80 || port == 443 ? "" : ":" + port)
                 + "/dashboard";
         response.sendRedirect(redirect);

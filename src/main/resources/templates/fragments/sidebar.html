@@ -1,117 +1,49 @@
-<div th:fragment="sidebarOffcanvas">
-    <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="sidebarOffcanvas">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title">Navegación</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-        </div>
-        <div class="offcanvas-body p-0">
+<div th:fragment="sidebarOffcanvas" class="offcanvas offcanvas-start mb-sidebar-offcanvas" tabindex="-1" id="sidebarOffcanvas" aria-label="Sidebar">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title mb-brand">
+            <span class="mb-brand-mi">Mi</span><span class="mb-brand-bombay">Bombay</span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <nav class="mb-sidebar-nav">
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a class="nav-link active" th:href="@{/dashboard}">
-                        <i class="bi bi-speedometer2 me-2"></i>
-                        Dashboard
+                    <a class="nav-link" th:href="@{/dashboard}">
+                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link disabled" href="#">
-                        <i class="bi bi-grid-3x3-gap me-2"></i>
-                        Mesas
-                        <span class="badge bg-secondary ms-auto">Pronto</span>
-                    </a>
-                </li>
-                <li class="nav-item" sec:authorize="hasAnyRole('ADMIN')">
-                    <a class="nav-link" th:href="@{/ingrediente}">
-                        <i class="bi bi-basket me-2"></i>
-                        Ingredientes
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link disabled" href="#">
-                        <i class="bi bi-book me-2"></i>
-                        Menú
-                        <span class="badge bg-secondary ms-auto">Pronto</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link disabled" href="#">
-                        <i class="bi bi-receipt me-2"></i>
-                        Pedidos
-                        <span class="badge bg-secondary ms-auto">Pronto</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link disabled" href="#">
-                        <i class="bi bi-graph-up me-2"></i>
-                        Reportes
-                        <span class="badge bg-secondary ms-auto">Pronto</span>
+                    <a class="nav-link" th:href="@{/ingredient}">
+                        <i class="bi bi-journal-text me-2"></i>Ingredients
                     </a>
                 </li>
                 <li class="nav-item mt-3">
-                    <a class="nav-link" th:href="@{/cambiar-password}">
-                        <i class="bi bi-key me-2"></i>
-                        Cambiar contraseña
+                    <a class="nav-link" th:href="@{/change-password}">
+                        <i class="bi bi-key me-2"></i>Change password
                     </a>
                 </li>
             </ul>
-        </div>
+        </nav>
     </div>
 </div>
 
-<nav th:fragment="sidebarInline" class="mb-sidebar">
-    <div class="mb-sidebar-header">
-        <h6 class="mb-0">Navegación</h6>
-    </div>
+<nav th:fragment="sidebarInline" class="mb-sidebar d-none d-md-block">
     <ul class="nav flex-column">
         <li class="nav-item">
-            <a class="nav-link active" th:href="@{/dashboard}">
-                <i class="bi bi-speedometer2 me-2"></i>
-                Dashboard
+            <a class="nav-link" th:href="@{/dashboard}">
+                <i class="bi bi-speedometer2 me-2"></i>Dashboard
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link disabled" href="#">
-                <i class="bi bi-grid-3x3-gap me-2"></i>
-                Mesas
-                <span class="badge bg-secondary ms-auto">Pronto</span>
-            </a>
-        </li>
-        <li class="nav-item" sec:authorize="hasAnyRole('ADMIN')">
-            <a class="nav-link" th:href="@{/ingrediente}">
-                <i class="bi bi-basket me-2"></i>
-                Ingredientes
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link disabled" href="#">
-                <i class="bi bi-book me-2"></i>
-                Menú
-                <span class="badge bg-secondary ms-auto">Pronto</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link disabled" href="#">
-                <i class="bi bi-receipt me-2"></i>
-                Pedidos
-                <span class="badge bg-secondary ms-auto">Pronto</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link disabled" href="#">
-                <i class="bi bi-graph-up me-2"></i>
-                Reportes
-                <span class="badge bg-secondary ms-auto">Pronto</span>
+            <a class="nav-link" th:href="@{/ingredient}">
+                <i class="bi bi-journal-text me-2"></i>Ingredients
             </a>
         </li>
         <li class="nav-item mt-3">
-            <a class="nav-link" th:href="@{/cambiar-password}">
-                <i class="bi bi-key me-2"></i>
-                Cambiar contraseña
+            <a class="nav-link" th:href="@{/change-password}">
+                <i class="bi bi-key me-2"></i>Change password
             </a>
         </li>
     </ul>
 </nav>
-
-<th:block th:fragment="sidebar">
-    <th:block th:replace="~{fragments/sidebar :: sidebarOffcanvas}" />
-    <th:block th:replace="~{fragments/sidebar :: sidebarInline}" />
-</th:block>

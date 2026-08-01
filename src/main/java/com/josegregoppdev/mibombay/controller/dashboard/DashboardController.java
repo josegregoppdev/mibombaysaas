@@ -1,9 +1,9 @@
 package com.josegregoppdev.mibombay.controller.dashboard;
 
-import com.josegregoppdev.mibombay.model.usuario.Rol;
-import com.josegregoppdev.mibombay.model.usuario.Usuario;
-import com.josegregoppdev.mibombay.repository.empresa.EmpresaRepository;
-import com.josegregoppdev.mibombay.repository.usuario.UsuarioRepository;
+import com.josegregoppdev.mibombay.model.user.Role;
+import com.josegregoppdev.mibombay.model.user.User;
+import com.josegregoppdev.mibombay.repository.company.CompanyRepository;
+import com.josegregoppdev.mibombay.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -17,33 +17,33 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequiredArgsConstructor
 public class DashboardController {
 
-    private final UsuarioRepository usuarioRepository;
-    private final EmpresaRepository empresaRepository;
+    private final UserRepository userRepository;
+    private final CompanyRepository companyRepository;
 
     @GetMapping
     public String dashboard(Authentication authentication,
-                            @RequestParam(required = false) String passwordCambiada,
+                            @RequestParam(required = false) String passwordChanged,
                             Model model) {
         String email = authentication.getName();
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalStateException("Usuario no encontrado"));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("User not found"));
 
-        if (usuario.getDebeCambiarPassword()) {
-            return "redirect:/cambiar-password";
+        if (user.getMustChangePassword()) {
+            return "redirect:/change-password";
         }
 
-        if (usuario.getRol() == Rol.SUPER_ADMINISTRADOR) {
+        if (user.getRole() == Role.SUPER_ADMIN) {
             return "redirect:/admin/dashboard";
         }
 
-        var empresa = empresaRepository.findByTenantId(usuario.getTenantId())
-                .orElseThrow(() -> new IllegalStateException("Empresa no encontrada"));
+        var company = companyRepository.findByTenantId(user.getTenantId())
+                .orElseThrow(() -> new IllegalStateException("Company not found"));
 
-        model.addAttribute("usuario", usuario);
-        model.addAttribute("empresa", empresa);
+        model.addAttribute("user", user);
+        model.addAttribute("company", company);
 
-        if (passwordCambiada != null) {
-            model.addAttribute("mensaje", "Contraseña cambiada correctamente");
+        if (passwordChanged != null) {
+            model.addAttribute("message", "Password changed successfully");
         }
 
         return "dashboard";

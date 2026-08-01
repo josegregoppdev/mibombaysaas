@@ -1,7 +1,7 @@
 package com.josegregoppdev.mibombay.controller.auth;
 
-import com.josegregoppdev.mibombay.model.usuario.Usuario;
-import com.josegregoppdev.mibombay.repository.usuario.UsuarioRepository;
+import com.josegregoppdev.mibombay.model.user.User;
+import com.josegregoppdev.mibombay.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,42 +15,42 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.time.LocalDateTime;
 
 @Controller
-@RequestMapping("/cambiar-password")
+@RequestMapping("/change-password")
 @RequiredArgsConstructor
 public class PasswordChangeController {
 
-    private final UsuarioRepository usuarioRepository;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
     @GetMapping
-    public String mostrarFormulario() {
-        return "cambiar-password";
+    public String showForm() {
+        return "change-password";
     }
 
     @PostMapping
-    public String cambiarPassword(@RequestParam String nuevaPassword,
-                                  @RequestParam String confirmarPassword,
-                                  Authentication authentication,
-                                  Model model) {
-        if (!nuevaPassword.equals(confirmarPassword)) {
-            model.addAttribute("error", "Las contraseñas no coinciden");
-            return "cambiar-password";
+    public String changePassword(@RequestParam String newPassword,
+                                 @RequestParam String confirmPassword,
+                                 Authentication authentication,
+                                 Model model) {
+        if (!newPassword.equals(confirmPassword)) {
+            model.addAttribute("error", "The passwords do not match");
+            return "change-password";
         }
 
-        if (nuevaPassword.length() < 8) {
-            model.addAttribute("error", "La contraseña debe tener al menos 8 caracteres");
-            return "cambiar-password";
+        if (newPassword.length() < 8) {
+            model.addAttribute("error", "The password must be at least 8 characters");
+            return "change-password";
         }
 
         String email = authentication.getName();
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalStateException("Usuario no encontrado"));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("User not found"));
 
-        usuario.setPasswordHash(passwordEncoder.encode(nuevaPassword));
-        usuario.setDebeCambiarPassword(false);
-        usuario.setUltimoCambioPassword(LocalDateTime.now());
-        usuarioRepository.save(usuario);
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setMustChangePassword(false);
+        user.setLastPasswordChange(LocalDateTime.now());
+        userRepository.save(user);
 
-        return "redirect:/dashboard?passwordCambiada=true";
+        return "redirect:/dashboard?passwordChanged=true";
     }
 }

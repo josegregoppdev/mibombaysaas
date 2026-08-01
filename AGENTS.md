@@ -1,219 +1,224 @@
 # AGENTS.md
 
-## Dominio
+## Domain
 
-Sistema de gestión para restaurantes (MiBombay). SaaS multi-tenant.
+Restaurant management system (MiBombay). Multi-tenant SaaS.
 
 ## Build & Run
 
 ```bash
-./mvnw spring-boot:run          # servidor dev (requiere MySQL configurado)
-./mvnw test                     # ejecutar todos los tests
-./mvnw test -Dtest=ClaseTest    # ejecutar una sola clase de test
-./mvnw clean package            # construir jar
+./mvnw spring-boot:run          # dev server (needs MySQL configured)
+./mvnw test                     # run all tests
+./mvnw test -Dtest=ClaseTest    # run one test class
+./mvnw clean package            # build jar
 ```
 
-No hay comandos separados de lint/typecheck — la compilación (`./mvnw compile`) detecta errores de tipo.
+There are no separate lint/typecheck commands — compilation (`./mvnw compile`) detects type errors.
 
 ## Tech Stack
 
 - **Java 21**, **Spring Boot 4.1.0**, Maven
-- Spring MVC + Thymeleaf (HTML renderizado en servidor, no REST API por defecto)
+- Spring MVC + Thymeleaf (server-rendered HTML, not REST API by default)
 - Spring Security, Spring Data JPA, Bean Validation
-- MySQL (driver incluido, requiere configuración en `application-dev.properties`)
-- Lombok (procesador de anotaciones configurado en `pom.xml` — usar `@Data`, `@Builder`, etc.)
-- **MapStruct 1.6.3** (mapeo DTO ↔ Entidad, procesador configurado en `pom.xml`)
+- MySQL (driver included, config in `application-dev.properties`)
+- Lombok (annotation processor in `pom.xml` — use `@Data`, `@Builder`, etc.)
+- **MapStruct 1.6.3** (DTO ↔ Entity mapping, processor in `pom.xml`)
 
-## Estructura del Proyecto
+## Project Structure
 
-Organización por capas con subcarpetas por dominio:
+Layer-based organization with subfolders by domain:
 
 ```
 com.josegregoppdev.mibombay
 ├── MibombayApplication.java
-├── common/                    # utilidades transversales
-│   ├── audit/                 # AuditableEntity (timestamps automáticos)
+├── common/                    # shared utilities
+│   ├── audit/                 # AuditableEntity (auto timestamps)
 │   ├── tenant/                # TenantContext, TenantFilter
 │   └── exception/             # GlobalExceptionHandler
-├── model/                     # entidades JPA (sin validaciones, solo JPA)
-│   ├── usuario/               # Usuario, Rol
-│   ├── empresa/               # Empresa
-│   └── ingrediente/           # Categoria, Ingrediente, UnidadMedida
-├── dto/                       # DTOs con validaciones
-│   ├── empresa/               # EmpresaDTORequest, EmpresaDTOResponse
-│   ├── usuario/               # UsuarioDTORequest, UsuarioDTOResponse
-│   └── ingrediente/           # CategoriaDTO, IngredienteDTO
-├── mapper/                    # Mappers MapStruct
-│   ├── empresa/               # EmpresaMapper
-│   ├── usuario/               # UsuarioMapper
-│   └── ingrediente/           # CategoriaMapper, IngredienteMapper
-├── repository/                # repositorios Spring Data JPA
-│   ├── usuario/               # UsuarioRepository
-│   ├── empresa/               # EmpresaRepository
-│   └── ingrediente/           # CategoriaRepository, IngredienteRepository
-├── service/                   # lógica de negocio
-│   ├── usuario/               # CustomUserDetailsService, PasswordGeneratorService
-│   ├── empresa/               # RegistroEmpresaService
-│   └── ingrediente/           # CategoriaService, IngredienteService
-├── controller/                # controladores web
+├── model/                     # JPA entities (no validations, JPA only)
+│   ├── user/                  # User, Role
+│   ├── company/               # Company
+│   └── ingredient/            # Category (enum), Ingredient, UnitOfMeasure (enum)
+├── dto/                       # DTOs with validations
+│   ├── company/               # CompanyDTORequest, CompanyDTOResponse
+│   ├── user/                  # UserDTORequest, UserDTOResponse
+│   └── ingredient/            # IngredientDTO
+├── mapper/                    # MapStruct Mappers
+│   ├── company/               # CompanyMapper
+│   ├── user/                  # UserMapper
+│   └── ingredient/            # IngredientMapper
+├── repository/                # Spring Data JPA repositories
+│   ├── user/                  # UserRepository
+│   ├── company/               # CompanyRepository
+│   └── ingredient/            # IngredientRepository
+├── service/                   # business logic
+│   ├── user/                  # CustomUserDetailsService, PasswordGeneratorService
+│   ├── company/               # CompanyRegistrationService
+│   └── ingredient/            # IngredientService
+├── controller/                # web controllers
 │   ├── landing/               # LandingController
 │   ├── auth/                  # LoginController, PasswordChangeController
-│   ├── empresa/               # RegistroEmpresaController
+│   ├── company/               # CompanyRegistrationController
 │   ├── dashboard/             # DashboardController
 │   ├── admin/                 # AdminController
-│   └── ingrediente/           # CategoriaController, IngredienteController
-└── config/                    # configuraciones Spring
+│   └── ingredient/            # IngredientController
+└── config/                    # Spring configurations
     ├── SecurityConfig.java
     ├── PasswordEncoderConfig.java
-    ├── DatosInicialesConfig.java
+    ├── InitialDataConfig.java
     └── LoginSuccessHandler.java
 ```
 
-## Arquitectura Multi-Tenant
+## Multi-Tenant Architecture
 
-- Cada empresa tiene un `tenantId` único (formato: `tnt_` + UUID)
-- Campo `subdominio` en `Empresa` identifica al restaurante (ej: `1`, `mirestaurante`)
-- `TenantContext` (ThreadLocal) mantiene el tenant actual del request
-- `TenantFilter` extrae el subdominio del `Host` header (funciona con lvh.me para dev y mibombay.com para prod), busca `Empresa` por subdominio y asigna el `tenantId` al `TenantContext`. Sin subdominio o subdominio `admin`/`www` no asigna tenant
-- `CustomUserDetailsService` valida que el tenant del usuario coincida con el tenant del subdominio
-- `TenantFilter` limpia el contexto al final de cada request
-- Aislamiento por `tenantId` en cada entidad del dominio
-- Cookie de sesión con `Domain=lvh.me` (dev) / `Domain=mibombay.com` (prod) para que sea válida entre subdominios. Configurado en `application-dev.properties` y `application-prod.properties`
-- `LoginSuccessHandler`: al autenticar, valida el subdominio del formulario, busca la empresa y redirige a `{subdominio}.{domain}/dashboard`
-- Logout borra la cookie con y sin Domain para asegurar limpieza en el navegador
+- Each company has a unique `tenantId` (format: `tnt_` + UUID)
+- `subdomain` field in `Company` identifies the restaurant (e.g., `1`, `mirestaurante`)
+- `TenantContext` (ThreadLocal) holds the current request tenant
+- `TenantFilter` extracts the subdomain from the `Host` header (works with lvh.me for dev and mibombay.com for prod), finds `Company` by subdomain and sets the `tenantId` in `TenantContext`. No subdomain or `admin`/`www` subdomain means no tenant is set
+- `CustomUserDetailsService` validates that the user tenant matches the subdomain tenant
+- `TenantFilter` clears the context at the end of each request
+- Isolation by `tenantId` in each domain entity
+- Session cookie with `Domain=lvh.me` (dev) / `Domain=mibombay.com` (prod) to work across subdomains. Configured in `application-dev.properties` and `application-prod.properties`
+- `LoginSuccessHandler`: on login, validates the form subdomain, finds the company and redirects to `{subdomain}.{domain}/dashboard`
+- Logout deletes the cookie with and without Domain to ensure browser cleanup
 
-## Seguridad (OWASP Top 10)
+## Security (OWASP Top 10)
 
 ### A01: Broken Access Control
-- CSRF habilitado por defecto (Spring Security)
-- Logout invalida sesión y borra JSESSIONID
-- Máximo 1 sesión por usuario
-- DTOs evitan mass assignment (no exponen campos sensibles al binding)
-- `@InitBinder` es innecesario porque los DTOs no tienen setters no deseados
+- CSRF enabled by default (Spring Security)
+- Logout invalidates session and deletes JSESSIONID
+- Max 1 session per user
+- DTOs prevent mass assignment (no sensitive fields exposed in binding)
 
 ### A02: Cryptographic Failures
-- `BCryptPasswordEncoder` con strength 12 para passwords
-- Documento del encargado hasheado con BCrypt (no reversible)
-- Contraseñas temporales generadas con `SecureRandom`
+- `BCryptPasswordEncoder` with strength 12 for passwords
+- Manager document hashed with BCrypt (not reversible)
+- Temporary passwords generated with `SecureRandom`
 
 ### A03: Injection
-- Thymeleaf escapa HTML automáticamente (XSS)
-- JPA/Spring Data usa prepared statements (SQL injection)
-- `@Valid` en DTOs para validar entrada de datos
-- `@Pattern` en campos de texto para bloquear caracteres maliciosos (`< > " &`)
-- Patrones usados en DTOs: nombres solo letras/espacios/puntos, documento alfanumérico+guiones, teléfono dígitos+`+()-`, rol solo `ADMIN|CAJERO`, dirección con caracteres seguros
+- Thymeleaf escapes HTML automatically (XSS)
+- JPA/Spring Data uses prepared statements (SQL injection)
+- `@Valid` in DTOs to validate input data
+- `@Pattern` on text fields to block malicious characters (`< > " &`)
 
 ### A05: Security Misconfiguration
-- Session timeout: 10 minutos de inactividad
+- Session timeout: 10 minutes of inactivity
 - Session fixation: `.sessionFixation().migrateSession()`
-- Sesión expirada redirige a `/login?expired=true` con mensaje
-- Headers HTTP: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`
-- Perfiles de config: dev/prod separados
-- `.gitignore` ignora properties con secrets
+- Expired session redirects to `/login?expired=true` with message
+- HTTP headers: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`
+- Config profiles: dev/prod separate
+- `.gitignore` ignores properties with secrets
 
 ### A07: Identification & Authentication Failures
-- BCrypt para passwords
-- Email único global
-- Roles: `SUPER_ADMINISTRADOR`, `ADMIN`, `CAJERO` (enum `Rol`)
-- Al crear empresa: se crea admin (con password del form) y cajero (password temporal generada)
-- Campo `debeCambiarPassword` fuerza cambio de contraseña al primer login del cajero
-- SuperAdmin por defecto: `SuperAdministrador@gmail.com` / `Mora.Kristoff_26123009` (se crea automáticamente al iniciar)
-- SuperAdmin accede a `/admin/dashboard` con listado de empresas y estado activo/inactivo
-- Restaurante demo creado automáticamente con subdominio `1` — admin: `demo@mibombay.com` / `demo1234`, cajero: `demo_cajero@mibombay.com` (password temporal)
+- BCrypt for passwords
+- Unique global email
+- Roles: `SUPER_ADMIN`, `ADMIN`, `CASHIER` (enum `Role`)
+- When creating a company: admin is created (with form password) and cashier (generated temporary password)
+- `mustChangePassword` field forces password change on cashier first login
+- Default SuperAdmin: `SuperAdministrador@gmail.com` / `Mora.Kristoff_26123009` (auto-created on startup)
+- SuperAdmin accesses `/admin/dashboard` with company list and active/inactive status
+- Demo restaurant auto-created with subdomain `1` — admin: `demo@mibombay.com` / `demo1234`, cashier: `demo_cashier@mibombay.com` (temporary password)
 
 ## Properties
 
-- `application.properties` — base, carga perfil activo + session timeout
-- `application-dev.properties` — configuración local (MySQL local, logs)
-- `application-prod.properties` — configuración producción (variables de entorno)
-- `application.properties.example` — plantilla para GitHub (se sube)
+- `application.properties` — base, loads active profile + session timeout
+- `application-dev.properties` — local config (local MySQL, logs)
+- `application-prod.properties` — production config (environment variables)
+- `application.properties.example` — template for GitHub (uploaded)
 
-Los archivos de properties reales están en `.gitignore`.
+Real properties files are in `.gitignore`.
 
 ## Tests
 
-- JUnit 5 + Mockito (`spring-boot-starter-test` incluido)
-- Test Data Factory en `testdata/TestDataFactory.java` (provee objetos preconstruidos)
-- Servicios con lógica: tests unitarios con `@ExtendWith(MockitoExtension.class)`
-- Servicios sin dependencias: tests directos (sin mocks)
+- JUnit 5 + Mockito (`spring-boot-starter-test` included)
+- Test Data Factory in `testdata/TestDataFactory.java` (provides pre-built objects)
+- Services with logic: unit tests with `@ExtendWith(MockitoExtension.class)`
+- Services without dependencies: direct tests (no mocks)
 
-### Tests actuales
+### Current tests
 
-| Clase | Tests |
+| Class | Tests |
 |---|---|
-| `RegistroEmpresaServiceTest` | 7 |
+| `CompanyRegistrationServiceTest` | 7 |
 | `PasswordGeneratorServiceTest` | 8 |
 | `CustomUserDetailsServiceTest` | 7 |
+| `IngredientServiceTest` | 15 |
 | `LandingControllerTest` | 1 |
 | `LoginControllerTest` | 6 |
 | `PasswordChangeControllerTest` | 4 |
 | `DashboardControllerTest` | 4 |
-| `RegistroEmpresaControllerTest` | 4 |
+| `CompanyRegistrationControllerTest` | 4 |
 | `AdminControllerTest` | 2 |
+| `IngredientControllerTest` | 13 |
 | `MibombayApplicationTests` | 1 |
-| Total | 44 |
+| Total | 72 |
 
 ```bash
 ./mvnw test
-./mvnw test -Dtest=RegistroEmpresaServiceTest
-./mvnw test -Dtest=PasswordGeneratorServiceTest
-./mvnw test -Dtest=CustomUserDetailsServiceTest
+./mvnw test -Dtest=IngredientServiceTest
+./mvnw test -Dtest=IngredientControllerTest
 ```
 
 ## Frontend
 
 - **Bootstrap 5.3** via CDN + **Bootstrap Icons** via CDN
-- Plantillas Thymeleaf en `src/main/resources/templates/`
-- CSS custom en `src/main/resources/static/css/styles.css` (solo tokens + overrides de Bootstrap)
-- JS en `src/main/resources/static/js/app.js` (interacciones mínimas: auto-dismiss alerts, copiar al portapapeles)
+- Thymeleaf templates in `src/main/resources/templates/`
+- Custom CSS in `src/main/resources/static/css/styles.css` (tokens only + Bootstrap overrides)
+- JS in `src/main/resources/static/js/app.js` (minimal interactions: auto-dismiss alerts, copy to clipboard)
 
-### Paleta de colores (CSS variables)
+### Color palette (CSS variables)
 
-- `--mb-blue-900: #0B2545` — navbar, texto principal
-- `--mb-blue-700: #13315C` — hover, bordes
-- `--mb-blue-500: #1E5A96` — color primario
-- `--mb-amber-500: #F4A261` — acento cálido (CTAs, brand "Bombay")
-- `--mb-success: #2A9D8F` — mensajes de éxito
-- `--mb-error: #E63946` — errores
+- `--mb-blue-900: #0B2545` — navbar, main text
+- `--mb-blue-700: #13315C` — hover, borders
+- `--mb-blue-500: #1E5A96` — primary color
+- `--mb-amber-500: #F4A261` — warm accent (CTAs, "Bombay" brand)
+- `--mb-success: #2A9D8F` — success messages
+- `--mb-error: #E63946` — errors
 
-### Tipografía
+### Typography
 
-- **Display**: Georgia/serif para "Bombay" y titulares
+- **Display**: Georgia/serif for "Bombay" and headings
 - **Body**: system-ui sans-serif
-- **Mono**: SF Mono/Monaco para credenciales
+- **Mono**: SF Mono/Monaco for credentials
 
 ### Brand signature
 
-"MiBombay" con tratamiento dual: "Mi" en sans-serif blanco, "Bombay" en serif italic amber.
+"MiBombay" with dual treatment: "Mi" in white sans-serif, "Bombay" in italic amber serif.
 
-### Fragments Thymeleaf
+### Thymeleaf Fragments
 
-- `fragments/layout.html` — estructura base con CDNs
-- `fragments/navbar.html` — navbar con autenticación condicional (Spring Security)
+- `fragments/layout.html` — base structure with CDNs
+- `fragments/navbar.html` — navbar with conditional authentication (Spring Security)
 - `fragments/footer.html` — footer
-- `fragments/alerts.html` — mensajes flash
-- `fragments/sidebar.html` — sidebar del dashboard
+- `fragments/alerts.html` — flash messages
+- `fragments/sidebar.html` — dashboard sidebar (Offcanvas on mobile, inline on desktop)
+- `fragments/sidebar-admin.html` — admin panel sidebar (Offcanvas on mobile, inline on desktop)
 
 ### Dashboard layout
 
-Layout con sidebar izquierda (`col-md-3`) + contenido principal (`col-md-9`). Sidebar preparada para futuras secciones (mesas, menú, pedidos, reportes).
+Layout with left sidebar (`col-md-3 col-lg-2`) + main content (`col-md-9 col-lg-10`). On mobile (<768px) the sidebar is hidden and opens with Offcanvas via hamburger button in the navbar. Sidebar prepared for future sections (tables, menu, orders, reports).
 
-## Convenciones
+## Conventions
 
-- Usar anotaciones Lombok en entidades/DTOs para reducir boilerplate
-- **DTOs**: `EmpresaDTORequest`/`EmpresaDTOResponse` para empresa, `UsuarioDTORequest`/`UsuarioDTOResponse` para usuario. El resto simple `@RequestParam` sin DTO
-- **MapStruct**: `@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)` en interfaces dentro de `mapper/`
-- **Entidades**: sin validaciones Javax/Jakarta, solo anotaciones JPA
-- **Validaciones**: en los DTOs, no en las entidades
-- **Tests**: usar `TestDataFactory` para construir objetos de prueba
-- Plantillas Thymeleaf van en `src/main/resources/templates/`
-- Assets estáticos van en `src/main/resources/static/`
-- Responder y comunicar en español con el usuario
+- Use Lombok annotations on entities/DTOs to reduce boilerplate
+- **DTOs**: `CompanyDTORequest`/`CompanyDTOResponse` for company, `UserDTORequest`/`UserDTOResponse` for user. The rest use simple `@RequestParam` without DTO
+- **MapStruct**: `@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)` in interfaces inside `mapper/`
+- **Entities**: no Javax/Jakarta validations, JPA annotations only
+- **Validations**: in DTOs, not in entities
+- **Tests**: use `TestDataFactory` to build test objects
+- Thymeleaf templates go in `src/main/resources/templates/`
+- Static assets go in `src/main/resources/static/`
+- Respond and communicate in English with the user
 
-## Pendiente para próxima sesión
+## Next Module
 
-Mobile-First responsive:
-- Ver `plan-mobile-first.txt` para el plan completo
-- Dashboard: convertir sidebar en Offcanvas de Bootstrap 5.3
-- CSS: reescribir media queries a mobile-first (`min-width`)
-- Touch targets: mínimo 44x44px en mobile
+**Tables** module (tables, rooms, availability management). See `plan-mesas.md` when created.
+
+## Additional Conventions
+
+- **Service method names**: use long descriptive names (`getPaginatedIngredients`, `createNewIngredient`, `toggleIngredientActiveStatus`)
+- **Controller helper method**: `private String tenantId() { return TenantContext.get(); }` to avoid direct calls to `TenantContext.get()`
+- **Numeric validation**: `@Digits(integer = 8, fraction = 4)` on BigDecimal fields + `max="99999999.9999"` on HTML5 inputs
+- **Category as enum**: fixed with 9 values (MEATS, DAIRY, BREADS, VEGETABLES, FRUITS, GRAINS, CONDIMENTS, BEVERAGES, OTHERS) with `displayName`
+- **Responsive sidebar**: Offcanvas on mobile (<768px), inline on desktop (≥768px). Hamburger button in authenticated navbar
+- **State toggle**: single method `toggleIngredientActiveStatus` that flips `active`. Button always visible in list (red if active, green if inactive)

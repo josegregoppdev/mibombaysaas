@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration successful - MiBombay</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body class="mb-auth">
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+    
+    <main class="mb-main py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body p-5">
+                            <div class="text-center mb-4">
+                                <div class="mb-success-icon mb-3">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                </div>
+                                <h1 class="display-6">Company created successfully!</h1>
+                                <p class="text-muted">Your company has been registered correctly</p>
+                            </div>
+                            
+                            <div class="alert alert-warning" role="alert">
+                                <h5 class="alert-heading">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    Cashier credentials
+                                </h5>
+                                <p class="mb-3">Save this information. It is shown only once.</p>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Cashier email:</label>
+                                    <div class="input-group">
+<input type="text" class="form-control font-monospace" 
+       th:value="${result.cashierEmail}" readonly id="cashierEmail">
+                                        <button class="btn btn-outline-secondary" type="button" 
+                                                onclick="copyToClipboard('cashierEmail')">
+                                            <i class="bi bi-clipboard"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Temporary password:</label>
+                                    <div class="input-group">
+<input type="text" class="form-control font-monospace" 
+       th:value="${result.cashierPassword}" readonly id="cashierPassword">
+                                        <button class="btn btn-outline-secondary" type="button" 
+                                                onclick="copyToClipboard('cashierPassword')">
+                                            <i class="bi bi-clipboard"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <hr>
+                                <p class="mb-0 small">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    The cashier must change this password on first login.
+                                </p>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h5>Next steps</h5>
+                                <ol class="mb-0">
+                                    <li class="mb-2">Log in with your email and password</li>
+                                    <li class="mb-2">Share the cashier credentials with your team</li>
+                                    <li>Start managing your restaurant</li>
+                                </ol>
+                            </div>
+                            
+                            <div class="text-center">
+                                <a th:href="@{/login}" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>Log in
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/app.js}"></script>
+</body>
+</html>

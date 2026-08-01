@@ -1,14 +1,14 @@
 package com.josegregoppdev.mibombay.testdata;
 
-import com.josegregoppdev.mibombay.dto.empresa.EmpresaDTORequest;
-import com.josegregoppdev.mibombay.dto.empresa.EmpresaDTOResponse;
-import com.josegregoppdev.mibombay.dto.ingrediente.IngredienteDTO;
-import com.josegregoppdev.mibombay.model.empresa.Empresa;
-import com.josegregoppdev.mibombay.model.ingrediente.Categoria;
-import com.josegregoppdev.mibombay.model.ingrediente.Ingrediente;
-import com.josegregoppdev.mibombay.model.ingrediente.UnidadMedida;
-import com.josegregoppdev.mibombay.model.usuario.Rol;
-import com.josegregoppdev.mibombay.model.usuario.Usuario;
+import com.josegregoppdev.mibombay.dto.company.CompanyDTORequest;
+import com.josegregoppdev.mibombay.dto.company.CompanyDTOResponse;
+import com.josegregoppdev.mibombay.dto.ingredient.IngredientDTO;
+import com.josegregoppdev.mibombay.model.company.Company;
+import com.josegregoppdev.mibombay.model.ingredient.Category;
+import com.josegregoppdev.mibombay.model.ingredient.Ingredient;
+import com.josegregoppdev.mibombay.model.ingredient.UnitOfMeasure;
+import com.josegregoppdev.mibombay.model.user.Role;
+import com.josegregoppdev.mibombay.model.user.User;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -17,134 +17,134 @@ public class TestDataFactory {
 
     private static final String TENANT_ID = "tnt_test1234567890123456789012345678";
 
-    public static EmpresaDTORequest crearEmpresaDTORequest() {
-        EmpresaDTORequest dto = new EmpresaDTORequest();
-        dto.setNombre("Mi Restaurante");
-        dto.setSubdominio("mi-restaurante");
-        dto.setCorreo("contacto@test.com");
-        dto.setTelefono("+54 11 1234-5678");
-        dto.setDireccion("Av. Siempre Viva 123");
-        dto.setNombreEncargado("Juan Pérez");
-        dto.setDocumentoEncargado("12345678");
-        dto.setEmailEncargado("admin@test.com");
-        dto.setPasswordEncargado("Password123!");
-        dto.setConfirmarPasswordEncargado("Password123!");
-        dto.setTelefonoEncargado("+54 11 9876-5432");
+    public static CompanyDTORequest createCompanyDTORequest() {
+        CompanyDTORequest dto = new CompanyDTORequest();
+        dto.setName("My Restaurant");
+        dto.setSubdomain("my-restaurant");
+        dto.setEmail("contact@test.com");
+        dto.setPhone("+54 11 1234-5678");
+        dto.setAddress("123 Main St");
+        dto.setManagerName("John Doe");
+        dto.setManagerDocument("12345678");
+        dto.setManagerEmail("admin@test.com");
+        dto.setManagerPassword("Password123!");
+        dto.setConfirmManagerPassword("Password123!");
+        dto.setManagerPhone("+54 11 9876-5432");
         return dto;
     }
 
-    public static Empresa crearEmpresa() {
-        return Empresa.builder()
+    public static Company createCompany() {
+        return Company.builder()
                 .id(1L)
                 .tenantId(TENANT_ID)
-                .subdominio("mi-restaurante")
-                .nombre("Mi Restaurante")
-                .correo("contacto@test.com")
-                .telefono("+54 11 1234-5678")
-                .direccion("Av. Siempre Viva 123")
-                .nombreEncargado("Juan Pérez")
-                .documentoEncargadoHash("$2a$12$hashEjemplo")
-                .activo(true)
+                .subdomain("my-restaurant")
+                .name("My Restaurant")
+                .email("contact@test.com")
+                .phone("+54 11 1234-5678")
+                .address("123 Main St")
+                .managerName("John Doe")
+                .managerDocumentHash("$2a$12$hashEjemplo")
+                .active(true)
                 .build();
     }
 
-    public static Usuario crearSuperAdmin() {
-        return Usuario.builder()
+    public static User createSuperAdmin() {
+        return User.builder()
                 .id(3L)
                 .tenantId("SUPER_ADMIN")
                 .email("SuperAdministrador")
                 .passwordHash("$2a$12$hashSuperAdmin")
-                .nombreCompleto("SuperAdministrador")
-                .documentoHash("$2a$12$hashDoc")
-                .rol(Rol.SUPER_ADMINISTRADOR)
-                .activo(true)
-                .debeCambiarPassword(false)
-                .ultimoCambioPassword(LocalDateTime.now())
+                .fullName("SuperAdministrador")
+                .documentHash("$2a$12$hashDoc")
+                .role(Role.SUPER_ADMIN)
+                .active(true)
+                .mustChangePassword(false)
+                .lastPasswordChange(LocalDateTime.now())
                 .build();
     }
 
-    public static Usuario crearAdmin() {
-        return crearAdminConTenant(TENANT_ID);
+    public static User createAdmin() {
+        return createAdminWithTenant(TENANT_ID);
     }
 
-    public static Usuario crearAdminConTenant(String tenantId) {
-        return Usuario.builder()
+    public static User createAdminWithTenant(String tenantId) {
+        return User.builder()
                 .id(1L)
                 .tenantId(tenantId)
                 .email("admin@test.com")
                 .passwordHash("$2a$12$hashAdmin")
-                .nombreCompleto("Juan Pérez")
-                .telefono("+54 11 9876-5432")
-                .documentoHash("$2a$12$hashDoc")
-                .rol(Rol.ADMIN)
-                .activo(true)
-                .debeCambiarPassword(false)
-                .ultimoCambioPassword(LocalDateTime.now())
+                .fullName("John Doe")
+                .phone("+54 11 9876-5432")
+                .documentHash("$2a$12$hashDoc")
+                .role(Role.ADMIN)
+                .active(true)
+                .mustChangePassword(false)
+                .lastPasswordChange(LocalDateTime.now())
                 .build();
     }
 
-    public static Usuario crearCajero() {
-        return Usuario.builder()
+    public static User createCashier() {
+        return User.builder()
                 .id(2L)
                 .tenantId(TENANT_ID)
-                .email("admin_cajero@test.com")
-                .passwordHash("$2a$12$hashCajero")
-                .nombreCompleto("Cajero Mi Restaurante")
-                .documentoHash("$2a$12$hashDoc")
-                .rol(Rol.CAJERO)
-                .activo(true)
-                .debeCambiarPassword(true)
+                .email("admin_cashier@test.com")
+                .passwordHash("$2a$12$hashCashier")
+                .fullName("Cashier My Restaurant")
+                .documentHash("$2a$12$hashDoc")
+                .role(Role.CASHIER)
+                .active(true)
+                .mustChangePassword(true)
                 .build();
     }
 
-    public static EmpresaDTOResponse crearEmpresaDTOResponse() {
-        return EmpresaDTOResponse.builder()
-                .nombreEmpresa("Mi Restaurante")
-                .emailCajero("admin_cajero@test.com")
-                .passwordCajero("TempPass123!")
+    public static CompanyDTOResponse createCompanyDTOResponse() {
+        return CompanyDTOResponse.builder()
+                .companyName("My Restaurant")
+                .cashierEmail("admin_cashier@test.com")
+                .cashierPassword("TempPass123!")
                 .build();
     }
 
-    public static IngredienteDTO crearIngredienteDTO() {
-        return IngredienteDTO.builder()
-                .codigo("CAR-001")
-                .nombre("Carne de res")
-                .categoria(Categoria.CARNES)
-                .unidadMedida(UnidadMedida.KILOGRAMO)
-                .costoUnitarioActual(new BigDecimal("15.50"))
-                .stockActual(new BigDecimal("50"))
-                .stockMinimo(new BigDecimal("10"))
-                .activo(true)
+    public static IngredientDTO createIngredientDTO() {
+        return IngredientDTO.builder()
+                .code("CAR-001")
+                .name("Beef")
+                .category(Category.MEATS)
+                .unitOfMeasure(UnitOfMeasure.KILOGRAM)
+                .currentUnitCost(new BigDecimal("15.50"))
+                .currentStock(new BigDecimal("50"))
+                .minimumStock(new BigDecimal("10"))
+                .active(true)
                 .build();
     }
 
-    public static Ingrediente crearIngrediente() {
-        return Ingrediente.builder()
+    public static Ingredient createIngredient() {
+        return Ingredient.builder()
                 .id(1L)
                 .tenantId(TENANT_ID)
-                .codigo("CAR-001")
-                .nombre("Carne de res")
-                .categoria(Categoria.CARNES)
-                .unidadMedida(UnidadMedida.KILOGRAMO)
-                .costoUnitarioActual(new BigDecimal("15.50"))
-                .stockActual(new BigDecimal("50"))
-                .stockMinimo(new BigDecimal("10"))
-                .activo(true)
+                .code("CAR-001")
+                .name("Beef")
+                .category(Category.MEATS)
+                .unitOfMeasure(UnitOfMeasure.KILOGRAM)
+                .currentUnitCost(new BigDecimal("15.50"))
+                .currentStock(new BigDecimal("50"))
+                .minimumStock(new BigDecimal("10"))
+                .active(true)
                 .build();
     }
 
-    public static Ingrediente crearIngredienteInactivo() {
-        return Ingrediente.builder()
+    public static Ingredient createInactiveIngredient() {
+        return Ingredient.builder()
                 .id(2L)
                 .tenantId(TENANT_ID)
-                .codigo("PAN-001")
-                .nombre("Pan de hamburguesa")
-                .categoria(Categoria.GRANOS)
-                .unidadMedida(UnidadMedida.UNIDAD)
-                .costoUnitarioActual(new BigDecimal("1.50"))
-                .stockActual(new BigDecimal("100"))
-                .stockMinimo(new BigDecimal("20"))
-                .activo(false)
+                .code("PAN-001")
+                .name("Hamburger bun")
+                .category(Category.GRAINS)
+                .unitOfMeasure(UnitOfMeasure.UNIT)
+                .currentUnitCost(new BigDecimal("1.50"))
+                .currentStock(new BigDecimal("100"))
+                .minimumStock(new BigDecimal("20"))
+                .active(false)
                 .build();
     }
 }

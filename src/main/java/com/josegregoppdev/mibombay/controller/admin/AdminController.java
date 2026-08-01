@@ -1,7 +1,7 @@
 package com.josegregoppdev.mibombay.controller.admin;
 
-import com.josegregoppdev.mibombay.model.empresa.Empresa;
-import com.josegregoppdev.mibombay.repository.empresa.EmpresaRepository;
+import com.josegregoppdev.mibombay.model.company.Company;
+import com.josegregoppdev.mibombay.repository.company.CompanyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,25 +15,25 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final EmpresaRepository empresaRepository;
+    private final CompanyRepository companyRepository;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        List<Empresa> empresas = empresaRepository.findAll();
-        long total = empresas.size();
-        long activas = empresas.stream().filter(Empresa::getActivo).count();
-        long inactivas = total - activas;
+        List<Company> companies = companyRepository.findAll();
+        long total = companies.size();
+        long activeCount = companies.stream().filter(Company::getActive).count();
+        long inactiveCount = total - activeCount;
 
         model.addAttribute("total", total);
-        model.addAttribute("activas", activas);
-        model.addAttribute("inactivas", inactivas);
+        model.addAttribute("activeCount", activeCount);
+        model.addAttribute("inactiveCount", inactiveCount);
         return "admin/dashboard";
     }
 
-    @GetMapping("/empresas")
-    public String empresas(Model model) {
-        List<Empresa> empresas = empresaRepository.findAll();
-        model.addAttribute("empresas", empresas);
-        return "admin/empresas";
+    @GetMapping("/companies")
+    public String companies(Model model) {
+        List<Company> companies = companyRepository.findAll();
+        model.addAttribute("companies", companies);
+        return "admin/companies";
     }
 }

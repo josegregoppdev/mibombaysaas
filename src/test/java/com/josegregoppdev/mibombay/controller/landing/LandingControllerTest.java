@@ -9,7 +9,7 @@ class LandingControllerTest {
     private final LandingController controller = new LandingController();
 
     @Test
-    void landing_retornaVistaLanding() {
+    void landing_returnsLandingView() {
         assertEquals("landing", controller.landing());
     }
 }

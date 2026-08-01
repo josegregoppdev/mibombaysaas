@@ -20,16 +20,16 @@
             </div>
             
             <main class="col-md-9 col-lg-10 mb-main-col">
-                <div th:if="${mensaje}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
                     <i class="bi bi-check-circle-fill me-2"></i>
-                    <span th:text="${mensaje}">Mensaje</span>
+                    <span th:text="${message}">Message</span>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
                 
                 <div class="mb-dashboard-header">
                     <h1 class="display-6">Dashboard</h1>
                     <p class="lead text-muted">
-                        Bienvenido a <strong th:text="${empresa.nombre}">Mi empresa</strong>
+                        Welcome to <strong th:text="${company.name}">My company</strong>
                     </p>
                 </div>
                 
@@ -39,20 +39,20 @@
                             <div class="card-body">
                                 <h5 class="card-title">
                                     <i class="bi bi-building text-primary me-2"></i>
-                                    Información de la empresa
+                                    Company information
                                 </h5>
                                 <dl class="row mb-0">
-                                    <dt class="col-sm-4">Nombre:</dt>
-                                    <dd class="col-sm-8" th:text="${empresa.nombre}">-</dd>
+                                    <dt class="col-sm-4">Name:</dt>
+                                    <dd class="col-sm-8" th:text="${company.name}">-</dd>
                                     
-                                    <dt class="col-sm-4">Correo:</dt>
-                                    <dd class="col-sm-8" th:text="${empresa.correo}">-</dd>
+                                    <dt class="col-sm-4">Email:</dt>
+                                    <dd class="col-sm-8" th:text="${company.email}">-</dd>
                                     
-                                    <dt class="col-sm-4">Teléfono:</dt>
-                                    <dd class="col-sm-8" th:text="${empresa.telefono ?: 'No especificado'}">-</dd>
+                                    <dt class="col-sm-4">Phone:</dt>
+                                    <dd class="col-sm-8" th:text="${company.phone ?: 'Not specified'}">-</dd>
                                     
-                                    <dt class="col-sm-4">Dirección:</dt>
-                                    <dd class="col-sm-8" th:text="${empresa.direccion}">-</dd>
+                                    <dt class="col-sm-4">Address:</dt>
+                                    <dd class="col-sm-8" th:text="${company.address}">-</dd>
                                 </dl>
                             </div>
                         </div>
@@ -63,22 +63,22 @@
                             <div class="card-body">
                                 <h5 class="card-title">
                                     <i class="bi bi-person-circle text-primary me-2"></i>
-                                    Tu perfil
+                                    Your profile
                                 </h5>
                                 <dl class="row mb-3">
-                                    <dt class="col-sm-4">Nombre:</dt>
-                                    <dd class="col-sm-8" th:text="${usuario.nombreCompleto}">-</dd>
+                                    <dt class="col-sm-4">Name:</dt>
+                                    <dd class="col-sm-8" th:text="${user.fullName}">-</dd>
                                     
                                     <dt class="col-sm-4">Email:</dt>
-                                    <dd class="col-sm-8" th:text="${usuario.email}">-</dd>
+                                    <dd class="col-sm-8" th:text="${user.email}">-</dd>
                                     
-                                    <dt class="col-sm-4">Rol:</dt>
+                                    <dt class="col-sm-4">Role:</dt>
                                     <dd class="col-sm-8">
-                                        <span class="badge bg-primary" th:text="${usuario.rol}">-</span>
+                                        <span class="badge bg-primary" th:text="${user.role}">-</span>
                                     </dd>
                                 </dl>
-                                <a th:href="@{/cambiar-password}" class="btn btn-outline-primary btn-sm">
-                                    <i class="bi bi-key me-2"></i>Cambiar contraseña
+                                <a th:href="@{/change-password}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-key me-2"></i>Change password
                                 </a>
                             </div>
                         </div>
@@ -86,14 +86,14 @@
                 </div>
                 
                 <div class="mb-4">
-                    <h2 class="h4 mb-4">Acciones rápidas</h2>
+                    <h2 class="h4 mb-4">Quick actions</h2>
                     <div class="row g-3">
                         <div class="col-md-6 col-lg-3">
                             <div class="card border-0 shadow-sm h-100 disabled opacity-50">
                                 <div class="card-body text-center">
                                     <i class="bi bi-grid-3x3-gap text-primary fs-1 mb-3"></i>
-                                    <h5>Gestión de mesas</h5>
-                                    <p class="text-muted small mb-0">Próximamente</p>
+                                    <h5>Table management</h5>
+                                    <p class="text-muted small mb-0">Coming soon</p>
                                 </div>
                             </div>
                         </div>
@@ -101,8 +101,8 @@
                             <div class="card border-0 shadow-sm h-100 disabled opacity-50">
                                 <div class="card-body text-center">
                                     <i class="bi bi-book text-primary fs-1 mb-3"></i>
-                                    <h5>Menú</h5>
-                                    <p class="text-muted small mb-0">Próximamente</p>
+                                    <h5>Menu</h5>
+                                    <p class="text-muted small mb-0">Coming soon</p>
                                 </div>
                             </div>
                         </div>
@@ -110,8 +110,8 @@
                             <div class="card border-0 shadow-sm h-100 disabled opacity-50">
                                 <div class="card-body text-center">
                                     <i class="bi bi-receipt text-primary fs-1 mb-3"></i>
-                                    <h5>Pedidos</h5>
-                                    <p class="text-muted small mb-0">Próximamente</p>
+                                    <h5>Orders</h5>
+                                    <p class="text-muted small mb-0">Coming soon</p>
                                 </div>
                             </div>
                         </div>
@@ -119,8 +119,8 @@
                             <div class="card border-0 shadow-sm h-100 disabled opacity-50">
                                 <div class="card-body text-center">
                                     <i class="bi bi-graph-up text-primary fs-1 mb-3"></i>
-                                    <h5>Reportes</h5>
-                                    <p class="text-muted small mb-0">Próximamente</p>
+                                    <h5>Reports</h5>
+                                    <p class="text-muted small mb-0">Coming soon</p>
                                 </div>
                             </div>
                         </div>

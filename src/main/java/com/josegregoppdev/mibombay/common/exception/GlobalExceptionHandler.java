@@ -10,6 +10,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public String handleIllegalArgumentException(IllegalArgumentException ex, Model model) {
         model.addAttribute("error", ex.getMessage());
-        return "redirect:/registro?error=" + ex.getMessage();
+        return "redirect:/registration?error=" + ex.getMessage();
     }
 }

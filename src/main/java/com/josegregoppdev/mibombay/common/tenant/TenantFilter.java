@@ -1,6 +1,6 @@
 package com.josegregoppdev.mibombay.common.tenant;
 
-import com.josegregoppdev.mibombay.repository.empresa.EmpresaRepository;
+import com.josegregoppdev.mibombay.repository.company.CompanyRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,10 +16,10 @@ import java.io.IOException;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class TenantFilter extends OncePerRequestFilter {
 
-    private final EmpresaRepository empresaRepository;
+    private final CompanyRepository companyRepository;
 
-    public TenantFilter(EmpresaRepository empresaRepository) {
-        this.empresaRepository = empresaRepository;
+    public TenantFilter(CompanyRepository companyRepository) {
+        this.companyRepository = companyRepository;
     }
 
     @Override
@@ -27,12 +27,12 @@ public class TenantFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
-            String subdominio = extraerSubdominio(request.getServerName());
-            if (subdominio != null && !subdominio.isBlank()
-                    && !subdominio.equals("www")
-                    && !subdominio.equals("admin")) {
-                empresaRepository.findBySubdominio(subdominio)
-                        .ifPresent(empresa -> TenantContext.set(empresa.getTenantId()));
+            String subdomain = extractSubdomain(request.getServerName());
+            if (subdomain != null && !subdomain.isBlank()
+                    && !subdomain.equals("www")
+                    && !subdomain.equals("admin")) {
+                companyRepository.findBySubdomain(subdomain)
+                        .ifPresent(company -> TenantContext.set(company.getTenantId()));
             }
             filterChain.doFilter(request, response);
         } finally {
@@ -40,7 +40,7 @@ public class TenantFilter extends OncePerRequestFilter {
         }
     }
 
-    private String extraerSubdominio(String serverName) {
+    private String extractSubdomain(String serverName) {
         if (serverName == null || serverName.isEmpty()) return null;
         String[] parts = serverName.split("\\.");
         if (parts.length <= 2) return null;

@@ -4,7 +4,7 @@
             <button class="btn btn-link text-white d-md-none p-1 me-2" type="button"
                     sec:authorize="isAuthenticated()"
                     data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas"
-                    aria-label="Abrir navegación">
+                    aria-label="Open navigation">
                 <i class="bi bi-list fs-3 lh-1"></i>
             </button>
             <a class="navbar-brand mb-brand" th:href="@{/}">
@@ -17,25 +17,25 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item" sec:authorize="isAnonymous()">
-                    <a class="nav-link" th:href="@{/login}">Iniciar sesión</a>
+                    <a class="nav-link" th:href="@{/login}">Log in</a>
                 </li>
                 <li class="nav-item" sec:authorize="isAnonymous()">
-                    <a class="nav-link btn btn-outline-light btn-sm ms-2" th:href="@{/registro}">Registrarse</a>
+                    <a class="nav-link btn btn-outline-light btn-sm ms-2" th:href="@{/registration}">Register</a>
                 </li>
                 <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                         <i class="bi bi-person-circle me-1"></i>
-                        <span sec:authentication="name">Usuario</span>
+                        <span sec:authentication="name">User</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li sec:authorize="hasRole('SUPER_ADMINISTRADOR')"><a class="dropdown-item" th:href="@{/admin/dashboard}"><i class="bi bi-speedometer2 me-2"></i>Panel Admin</a></li>
-                        <li sec:authorize="!hasRole('SUPER_ADMINISTRADOR')"><a class="dropdown-item" th:href="@{/dashboard}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
-                        <li><a class="dropdown-item" th:href="@{/cambiar-password}"><i class="bi bi-key me-2"></i>Cambiar contraseña</a></li>
+                        <li sec:authorize="hasRole('SUPER_ADMIN')"><a class="dropdown-item" th:href="@{/admin/dashboard}"><i class="bi bi-speedometer2 me-2"></i>Admin Panel</a></li>
+                        <li sec:authorize="!hasRole('SUPER_ADMIN')"><a class="dropdown-item" th:href="@{/dashboard}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+                        <li><a class="dropdown-item" th:href="@{/change-password}"><i class="bi bi-key me-2"></i>Change password</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <form th:action="@{/logout}" method="post" class="d-inline">
                                 <button type="submit" class="dropdown-item">
-                                    <i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión
+                                    <i class="bi bi-box-arrow-right me-2"></i>Log out
                                 </button>
                             </form>
                         </li>
