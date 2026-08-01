@@ -4,10 +4,13 @@ import com.josegregoppdev.mibombay.model.company.Company;
 import com.josegregoppdev.mibombay.model.ingredient.Category;
 import com.josegregoppdev.mibombay.model.ingredient.Ingredient;
 import com.josegregoppdev.mibombay.model.ingredient.UnitOfMeasure;
+import com.josegregoppdev.mibombay.model.recipe.Recipe;
+import com.josegregoppdev.mibombay.model.recipe.RecipeDetail;
 import com.josegregoppdev.mibombay.model.user.Role;
 import com.josegregoppdev.mibombay.model.user.User;
 import com.josegregoppdev.mibombay.repository.company.CompanyRepository;
 import com.josegregoppdev.mibombay.repository.ingredient.IngredientRepository;
+import com.josegregoppdev.mibombay.repository.recipe.RecipeRepository;
 import com.josegregoppdev.mibombay.repository.user.UserRepository;
 import com.josegregoppdev.mibombay.service.user.PasswordGeneratorService;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +20,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,6 +34,7 @@ public class InitialDataConfig implements CommandLineRunner {
     private final UserRepository userRepository;
     private final CompanyRepository companyRepository;
     private final IngredientRepository ingredientRepository;
+    private final RecipeRepository recipeRepository;
     private final PasswordEncoder passwordEncoder;
     private final PasswordGeneratorService passwordGeneratorService;
 
@@ -111,6 +117,7 @@ public class InitialDataConfig implements CommandLineRunner {
         }
 
         createDemoIngredients(tenantId);
+        createDemoRecipes(tenantId);
     }
 
     private void createDemoIngredients(String tenantId) {
@@ -164,5 +171,86 @@ public class InitialDataConfig implements CommandLineRunner {
 
         ingredientRepository.saveAll(ingredients);
         log.info("10 demo ingredients created for the restaurant");
+    }
+
+    private void createDemoRecipes(String tenantId) {
+        if (recipeRepository.existsByCodeAndTenantId("HAM-001", tenantId)) {
+            log.debug("Demo recipes already exist");
+            return;
+        }
+
+        Ingredient groundBeef = ingredientRepository.findByCodeAndTenantId("CAR-001", tenantId).orElseThrow();
+        Ingredient hamburgerBun = ingredientRepository.findByCodeAndTenantId("PAN-001", tenantId).orElseThrow();
+        Ingredient hotDogBun = ingredientRepository.findByCodeAndTenantId("PAN-002", tenantId).orElseThrow();
+        Ingredient cheese = ingredientRepository.findByCodeAndTenantId("LEC-001", tenantId).orElseThrow();
+        Ingredient lettuce = ingredientRepository.findByCodeAndTenantId("VER-001", tenantId).orElseThrow();
+        Ingredient tomato = ingredientRepository.findByCodeAndTenantId("VER-002", tenantId).orElseThrow();
+        Ingredient frenchFries = ingredientRepository.findByCodeAndTenantId("PAP-001", tenantId).orElseThrow();
+        Ingredient fryingOil = ingredientRepository.findByCodeAndTenantId("ACE-001", tenantId).orElseThrow();
+
+        Recipe classicHamburger = buildRecipe(tenantId, "HAM-001", "Classic Hamburger",
+                "Traditional hamburger with beef patty, cheese, lettuce and tomato",
+                List.of(
+                        buildDetail(groundBeef, new BigDecimal("0.150"), "Extra point"),
+                        buildDetail(hamburgerBun, new BigDecimal("1"), null),
+                        buildDetail(cheese, new BigDecimal("2"), null),
+                        buildDetail(lettuce, new BigDecimal("0.020"), null),
+                        buildDetail(tomato, new BigDecimal("0.030"), null)
+                ));
+
+        Recipe hotDog = buildRecipe(tenantId, "HOT-001", "Hot Dog",
+                "Classic hot dog with beef sausage, lettuce and tomato",
+                List.of(
+                        buildDetail(hotDogBun, new BigDecimal("1"), null),
+                        buildDetail(groundBeef, new BigDecimal("0.080"), "Ground for sausage"),
+                        buildDetail(lettuce, new BigDecimal("0.010"), null),
+                        buildDetail(tomato, new BigDecimal("0.020"), null)
+                ));
+
+        Recipe frenchFriesRecipe = buildRecipe(tenantId, "FRI-001", "French Fries",
+                "Crispy golden french fries",
+                List.of(
+                        buildDetail(frenchFries, new BigDecimal("0.200"), null),
+                        buildDetail(fryingOil, new BigDecimal("0.050"), "For frying")
+                ));
+
+        recipeRepository.saveAll(List.of(classicHamburger, hotDog, frenchFriesRecipe));
+        log.info("3 demo recipes created: Classic Hamburger, Hot Dog, French Fries");
+    }
+
+    private Recipe buildRecipe(String tenantId, String code, String name, String description,
+                               List<RecipeDetail> details) {
+        BigDecimal productionCost = details.stream()
+                .map(RecipeDetail::getTotalCost)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        Recipe recipe = Recipe.builder()
+                .tenantId(tenantId)
+                .code(code)
+                .name(name)
+                .description(description)
+                .productionCost(productionCost)
+                .active(true)
+                .details(new ArrayList<>())
+                .build();
+
+        for (RecipeDetail detail : details) {
+            detail.setRecipe(recipe);
+            recipe.getDetails().add(detail);
+        }
+
+        return recipe;
+    }
+
+    private RecipeDetail buildDetail(Ingredient ingredient, BigDecimal quantity, String notes) {
+        BigDecimal totalCost = quantity.multiply(ingredient.getCurrentUnitCost()).setScale(4, RoundingMode.HALF_UP);
+        return RecipeDetail.builder()
+                .ingredient(ingredient)
+                .quantity(quantity)
+                .unitOfMeasure(ingredient.getUnitOfMeasure())
+                .unitCost(ingredient.getCurrentUnitCost())
+                .totalCost(totalCost)
+                .notes(notes)
+                .build();
     }
 }

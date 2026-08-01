@@ -3,15 +3,21 @@ package com.josegregoppdev.mibombay.testdata;
 import com.josegregoppdev.mibombay.dto.company.CompanyDTORequest;
 import com.josegregoppdev.mibombay.dto.company.CompanyDTOResponse;
 import com.josegregoppdev.mibombay.dto.ingredient.IngredientDTO;
+import com.josegregoppdev.mibombay.dto.recipe.RecipeDTO;
+import com.josegregoppdev.mibombay.dto.recipe.RecipeDetailDTO;
 import com.josegregoppdev.mibombay.model.company.Company;
 import com.josegregoppdev.mibombay.model.ingredient.Category;
 import com.josegregoppdev.mibombay.model.ingredient.Ingredient;
 import com.josegregoppdev.mibombay.model.ingredient.UnitOfMeasure;
+import com.josegregoppdev.mibombay.model.recipe.Recipe;
+import com.josegregoppdev.mibombay.model.recipe.RecipeDetail;
 import com.josegregoppdev.mibombay.model.user.Role;
 import com.josegregoppdev.mibombay.model.user.User;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestDataFactory {
 
@@ -144,6 +150,59 @@ public class TestDataFactory {
                 .currentUnitCost(new BigDecimal("1.50"))
                 .currentStock(new BigDecimal("100"))
                 .minimumStock(new BigDecimal("20"))
+                .active(false)
+                .build();
+    }
+
+    public static RecipeDTO createRecipeDTO() {
+        RecipeDetailDTO detail = RecipeDetailDTO.builder()
+                .ingredientId(1L)
+                .quantity(new BigDecimal("0.100"))
+                .unitCost(new BigDecimal("15.50"))
+                .totalCost(new BigDecimal("1.5500"))
+                .build();
+
+        return RecipeDTO.builder()
+                .code("HAM-001")
+                .name("Classic Hamburger")
+                .description("Traditional hamburger with beef patty")
+                .productionCost(new BigDecimal("1.5500"))
+                .active(true)
+                .details(List.of(detail))
+                .build();
+    }
+
+    public static Recipe createRecipe() {
+        RecipeDetail detail = RecipeDetail.builder()
+                .id(1L)
+                .quantity(new BigDecimal("0.100"))
+                .unitOfMeasure(UnitOfMeasure.KILOGRAM)
+                .unitCost(new BigDecimal("15.50"))
+                .totalCost(new BigDecimal("1.5500"))
+                .ingredient(createIngredient())
+                .build();
+
+        Recipe recipe = Recipe.builder()
+                .id(1L)
+                .tenantId(TENANT_ID)
+                .code("HAM-001")
+                .name("Classic Hamburger")
+                .description("Traditional hamburger with beef patty")
+                .productionCost(new BigDecimal("1.5500"))
+                .active(true)
+                .build();
+        detail.setRecipe(recipe);
+        recipe.setDetails(new ArrayList<>(List.of(detail)));
+        return recipe;
+    }
+
+    public static Recipe createInactiveRecipe() {
+        return Recipe.builder()
+                .id(2L)
+                .tenantId(TENANT_ID)
+                .code("SOD-001")
+                .name("Cola Soda")
+                .productionCost(new BigDecimal("2.0000"))
                 .active(false)
                 .build();
     }

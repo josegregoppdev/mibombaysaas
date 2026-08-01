@@ -21,6 +21,8 @@ public interface IngredientRepository extends JpaRepository<Ingredient, Long> {
 
     Optional<Ingredient> findByIdAndTenantId(Long id, String tenantId);
 
+    Optional<Ingredient> findByCodeAndTenantId(String code, String tenantId);
+
     boolean existsByCodeAndTenantId(String code, String tenantId);
 
     boolean existsByNameAndTenantId(String name, String tenantId);
