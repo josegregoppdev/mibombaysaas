@@ -38,30 +38,42 @@ com.josegregoppdev.mibombay
 ├── model/                     # JPA entities (no validations, JPA only)
 │   ├── user/                  # User, Role
 │   ├── company/               # Company
-│   └── ingredient/            # Category (enum), Ingredient, UnitOfMeasure (enum)
+│   ├── ingredient/            # Category (enum), Ingredient, UnitOfMeasure (enum)
+│   ├── recipe/                # Recipe, RecipeDetail
+│   └── product/               # Product, ProductType (enum), ProductCategory (enum)
 ├── dto/                       # DTOs with validations
 │   ├── company/               # CompanyDTORequest, CompanyDTOResponse
 │   ├── user/                  # UserDTORequest, UserDTOResponse
-│   └── ingredient/            # IngredientDTO
+│   ├── ingredient/            # IngredientDTO
+│   ├── recipe/                # RecipeDTO, RecipeDetailDTO
+│   └── product/               # ProductDTO
 ├── mapper/                    # MapStruct Mappers
 │   ├── company/               # CompanyMapper
 │   ├── user/                  # UserMapper
-│   └── ingredient/            # IngredientMapper
+│   ├── ingredient/            # IngredientMapper
+│   ├── recipe/                # RecipeMapper
+│   └── product/               # ProductMapper
 ├── repository/                # Spring Data JPA repositories
 │   ├── user/                  # UserRepository
 │   ├── company/               # CompanyRepository
-│   └── ingredient/            # IngredientRepository
+│   ├── ingredient/            # IngredientRepository
+│   ├── recipe/                # RecipeRepository
+│   └── product/               # ProductRepository
 ├── service/                   # business logic
 │   ├── user/                  # CustomUserDetailsService, PasswordGeneratorService
 │   ├── company/               # CompanyRegistrationService
-│   └── ingredient/            # IngredientService
+│   ├── ingredient/            # IngredientService
+│   ├── recipe/                # RecipeService
+│   └── product/               # ProductService
 ├── controller/                # web controllers
 │   ├── landing/               # LandingController
 │   ├── auth/                  # LoginController, PasswordChangeController
 │   ├── company/               # CompanyRegistrationController
 │   ├── dashboard/             # DashboardController
 │   ├── admin/                 # AdminController
-│   └── ingredient/            # IngredientController
+│   ├── ingredient/            # IngredientController
+│   ├── recipe/                # RecipeController
+│   └── product/               # ProductController
 └── config/                    # Spring configurations
     ├── SecurityConfig.java
     ├── PasswordEncoderConfig.java
@@ -143,6 +155,8 @@ Real properties files are in `.gitignore`.
 | `PasswordGeneratorServiceTest` | 8 |
 | `CustomUserDetailsServiceTest` | 7 |
 | `IngredientServiceTest` | 15 |
+| `RecipeServiceTest` | 14 |
+| `ProductServiceTest` | 16 |
 | `LandingControllerTest` | 1 |
 | `LoginControllerTest` | 6 |
 | `PasswordChangeControllerTest` | 4 |
@@ -150,8 +164,10 @@ Real properties files are in `.gitignore`.
 | `CompanyRegistrationControllerTest` | 4 |
 | `AdminControllerTest` | 2 |
 | `IngredientControllerTest` | 13 |
+| `RecipeControllerTest` | 13 |
+| `ProductControllerTest` | 13 |
 | `MibombayApplicationTests` | 1 |
-| Total | 72 |
+| Total | 112 |
 
 ```bash
 ./mvnw test
@@ -222,3 +238,6 @@ Layout with left sidebar (`col-md-3 col-lg-2`) + main content (`col-md-9 col-lg-
 - **Category as enum**: fixed with 9 values (MEATS, DAIRY, BREADS, VEGETABLES, FRUITS, GRAINS, CONDIMENTS, BEVERAGES, OTHERS) with `displayName`
 - **Responsive sidebar**: Offcanvas on mobile (<768px), inline on desktop (≥768px). Hamburger button in authenticated navbar
 - **State toggle**: single method `toggleIngredientActiveStatus` that flips `active`. Button always visible in list (red if active, green if inactive)
+- **Product types**: `ProductType` enum (CON_RECETA, SIN_RECETA, ADICIONAL) — single Product entity differentiated by type
+- **Product-Recipe relationship**: optional `@ManyToOne` — CON_RECETA requires recipe, SIN_RECETA has none, ADICIONAL is optional
+- **Product categories**: `ProductCategory` enum (FOOD, DRINKS, DESSERTS, SIDES, COMBOS, OTHERS)

@@ -4,12 +4,16 @@ import com.josegregoppdev.mibombay.model.company.Company;
 import com.josegregoppdev.mibombay.model.ingredient.Category;
 import com.josegregoppdev.mibombay.model.ingredient.Ingredient;
 import com.josegregoppdev.mibombay.model.ingredient.UnitOfMeasure;
+import com.josegregoppdev.mibombay.model.product.Product;
+import com.josegregoppdev.mibombay.model.product.ProductCategory;
+import com.josegregoppdev.mibombay.model.product.ProductType;
 import com.josegregoppdev.mibombay.model.recipe.Recipe;
 import com.josegregoppdev.mibombay.model.recipe.RecipeDetail;
 import com.josegregoppdev.mibombay.model.user.Role;
 import com.josegregoppdev.mibombay.model.user.User;
 import com.josegregoppdev.mibombay.repository.company.CompanyRepository;
 import com.josegregoppdev.mibombay.repository.ingredient.IngredientRepository;
+import com.josegregoppdev.mibombay.repository.product.ProductRepository;
 import com.josegregoppdev.mibombay.repository.recipe.RecipeRepository;
 import com.josegregoppdev.mibombay.repository.user.UserRepository;
 import com.josegregoppdev.mibombay.service.user.PasswordGeneratorService;
@@ -35,6 +39,7 @@ public class InitialDataConfig implements CommandLineRunner {
     private final CompanyRepository companyRepository;
     private final IngredientRepository ingredientRepository;
     private final RecipeRepository recipeRepository;
+    private final ProductRepository productRepository;
     private final PasswordEncoder passwordEncoder;
     private final PasswordGeneratorService passwordGeneratorService;
 
@@ -118,6 +123,7 @@ public class InitialDataConfig implements CommandLineRunner {
 
         createDemoIngredients(tenantId);
         createDemoRecipes(tenantId);
+        createDemoProducts(tenantId);
     }
 
     private void createDemoIngredients(String tenantId) {
@@ -216,6 +222,83 @@ public class InitialDataConfig implements CommandLineRunner {
 
         recipeRepository.saveAll(List.of(classicHamburger, hotDog, frenchFriesRecipe));
         log.info("3 demo recipes created: Classic Hamburger, Hot Dog, French Fries");
+    }
+
+    private void createDemoProducts(String tenantId) {
+        if (productRepository.existsByCodeAndTenantId("PROD-001", tenantId)) {
+            log.debug("Demo products already exist");
+            return;
+        }
+
+        Recipe hamburgerRecipe = recipeRepository.findByCodeAndTenantId("HAM-001", tenantId).orElseThrow();
+        Recipe hotDogRecipe = recipeRepository.findByCodeAndTenantId("HOT-001", tenantId).orElseThrow();
+        Recipe friesRecipe = recipeRepository.findByCodeAndTenantId("FRI-001", tenantId).orElseThrow();
+
+        Ingredient cheese = ingredientRepository.findByCodeAndTenantId("LEC-001", tenantId).orElseThrow();
+        Ingredient lettuce = ingredientRepository.findByCodeAndTenantId("VER-001", tenantId).orElseThrow();
+
+        List<Product> products = List.of(
+                // CON_RECETA — 3 products with recipe
+                Product.builder()
+                        .tenantId(tenantId).code("PROD-001").name("Classic Hamburger")
+                        .description("Traditional hamburger with beef patty, cheese, lettuce and tomato")
+                        .category(ProductCategory.FOOD).productType(ProductType.CON_RECETA)
+                        .sellingPrice(new BigDecimal("12.0000"))
+                        .unitCost(hamburgerRecipe.getProductionCost())
+                        .recipe(hamburgerRecipe)
+                        .active(true).build(),
+                Product.builder()
+                        .tenantId(tenantId).code("PROD-002").name("Hot Dog")
+                        .description("Classic hot dog with beef sausage, lettuce and tomato")
+                        .category(ProductCategory.FOOD).productType(ProductType.CON_RECETA)
+                        .sellingPrice(new BigDecimal("9.0000"))
+                        .unitCost(hotDogRecipe.getProductionCost())
+                        .recipe(hotDogRecipe)
+                        .active(true).build(),
+                Product.builder()
+                        .tenantId(tenantId).code("PROD-003").name("French Fries")
+                        .description("Crispy golden french fries")
+                        .category(ProductCategory.SIDES).productType(ProductType.CON_RECETA)
+                        .sellingPrice(new BigDecimal("6.0000"))
+                        .unitCost(friesRecipe.getProductionCost())
+                        .recipe(friesRecipe)
+                        .active(true).build(),
+
+                // SIN_RECETA — 2 products without recipe
+                Product.builder()
+                        .tenantId(tenantId).code("PROD-004").name("Bottled Cola")
+                        .description("350ml bottled cola drink")
+                        .category(ProductCategory.DRINKS).productType(ProductType.SIN_RECETA)
+                        .sellingPrice(new BigDecimal("3.5000"))
+                        .unitCost(new BigDecimal("1.8000"))
+                        .active(true).build(),
+                Product.builder()
+                        .tenantId(tenantId).code("PROD-005").name("Mineral Water")
+                        .description("600ml mineral water bottle")
+                        .category(ProductCategory.DRINKS).productType(ProductType.SIN_RECETA)
+                        .sellingPrice(new BigDecimal("2.5000"))
+                        .unitCost(new BigDecimal("1.0000"))
+                        .active(true).build(),
+
+                // ADICIONAL — 2 add-on products
+                Product.builder()
+                        .tenantId(tenantId).code("PROD-006").name("Extra Cheese")
+                        .description("Additional cheese slice")
+                        .category(ProductCategory.FOOD).productType(ProductType.ADICIONAL)
+                        .sellingPrice(new BigDecimal("1.5000"))
+                        .unitCost(cheese.getCurrentUnitCost())
+                        .active(true).build(),
+                Product.builder()
+                        .tenantId(tenantId).code("PROD-007").name("Extra Lettuce")
+                        .description("Additional fresh lettuce")
+                        .category(ProductCategory.FOOD).productType(ProductType.ADICIONAL)
+                        .sellingPrice(new BigDecimal("1.0000"))
+                        .unitCost(lettuce.getCurrentUnitCost())
+                        .active(true).build()
+        );
+
+        productRepository.saveAll(products);
+        log.info("7 demo products created: 3 with recipe, 2 without recipe, 2 add-ons");
     }
 
     private Recipe buildRecipe(String tenantId, String code, String name, String description,

@@ -3,12 +3,16 @@ package com.josegregoppdev.mibombay.testdata;
 import com.josegregoppdev.mibombay.dto.company.CompanyDTORequest;
 import com.josegregoppdev.mibombay.dto.company.CompanyDTOResponse;
 import com.josegregoppdev.mibombay.dto.ingredient.IngredientDTO;
+import com.josegregoppdev.mibombay.dto.product.ProductDTO;
 import com.josegregoppdev.mibombay.dto.recipe.RecipeDTO;
 import com.josegregoppdev.mibombay.dto.recipe.RecipeDetailDTO;
 import com.josegregoppdev.mibombay.model.company.Company;
 import com.josegregoppdev.mibombay.model.ingredient.Category;
 import com.josegregoppdev.mibombay.model.ingredient.Ingredient;
 import com.josegregoppdev.mibombay.model.ingredient.UnitOfMeasure;
+import com.josegregoppdev.mibombay.model.product.Product;
+import com.josegregoppdev.mibombay.model.product.ProductCategory;
+import com.josegregoppdev.mibombay.model.product.ProductType;
 import com.josegregoppdev.mibombay.model.recipe.Recipe;
 import com.josegregoppdev.mibombay.model.recipe.RecipeDetail;
 import com.josegregoppdev.mibombay.model.user.Role;
@@ -203,6 +207,92 @@ public class TestDataFactory {
                 .code("SOD-001")
                 .name("Cola Soda")
                 .productionCost(new BigDecimal("2.0000"))
+                .active(false)
+                .build();
+    }
+
+    // -- Product factory methods --
+
+    public static ProductDTO createProductDTO() {
+        return ProductDTO.builder()
+                .code("PROD-001")
+                .name("Classic Hamburger")
+                .description("Traditional hamburger with beef patty")
+                .category(ProductCategory.FOOD)
+                .productType(ProductType.CON_RECETA)
+                .sellingPrice(new BigDecimal("8.5000"))
+                .unitCost(new BigDecimal("1.5500"))
+                .recipeId(1L)
+                .active(true)
+                .build();
+    }
+
+    public static ProductDTO createProductDTOWithoutRecipe() {
+        return ProductDTO.builder()
+                .code("PROD-002")
+                .name("Cola Soda")
+                .description("350ml bottled cola")
+                .category(ProductCategory.DRINKS)
+                .productType(ProductType.SIN_RECETA)
+                .sellingPrice(new BigDecimal("2.5000"))
+                .unitCost(new BigDecimal("1.2000"))
+                .active(true)
+                .build();
+    }
+
+    public static ProductDTO createAddonProductDTO() {
+        return ProductDTO.builder()
+                .code("PROD-003")
+                .name("Extra Cheese")
+                .category(ProductCategory.FOOD)
+                .productType(ProductType.ADICIONAL)
+                .sellingPrice(new BigDecimal("1.5000"))
+                .unitCost(new BigDecimal("0.8000"))
+                .active(true)
+                .build();
+    }
+
+    public static Product createProduct() {
+        return Product.builder()
+                .id(1L)
+                .tenantId(TENANT_ID)
+                .code("PROD-001")
+                .name("Classic Hamburger")
+                .description("Traditional hamburger with beef patty")
+                .category(ProductCategory.FOOD)
+                .productType(ProductType.CON_RECETA)
+                .sellingPrice(new BigDecimal("8.5000"))
+                .unitCost(new BigDecimal("1.5500"))
+                .recipe(createRecipe())
+                .active(true)
+                .build();
+    }
+
+    public static Product createProductWithoutRecipe() {
+        return Product.builder()
+                .id(2L)
+                .tenantId(TENANT_ID)
+                .code("PROD-002")
+                .name("Cola Soda")
+                .description("350ml bottled cola")
+                .category(ProductCategory.DRINKS)
+                .productType(ProductType.SIN_RECETA)
+                .sellingPrice(new BigDecimal("2.5000"))
+                .unitCost(new BigDecimal("1.2000"))
+                .active(true)
+                .build();
+    }
+
+    public static Product createInactiveProduct() {
+        return Product.builder()
+                .id(3L)
+                .tenantId(TENANT_ID)
+                .code("PROD-004")
+                .name("Old Product")
+                .category(ProductCategory.OTHERS)
+                .productType(ProductType.SIN_RECETA)
+                .sellingPrice(new BigDecimal("5.0000"))
+                .unitCost(new BigDecimal("3.0000"))
                 .active(false)
                 .build();
     }
