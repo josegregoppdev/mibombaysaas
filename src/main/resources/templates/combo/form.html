@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${recipe.id} ? 'Edit recipe' : 'New recipe'">Recipe - MiBombay</title>
+    <title th:text="${combo.id} ? 'Edit combo' : 'New combo'">Combo - MiBombay</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body class="mb-dashboard">
     <div th:replace="~{fragments/navbar :: navbar}"></div>
-
     <div th:replace="~{fragments/sidebar :: sidebarOffcanvas}"></div>
 
     <div class="container-fluid">
@@ -27,17 +26,18 @@
                 </div>
 
                 <div class="mb-dashboard-header">
-                    <h1 class="display-6" th:text="${recipe.id} ? 'Edit recipe' : 'New recipe'">Title</h1>
+                    <h1 class="display-6" th:text="${combo.id} ? 'Edit combo' : 'New combo'">Title</h1>
                     <p class="lead text-muted">Complete the form fields</p>
                 </div>
 
-                <form th:action="${recipe.id} ? @{/recipe/{id}(id=${recipe.id})} : @{/recipe}"
-                      th:object="${recipe}" method="post">
+                <form th:action="${combo.id} ? @{/combo/{id}(id=${combo.id})} : @{/combo}"
+                      th:object="${combo}" method="post">
 
+                    <!-- Combo Information -->
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-body p-4">
                             <h5 class="card-title mb-3">
-                                <i class="bi bi-info-circle text-primary me-2"></i>Recipe information
+                                <i class="bi bi-info-circle text-primary me-2"></i>Combo information
                             </h5>
                             <div class="row g-3">
                                 <div class="col-md-3">
@@ -45,7 +45,7 @@
                                     <input type="text" class="form-control" id="code"
                                            th:field="*{code}"
                                            th:classappend="${#fields.hasErrors('code')} ? 'is-invalid'"
-                                           placeholder="E.g.: HAM-001">
+                                           placeholder="E.g.: COM-001">
                                     <div class="invalid-feedback" th:each="err : ${#fields.errors('code')}" th:text="${err}">Error</div>
                                 </div>
 
@@ -54,7 +54,7 @@
                                     <input type="text" class="form-control" id="name"
                                            th:field="*{name}"
                                            th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"
-                                           placeholder="E.g.: Classic Hamburger">
+                                           placeholder="E.g.: Hamburger + Fries Combo">
                                     <div class="invalid-feedback" th:each="err : ${#fields.errors('name')}" th:text="${err}">Error</div>
                                 </div>
 
@@ -66,18 +66,29 @@
                                               placeholder="Optional description"></textarea>
                                     <div class="invalid-feedback" th:each="err : ${#fields.errors('description')}" th:text="${err}">Error</div>
                                 </div>
+
+                                <div class="col-md-4">
+                                    <label for="sellingPrice" class="form-label">Selling price</label>
+                                    <input type="number" step="0.0001" min="0" max="99999999.9999"
+                                           class="form-control" id="sellingPrice"
+                                           th:field="*{sellingPrice}"
+                                           th:classappend="${#fields.hasErrors('sellingPrice')} ? 'is-invalid'"
+                                           placeholder="0.00">
+                                    <div class="invalid-feedback" th:each="err : ${#fields.errors('sellingPrice')}" th:text="${err}">Error</div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Products Table -->
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5 class="card-title mb-0">
-                                    <i class="bi bi-list-ul text-primary me-2"></i>Ingredients
+                                    <i class="bi bi-bag text-primary me-2"></i>Products
                                 </h5>
                                 <button type="button" class="btn btn-sm btn-outline-primary" id="addDetailBtn">
-                                    <i class="bi bi-plus-lg me-1"></i>Add ingredient
+                                    <i class="bi bi-plus-lg me-1"></i>Add product
                                 </button>
                             </div>
 
@@ -85,7 +96,7 @@
                                 <table class="table table-hover align-middle" id="detailsTable">
                                     <thead class="table-light">
                                         <tr>
-                                            <th style="width: 35%">Ingredient</th>
+                                            <th style="width: 35%">Product</th>
                                             <th style="width: 15%">Quantity</th>
                                             <th style="width: 15%">Unit cost</th>
                                             <th style="width: 15%">Total cost</th>
@@ -96,17 +107,16 @@
                                     <tbody>
                                         <tr th:each="detail, stat : *{details}" class="detail-row">
                                             <td>
-                                                <select class="form-select form-select-sm ingredient-select"
-                                                        th:field="*{details[__${stat.index}__].ingredientId}"
-                                                        th:classappend="${#fields.hasErrors('details[__${stat.index}__].ingredientId')} ? 'is-invalid'">
+                                                <select class="form-select form-select-sm product-select"
+                                                        th:field="*{details[__${stat.index}__].productId}"
+                                                        th:classappend="${#fields.hasErrors('details[__${stat.index}__].productId')} ? 'is-invalid'">
                                                     <option value="">Select...</option>
-                                                    <option th:each="ing : ${ingredients}"
-                                                            th:value="${ing.id}"
-                                                            th:text="${ing.name}"
-                                                            th:data-cost="${ing.currentUnitCost}"
-                                                            th:data-unit="${ing.unitOfMeasure}">Ingredient</option>
+                                                    <option th:each="prod : ${products}"
+                                                            th:value="${prod.id}"
+                                                            th:text="${prod.name}"
+                                                            th:data-cost="${prod.unitCost}">Product</option>
                                                 </select>
-                                                <div class="invalid-feedback" th:each="err : ${#fields.errors('details[__${stat.index}__].ingredientId')}" th:text="${err}">Error</div>
+                                                <div class="invalid-feedback" th:each="err : ${#fields.errors('details[__${stat.index}__].productId')}" th:text="${err}">Error</div>
                                             </td>
                                             <td>
                                                 <input type="number" step="0.0001" min="0.0001" max="99999999.9999"
@@ -134,8 +144,6 @@
                                             </td>
                                             <td>
                                                 <input type="hidden" th:field="*{details[__${stat.index}__].id}">
-                                                <input type="hidden" class="unit-of-measure-hidden"
-                                                       th:field="*{details[__${stat.index}__].unitOfMeasure}">
                                                 <button type="button" class="btn btn-sm btn-outline-danger remove-detail-btn">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
@@ -147,8 +155,20 @@
 
                             <div class="d-flex justify-content-end mt-3">
                                 <div class="text-end">
-                                    <span class="text-muted me-3">Production cost:</span>
-                                    <strong class="fs-5" id="totalProductionCost">0.00</strong>
+                                    <span class="text-muted me-3">Total cost:</span>
+                                    <strong class="fs-5" id="totalComboCost">0.00</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Margin display -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-4">
+                                    <label class="form-label">Margin</label>
+                                    <div class="form-control-plaintext fw-bold" id="marginDisplay">0.0000</div>
                                 </div>
                             </div>
                         </div>
@@ -157,9 +177,9 @@
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg me-2"></i>
-                            <span th:text="${recipe.id} ? 'Update' : 'Create'">Save</span>
+                            <span th:text="${combo.id} ? 'Update' : 'Create'">Save</span>
                         </button>
-                        <a th:href="@{/recipe}" class="btn btn-outline-secondary">
+                        <a th:href="@{/combo}" class="btn btn-outline-secondary">
                             <i class="bi bi-x-lg me-2"></i>Cancel
                         </a>
                     </div>
@@ -172,53 +192,58 @@
     <script th:src="@{/js/app.js}"></script>
     <script th:inline="javascript">
         document.addEventListener('DOMContentLoaded', function() {
-            const ingredients = /*[[${ingredients.content}]]*/ [];
-            const table = document.getElementById('detailsTable');
-            const tbody = table.querySelector('tbody');
-            const addBtn = document.getElementById('addDetailBtn');
-            let rowIndex = tbody.querySelectorAll('.detail-row').length;
+            var products = /*[[${products.content}]]*/ [];
+            var table = document.getElementById('detailsTable');
+            var tbody = table.querySelector('tbody');
+            var addBtn = document.getElementById('addDetailBtn');
+            var rowIndex = tbody.querySelectorAll('.detail-row').length;
 
-            function buildIngredientOptions() {
-                let html = '<option value="">Select...</option>';
-                ingredients.forEach(function(ing) {
-                    html += '<option value="' + ing.id + '"'
-                        + ' data-cost="' + ing.currentUnitCost + '"'
-                        + ' data-unit="' + ing.unitOfMeasure + '">'
-                        + ing.name + '</option>';
+            function buildProductOptions() {
+                var html = '<option value="">Select...</option>';
+                products.forEach(function(prod) {
+                    html += '<option value="' + prod.id + '"'
+                        + ' data-cost="' + prod.unitCost + '">'
+                        + prod.name + '</option>';
                 });
                 return html;
             }
 
             function recalculateTotal() {
-                let total = 0;
+                var total = 0;
                 tbody.querySelectorAll('.detail-row').forEach(function(row) {
-                    const totalCostHidden = row.querySelector('.total-cost-hidden');
+                    var totalCostHidden = row.querySelector('.total-cost-hidden');
                     if (totalCostHidden && totalCostHidden.value) {
                         total += parseFloat(totalCostHidden.value) || 0;
                     }
                 });
-                document.getElementById('totalProductionCost').textContent = total.toFixed(4);
+                document.getElementById('totalComboCost').textContent = total.toFixed(4);
+                updateMargin(total);
+            }
+
+            function updateMargin(totalCost) {
+                var sellingPrice = parseFloat(document.getElementById('sellingPrice').value) || 0;
+                var margin = sellingPrice - totalCost;
+                var marginDisplay = document.getElementById('marginDisplay');
+                marginDisplay.textContent = margin.toFixed(4);
+                marginDisplay.className = 'form-control-plaintext fw-bold ' + (margin >= 0 ? 'text-success' : 'text-danger');
             }
 
             function updateDetailCalculations(row) {
-                const select = row.querySelector('.ingredient-select');
-                const quantityInput = row.querySelector('.quantity-input');
-                const unitCostInput = row.querySelector('.unit-cost-input');
-                const unitCostHidden = row.querySelector('.unit-cost-hidden');
-                const totalCostInput = row.querySelector('.total-cost-input');
-                const totalCostHidden = row.querySelector('.total-cost-hidden');
-                const unitOfMeasureHidden = row.querySelector('.unit-of-measure-hidden');
+                var select = row.querySelector('.product-select');
+                var quantityInput = row.querySelector('.quantity-input');
+                var unitCostInput = row.querySelector('.unit-cost-input');
+                var unitCostHidden = row.querySelector('.unit-cost-hidden');
+                var totalCostInput = row.querySelector('.total-cost-input');
+                var totalCostHidden = row.querySelector('.total-cost-hidden');
 
                 if (select.value) {
-                    const option = select.options[select.selectedIndex];
-                    const cost = parseFloat(option.getAttribute('data-cost')) || 0;
-                    const unit = option.getAttribute('data-unit') || '';
+                    var option = select.options[select.selectedIndex];
+                    var cost = parseFloat(option.getAttribute('data-cost')) || 0;
                     unitCostInput.value = cost.toFixed(4);
                     unitCostHidden.value = cost;
-                    unitOfMeasureHidden.value = unit;
 
-                    const quantity = parseFloat(quantityInput.value) || 0;
-                    const totalCost = quantity * cost;
+                    var quantity = parseFloat(quantityInput.value) || 0;
+                    var totalCost = quantity * cost;
                     totalCostInput.value = totalCost.toFixed(4);
                     totalCostHidden.value = totalCost;
                 } else {
@@ -226,15 +251,14 @@
                     unitCostHidden.value = '';
                     totalCostInput.value = '';
                     totalCostHidden.value = '';
-                    unitOfMeasureHidden.value = '';
                 }
                 recalculateTotal();
             }
 
             function bindRowEvents(row) {
-                const select = row.querySelector('.ingredient-select');
-                const quantityInput = row.querySelector('.quantity-input');
-                const removeBtn = row.querySelector('.remove-detail-btn');
+                var select = row.querySelector('.product-select');
+                var quantityInput = row.querySelector('.quantity-input');
+                var removeBtn = row.querySelector('.remove-detail-btn');
 
                 select.addEventListener('change', function() { updateDetailCalculations(row); });
                 quantityInput.addEventListener('input', function() { updateDetailCalculations(row); });
@@ -246,20 +270,31 @@
 
             tbody.querySelectorAll('.detail-row').forEach(function(row) {
                 bindRowEvents(row);
-                const quantityInput = row.querySelector('.quantity-input');
-                const select = row.querySelector('.ingredient-select');
+                var quantityInput = row.querySelector('.quantity-input');
+                var select = row.querySelector('.product-select');
                 if (quantityInput.value && select.value) {
                     updateDetailCalculations(row);
                 }
             });
 
+            document.getElementById('sellingPrice').addEventListener('input', function() {
+                var totalCost = 0;
+                tbody.querySelectorAll('.detail-row').forEach(function(row) {
+                    var totalCostHidden = row.querySelector('.total-cost-hidden');
+                    if (totalCostHidden && totalCostHidden.value) {
+                        totalCost += parseFloat(totalCostHidden.value) || 0;
+                    }
+                });
+                updateMargin(totalCost);
+            });
+
             addBtn.addEventListener('click', function() {
-                const newRow = document.createElement('tr');
+                var newRow = document.createElement('tr');
                 newRow.className = 'detail-row';
                 newRow.innerHTML =
                     '<td>'
-                    + '<select class="form-select form-select-sm ingredient-select" name="details[' + rowIndex + '].ingredientId">'
-                    + buildIngredientOptions()
+                    + '<select class="form-select form-select-sm product-select" name="details[' + rowIndex + '].productId">'
+                    + buildProductOptions()
                     + '</select>'
                     + '</td>'
                     + '<td>'
@@ -278,20 +313,11 @@
                     + '</td>'
                     + '<td>'
                     + '<input type="hidden" name="details[' + rowIndex + '].id">'
-                    + '<input type="hidden" class="unit-of-measure-hidden" name="details[' + rowIndex + '].unitOfMeasure">'
                     + '<button type="button" class="btn btn-sm btn-outline-danger remove-detail-btn"><i class="bi bi-trash"></i></button>'
                     + '</td>';
                 tbody.appendChild(newRow);
                 bindRowEvents(newRow);
                 rowIndex++;
-            });
-
-            tbody.querySelectorAll('.detail-row').forEach(function(row) {
-                const removeBtn = row.querySelector('.remove-detail-btn');
-                removeBtn.addEventListener('click', function() {
-                    row.remove();
-                    recalculateTotal();
-                });
             });
 
             recalculateTotal();

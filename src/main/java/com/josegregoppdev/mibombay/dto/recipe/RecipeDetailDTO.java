@@ -32,6 +32,6 @@ public class RecipeDetailDTO {
     private BigDecimal totalCost;
 
     @Size(max = 200)
-    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\\s.,''():;\\-]*$", message = "The notes contain disallowed characters")
+    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\\s.,''()/:;\\-&+]*$", message = "The notes contain disallowed characters")
     private String notes;
 }

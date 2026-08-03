@@ -8,6 +8,7 @@ import com.josegregoppdev.mibombay.model.recipe.Recipe;
 import com.josegregoppdev.mibombay.model.recipe.RecipeDetail;
 import com.josegregoppdev.mibombay.repository.ingredient.IngredientRepository;
 import com.josegregoppdev.mibombay.repository.recipe.RecipeRepository;
+import com.josegregoppdev.mibombay.service.product.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class RecipeService {
     private final RecipeRepository recipeRepository;
     private final RecipeMapper recipeMapper;
     private final IngredientRepository ingredientRepository;
+    private final ProductService productService;
 
     @Transactional(readOnly = true)
     public Page<RecipeDTO> getPaginatedRecipes(String tenantId, String name, Pageable pageable) {
@@ -128,6 +130,7 @@ public class RecipeService {
 
         recipe.setProductionCost(calculateProductionCost(recipe.getDetails()));
         recipe = recipeRepository.save(recipe);
+        productService.syncProductCostsForRecipe(recipe.getId(), tenantId, recipe.getProductionCost());
         return recipeMapper.toDto(recipe);
     }
 

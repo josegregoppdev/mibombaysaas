@@ -1,11 +1,11 @@
-package com.josegregoppdev.mibombay.dto.ingredient;
+package com.josegregoppdev.mibombay.dto.product;
 
-import com.josegregoppdev.mibombay.model.ingredient.Category;
-import com.josegregoppdev.mibombay.model.ingredient.UnitOfMeasure;
+import com.josegregoppdev.mibombay.model.product.ProductCategory;
+import com.josegregoppdev.mibombay.model.product.ProductType;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class IngredientDTO {
+public class ProductDTO {
 
     private Long id;
 
@@ -37,22 +37,25 @@ public class IngredientDTO {
     @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\\s.,''()/:;\\-&+]*$", message = "The description contains disallowed characters")
     private String description;
 
-    private Category category;
+    private ProductCategory category;
 
-    @NotNull(message = "The unit of measure is required")
-    private UnitOfMeasure unitOfMeasure;
+    @NotNull(message = "The product type is required")
+    private ProductType productType;
+
+    @NotNull(message = "The selling price is required")
+    @PositiveOrZero(message = "The selling price cannot be negative")
+    @Digits(integer = 8, fraction = 4, message = "Maximum 8 integer digits and 4 decimals")
+    private BigDecimal sellingPrice;
 
     @PositiveOrZero(message = "The unit cost cannot be negative")
     @Digits(integer = 8, fraction = 4, message = "Maximum 8 integer digits and 4 decimals")
-    private BigDecimal currentUnitCost;
+    private BigDecimal unitCost;
 
-    @PositiveOrZero(message = "The current stock cannot be negative")
-    @Digits(integer = 8, fraction = 4, message = "Maximum 8 integer digits and 4 decimals")
-    private BigDecimal currentStock;
+    private Long recipeId;
 
-    @PositiveOrZero(message = "The minimum stock cannot be negative")
-    @Digits(integer = 8, fraction = 4, message = "Maximum 8 integer digits and 4 decimals")
-    private BigDecimal minimumStock;
+    private String recipeName;
+
+    private BigDecimal recipeProductionCost;
 
     private Boolean active;
 }

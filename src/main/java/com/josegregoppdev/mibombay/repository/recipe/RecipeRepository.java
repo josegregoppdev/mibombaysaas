@@ -14,7 +14,11 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
 
     Page<Recipe> findByTenantId(String tenantId, Pageable pageable);
 
+    Page<Recipe> findByTenantIdAndActiveTrue(String tenantId, Pageable pageable);
+
     Optional<Recipe> findByIdAndTenantId(Long id, String tenantId);
+
+    Optional<Recipe> findByCodeAndTenantId(String code, String tenantId);
 
     boolean existsByCodeAndTenantId(String code, String tenantId);
 

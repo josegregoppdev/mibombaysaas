@@ -17,7 +17,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.math.BigDecimal;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -37,6 +37,9 @@ class RecipeServiceTest {
 
     @Mock
     private IngredientRepository ingredientRepository;
+
+    @Mock
+    private com.josegregoppdev.mibombay.service.product.ProductService productService;
 
     @InjectMocks
     private RecipeService recipeService;
