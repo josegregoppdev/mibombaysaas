@@ -1,0 +1,87 @@
+# August 2, 2026
+
+## Daily Summary
+
+### Product Module
+- Created `ProductType` enum: CON_RECETA, SIN_RECETA, ADICIONAL
+- Created `ProductCategory` enum: FOOD, DRINKS, DESSERTS, SIDES, COMBOS, OTHERS
+- Created `Product` entity with optional `@ManyToOne Recipe` relationship
+- Created `ProductDTO` with validations
+- Created `ProductMapper`, `ProductRepository`, `ProductService`, `ProductController`
+- Created templates: `list.html` with ProductType filter, `form.html` with dynamic recipe/cost toggling
+- Added ProductType filter to product list (3 filters: name, category, type)
+- Product form dynamically shows/hides recipe dropdown and unitCost based on product type
+- Margin calculation displayed in form (sellingPrice - cost)
+- Added 7 demo products to InitialDataConfig: 3 CON_RECETA, 2 SIN_RECETA, 2 ADICIONAL
+- 27 tests added (16 service + 13 controller)
+
+### Recipe-Product Cost Sync
+- When a recipe is updated, all linked products automatically get their `unitCost` updated
+- Added `syncProductCostsForRecipe()` method to `ProductService`
+- `RecipeService.updateExistingRecipe()` calls sync after saving
+- Atomic operation within same transaction
+
+### Combo Module
+- Created `Combo` entity with `@OneToMany ComboDetail`
+- Created `ComboDetail` entity linking to Product with quantity
+- Created `ComboDTO`, `ComboDetailDTO`, `ComboMapper`, `ComboRepository`
+- Created `ComboService` with total cost calculation
+- Created `ComboController` with 6 endpoints
+- Created templates: `list.html` with margin display, `form.html` with dynamic product table
+- Added 2 demo combos to InitialDataConfig
+- 26 tests added (14 service + 12 controller)
+
+### Sales (POS) Module
+- Created `SaleState` enum: EN_ESPERA, CONFIRMADA, ANULADA
+- Created `PaymentMethod` enum: EFECTIVO, DATAFONO, TRANSFERENCIA
+- Created `Sale` entity with `@OneToMany SaleDetail` and `@ManyToOne User` (cashier)
+- Created `SaleDetail` entity with frozen product name, price, and cost (historical snapshot)
+- Created `SaleDTO`, `SaleDetailDTO`, `SaleMapper`, `SaleRepository`
+- Created `SaleService` with cart management, hold/confirm/cancel flows
+- Created `SaleController` with 9 endpoints (POS, add/remove/confirm/hold/cancel, on-hold, history)
+- Created POS template: full-screen interface with search, category tabs, dark cart panel, payment modal
+- Created on-hold template: amber accent cards with resume/delete
+- Created history template: responsive cards on phone, table on desktop
+- Created detail template: receipt-style layout
+- CASHIER role can access POS (added to SecurityConfig)
+- Cart stored in HTTP session (not database)
+
+### Bug Fixes
+- Fixed `@Valid` on `List<RecipeDetailDTO>` — changed to `List<@Valid RecipeDetailDTO>` (Jakarta Bean Validation 3.1 syntax)
+- Fixed description/notes regex pattern to allow `/ : & +` characters
+- Removed redundant `@NotNull` from RecipeDetailDTO (service already handles nulls)
+- Restored initial empty detail row in RecipeController showForm()
+
+### Tests
+- Total: 139 tests (up from 112)
+- All tests passing: BUILD SUCCESS
+
+### Files Created Today
+- 3 enums: ProductType, ProductCategory, SaleState, PaymentMethod (4 total)
+- 4 entities: Product, Combo, ComboDetail, Sale, SaleDetail (5 total)
+- 4 DTOs: ProductDTO, ComboDTO, ComboDetailDTO, SaleDTO, SaleDetailDTO (5 total)
+- 4 mappers: ProductMapper, ComboMapper, SaleMapper (3 total)
+- 4 repositories: ProductRepository, ComboRepository, SaleRepository (3 total)
+- 4 services: ProductService, ComboService, SaleService (3 total)
+- 4 controllers: ProductController, ComboController, SaleController (3 total)
+- 10 templates: product/list, product/form, combo/list, combo/form, sale/pos, sale/on-hold, sale/history, sale/detail (8 total)
+- 6 test files: ProductServiceTest, ComboServiceTest, SaleServiceTest, ProductControllerTest, ComboControllerTest, SaleControllerTest (6 total)
+
+### Files Modified Today
+- SecurityConfig.java — added /product/**, /combo/**, /sale/** rules
+- sidebar.html — added Products, Combos, POS links
+- InitialDataConfig.java — added 7 products, 2 combos, RecipeRepository/ProductRepository methods
+- TestDataFactory.java — added Product, Combo factory methods
+- RecipeDTO.java — fixed @Valid cascading
+- RecipeDetailDTO.java — fixed regex pattern
+- IngredientDTO.java — fixed regex pattern
+- ProductDTO.java — fixed regex pattern
+- RecipeRepository.java — added findByCodeAndTenantId, findByTenantIdAndActiveTrue
+- ProductRepository.java — added findByCodeAndTenantId
+- RecipeService.java — added ProductService dependency for cost sync
+
+## Pending for next session
+
+- Tables module (tables, rooms, availability management)
+- Adiciones module (add-on product groups)
+- Inventory module (stock management, movements)

@@ -40,31 +40,41 @@ com.josegregoppdev.mibombay
 │   ├── company/               # Company
 │   ├── ingredient/            # Category (enum), Ingredient, UnitOfMeasure (enum)
 │   ├── recipe/                # Recipe, RecipeDetail
-│   └── product/               # Product, ProductType (enum), ProductCategory (enum)
+│   ├── product/               # Product, ProductType (enum), ProductCategory (enum)
+│   ├── combo/                 # Combo, ComboDetail
+│   └── sale/                  # Sale, SaleDetail, SaleState (enum), PaymentMethod (enum)
 ├── dto/                       # DTOs with validations
 │   ├── company/               # CompanyDTORequest, CompanyDTOResponse
 │   ├── user/                  # UserDTORequest, UserDTOResponse
 │   ├── ingredient/            # IngredientDTO
 │   ├── recipe/                # RecipeDTO, RecipeDetailDTO
-│   └── product/               # ProductDTO
+│   ├── product/               # ProductDTO
+│   ├── combo/                 # ComboDTO, ComboDetailDTO
+│   └── sale/                  # SaleDTO, SaleDetailDTO
 ├── mapper/                    # MapStruct Mappers
 │   ├── company/               # CompanyMapper
 │   ├── user/                  # UserMapper
 │   ├── ingredient/            # IngredientMapper
 │   ├── recipe/                # RecipeMapper
-│   └── product/               # ProductMapper
+│   ├── product/               # ProductMapper
+│   ├── combo/                 # ComboMapper
+│   └── sale/                  # SaleMapper
 ├── repository/                # Spring Data JPA repositories
 │   ├── user/                  # UserRepository
 │   ├── company/               # CompanyRepository
 │   ├── ingredient/            # IngredientRepository
 │   ├── recipe/                # RecipeRepository
-│   └── product/               # ProductRepository
+│   ├── product/               # ProductRepository
+│   ├── combo/                 # ComboRepository
+│   └── sale/                  # SaleRepository
 ├── service/                   # business logic
 │   ├── user/                  # CustomUserDetailsService, PasswordGeneratorService
 │   ├── company/               # CompanyRegistrationService
 │   ├── ingredient/            # IngredientService
 │   ├── recipe/                # RecipeService
-│   └── product/               # ProductService
+│   ├── product/               # ProductService
+│   ├── combo/                 # ComboService
+│   └── sale/                  # SaleService
 ├── controller/                # web controllers
 │   ├── landing/               # LandingController
 │   ├── auth/                  # LoginController, PasswordChangeController
@@ -73,7 +83,9 @@ com.josegregoppdev.mibombay
 │   ├── admin/                 # AdminController
 │   ├── ingredient/            # IngredientController
 │   ├── recipe/                # RecipeController
-│   └── product/               # ProductController
+│   ├── product/               # ProductController
+│   ├── combo/                 # ComboController
+│   └── sale/                  # SaleController (POS, on-hold, history)
 └── config/                    # Spring configurations
     ├── SecurityConfig.java
     ├── PasswordEncoderConfig.java
@@ -157,6 +169,7 @@ Real properties files are in `.gitignore`.
 | `IngredientServiceTest` | 15 |
 | `RecipeServiceTest` | 14 |
 | `ProductServiceTest` | 16 |
+| `ComboServiceTest` | 14 |
 | `LandingControllerTest` | 1 |
 | `LoginControllerTest` | 6 |
 | `PasswordChangeControllerTest` | 4 |
@@ -166,8 +179,9 @@ Real properties files are in `.gitignore`.
 | `IngredientControllerTest` | 13 |
 | `RecipeControllerTest` | 13 |
 | `ProductControllerTest` | 13 |
+| `ComboControllerTest` | 12 |
 | `MibombayApplicationTests` | 1 |
-| Total | 112 |
+| Total | 139 |
 
 ```bash
 ./mvnw test
@@ -241,3 +255,8 @@ Layout with left sidebar (`col-md-3 col-lg-2`) + main content (`col-md-9 col-lg-
 - **Product types**: `ProductType` enum (CON_RECETA, SIN_RECETA, ADICIONAL) — single Product entity differentiated by type
 - **Product-Recipe relationship**: optional `@ManyToOne` — CON_RECETA requires recipe, SIN_RECETA has none, ADICIONAL is optional
 - **Product categories**: `ProductCategory` enum (FOOD, DRINKS, DESSERTS, SIDES, COMBOS, OTHERS)
+- **Combo**: groups products sold together. `ComboDetail` links to Product with quantity. Total cost = sum of product costs × quantities
+- **Sale states**: `SaleState` enum (EN_ESPERA, CONFIRMADA, ANULADA). Confirmed sales are immutable
+- **Payment methods**: `PaymentMethod` enum (EFECTIVO, DATAFONO, TRANSFERENCIA)
+- **POS**: full-screen interface at `/sale/pos`. Cart stored in HTTP session. Products frozen at sale time (historical snapshot)
+- **Recipe-Product cost sync**: when a recipe is updated, all linked products automatically get their `unitCost` updated via `ProductService.syncProductCostsForRecipe()`

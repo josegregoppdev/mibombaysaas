@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales History - MiBombay</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .sh-badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.72rem; font-weight: 600; }
+        .sh-badge.confirmed { background: #d4edda; color: #155724; }
+        .sh-badge.cancelled { background: #f8d7da; color: #721c24; }
+        .sh-badge.onhold { background: #fff3cd; color: #856404; }
+
+        .sh-card-mobile { display: none; }
+        @media (max-width: 767.98px) {
+            .sh-card-mobile { display: block; }
+            .sh-table-desktop { display: none; }
+        }
+        .sh-card { border: none; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 0.75rem; }
+        .sh-card .card-body { padding: 0.75rem; }
+        .sh-card-row { display: flex; justify-content: space-between; align-items: center; }
+        .sh-card-id { font-weight: 700; color: var(--mb-blue-900); font-size: 0.9rem; }
+        .sh-card-date { font-size: 0.75rem; color: #6c757d; }
+        .sh-card-total { font-size: 1.1rem; font-weight: 700; color: var(--mb-blue-900); }
+        .sh-card-info { display: flex; gap: 0.75rem; font-size: 0.78rem; color: #6c757d; margin-top: 0.4rem; }
+        .sh-empty { text-align: center; padding: 3rem 1rem; }
+        .sh-empty i { font-size: 3rem; color: #dee2e6; display: block; margin-bottom: 0.75rem; }
+    </style>
+</head>
+<body class="mb-dashboard">
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+    <div th:replace="~{fragments/sidebar :: sidebarOffcanvas}"></div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 d-none d-md-block mb-sidebar-col">
+                <div th:replace="~{fragments/sidebar :: sidebarInline}"></div>
+            </div>
+
+            <main class="col-md-9 col-lg-10 mb-main-col">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="display-6">Sales History</h1>
+                        <p class="lead text-muted">All confirmed and cancelled sales</p>
+                    </div>
+                    <a th:href="@{/sale/pos}" class="btn btn-primary">
+                        <i class="bi bi-arrow-left me-2"></i>Back to POS
+                    </a>
+                </div>
+
+                <div th:if="${page.totalElements == 0}" class="sh-empty">
+                    <i class="bi bi-receipt"></i>
+                    <p class="fs-5 fw-medium">No sales yet</p>
+                    <p class="text-muted small">Completed sales will appear here</p>
+                </div>
+
+                <!-- Mobile cards -->
+                <div class="sh-card-mobile">
+                    <div th:each="sale : ${page.content}" class="sh-card">
+                        <div class="card-body">
+                            <div class="sh-card-row">
+                                <div>
+                                    <div class="sh-card-id" th:text="'#' + ${sale.id}">#1</div>
+                                    <div class="sh-card-date" th:text="${#temporals.format(sale.saleDate, 'dd/MM/yyyy HH:mm')}">01/01/2026 12:00</div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="sh-card-total" th:text="'$' + ${sale.total}">$0.00</div>
+                                    <span th:if="${sale.state.name() == 'CONFIRMADA'}" class="sh-badge confirmed"><i class="bi bi-check-circle"></i>Confirmed</span>
+                                    <span th:if="${sale.state.name() == 'ANULADA'}" class="sh-badge cancelled"><i class="bi bi-x-circle"></i>Cancelled</span>
+                                </div>
+                            </div>
+                            <div class="sh-card-info">
+                                <span><i class="bi bi-person me-1"></i><span th:text="${sale.cashierName}">Cashier</span></span>
+                                <span th:if="${sale.paymentMethod}"><i class="bi bi-credit-card me-1"></i><span th:text="${sale.paymentMethod.displayName}">Method</span></span>
+                                <span><i class="bi bi-bag me-1"></i><span th:text="${sale.details.size()}">0</span> items</span>
+                            </div>
+                            <div class="mt-2">
+                                <a th:href="@{/sale/history/{id}(id=${sale.id})}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye me-1"></i>View details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desktop table -->
+                <div class="sh-table-desktop card border-0 shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width:60px">#</th>
+                                        <th>Date</th>
+                                        <th>Cashier</th>
+                                        <th class="text-center">Items</th>
+                                        <th class="text-end">Total</th>
+                                        <th>Payment</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="sale : ${page.content}">
+                                        <td class="fw-bold" th:text="${sale.id}">1</td>
+                                        <td>
+                                            <div th:text="${#temporals.format(sale.saleDate, 'dd/MM/yyyy')}">01/01/2026</div>
+                                            <small class="text-muted" th:text="${#temporals.format(sale.saleDate, 'HH:mm')}">12:00</small>
+                                        </td>
+                                        <td th:text="${sale.cashierName}">Cashier</td>
+                                        <td class="text-center" th:text="${sale.details.size()}">0</td>
+                                        <td class="text-end fw-bold" th:text="'$' + ${sale.total}">$0.00</td>
+                                        <td th:text="${sale.paymentMethod?.displayName ?: '---'}">---</td>
+                                        <td>
+                                            <span th:if="${sale.state.name() == 'CONFIRMADA'}" class="sh-badge confirmed"><i class="bi bi-check-circle"></i>Confirmed</span>
+                                            <span th:if="${sale.state.name() == 'ANULADA'}" class="sh-badge cancelled"><i class="bi bi-x-circle"></i>Cancelled</span>
+                                            <span th:if="${sale.state.name() == 'EN_ESPERA'}" class="sh-badge onhold"><i class="bi bi-clock"></i>On Hold</span>
+                                        </td>
+                                        <td>
+                                            <a th:href="@{/sale/history/{id}(id=${sale.id})}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <nav th:if="${page.totalPages > 1}" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:classappend="${page.first} ? 'disabled'">
+                            <a class="page-link" th:href="@{/sale/history(page=0)}">&laquo;</a>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
+                            th:classappend="${i == page.number} ? 'active'">
+                            <a class="page-link" th:href="@{/sale/history(page=${i})}" th:text="${i + 1}">1</a>
+                        </li>
+                        <li class="page-item" th:classappend="${page.last} ? 'disabled'">
+                            <a class="page-link" th:href="@{/sale/history(page=${page.totalPages - 1})}">&raquo;</a>
+                        </li>
+                    </ul>
+                </nav>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/app.js}"></script>
+</body>
+</html>
