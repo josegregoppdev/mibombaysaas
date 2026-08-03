@@ -3,6 +3,8 @@ package com.josegregoppdev.mibombay.testdata;
 import com.josegregoppdev.mibombay.dto.company.CompanyDTORequest;
 import com.josegregoppdev.mibombay.dto.company.CompanyDTOResponse;
 import com.josegregoppdev.mibombay.dto.ingredient.IngredientDTO;
+import com.josegregoppdev.mibombay.dto.combo.ComboDTO;
+import com.josegregoppdev.mibombay.dto.combo.ComboDetailDTO;
 import com.josegregoppdev.mibombay.dto.product.ProductDTO;
 import com.josegregoppdev.mibombay.dto.recipe.RecipeDTO;
 import com.josegregoppdev.mibombay.dto.recipe.RecipeDetailDTO;
@@ -10,6 +12,8 @@ import com.josegregoppdev.mibombay.model.company.Company;
 import com.josegregoppdev.mibombay.model.ingredient.Category;
 import com.josegregoppdev.mibombay.model.ingredient.Ingredient;
 import com.josegregoppdev.mibombay.model.ingredient.UnitOfMeasure;
+import com.josegregoppdev.mibombay.model.combo.Combo;
+import com.josegregoppdev.mibombay.model.combo.ComboDetail;
 import com.josegregoppdev.mibombay.model.product.Product;
 import com.josegregoppdev.mibombay.model.product.ProductCategory;
 import com.josegregoppdev.mibombay.model.product.ProductType;
@@ -293,6 +297,65 @@ public class TestDataFactory {
                 .productType(ProductType.SIN_RECETA)
                 .sellingPrice(new BigDecimal("5.0000"))
                 .unitCost(new BigDecimal("3.0000"))
+                .active(false)
+                .build();
+    }
+
+    // -- Combo factory methods --
+
+    public static ComboDTO createComboDTO() {
+        ComboDetailDTO detail = ComboDetailDTO.builder()
+                .productId(1L)
+                .quantity(new BigDecimal("1"))
+                .unitCost(new BigDecimal("1.5500"))
+                .totalCost(new BigDecimal("1.5500"))
+                .build();
+
+        return ComboDTO.builder()
+                .code("COM-001")
+                .name("Hamburger + Fries Combo")
+                .description("Classic hamburger with french fries")
+                .sellingPrice(new BigDecimal("15.0000"))
+                .totalCost(new BigDecimal("1.5500"))
+                .active(true)
+                .details(List.of(detail))
+                .build();
+    }
+
+    public static Combo createCombo() {
+        Product product = createProduct();
+
+        ComboDetail detail = ComboDetail.builder()
+                .id(1L)
+                .product(product)
+                .quantity(new BigDecimal("1"))
+                .unitCost(new BigDecimal("1.5500"))
+                .totalCost(new BigDecimal("1.5500"))
+                .build();
+
+        Combo combo = Combo.builder()
+                .id(1L)
+                .tenantId(TENANT_ID)
+                .code("COM-001")
+                .name("Hamburger + Fries Combo")
+                .description("Classic hamburger with french fries")
+                .sellingPrice(new BigDecimal("15.0000"))
+                .totalCost(new BigDecimal("1.5500"))
+                .active(true)
+                .build();
+        detail.setCombo(combo);
+        combo.setDetails(new ArrayList<>(List.of(detail)));
+        return combo;
+    }
+
+    public static Combo createInactiveCombo() {
+        return Combo.builder()
+                .id(2L)
+                .tenantId(TENANT_ID)
+                .code("COM-002")
+                .name("Old Combo")
+                .sellingPrice(new BigDecimal("10.0000"))
+                .totalCost(new BigDecimal("5.0000"))
                 .active(false)
                 .build();
     }

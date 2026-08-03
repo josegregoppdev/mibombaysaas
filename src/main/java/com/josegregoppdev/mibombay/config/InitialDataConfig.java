@@ -4,6 +4,8 @@ import com.josegregoppdev.mibombay.model.company.Company;
 import com.josegregoppdev.mibombay.model.ingredient.Category;
 import com.josegregoppdev.mibombay.model.ingredient.Ingredient;
 import com.josegregoppdev.mibombay.model.ingredient.UnitOfMeasure;
+import com.josegregoppdev.mibombay.model.combo.Combo;
+import com.josegregoppdev.mibombay.model.combo.ComboDetail;
 import com.josegregoppdev.mibombay.model.product.Product;
 import com.josegregoppdev.mibombay.model.product.ProductCategory;
 import com.josegregoppdev.mibombay.model.product.ProductType;
@@ -12,6 +14,7 @@ import com.josegregoppdev.mibombay.model.recipe.RecipeDetail;
 import com.josegregoppdev.mibombay.model.user.Role;
 import com.josegregoppdev.mibombay.model.user.User;
 import com.josegregoppdev.mibombay.repository.company.CompanyRepository;
+import com.josegregoppdev.mibombay.repository.combo.ComboRepository;
 import com.josegregoppdev.mibombay.repository.ingredient.IngredientRepository;
 import com.josegregoppdev.mibombay.repository.product.ProductRepository;
 import com.josegregoppdev.mibombay.repository.recipe.RecipeRepository;
@@ -40,6 +43,7 @@ public class InitialDataConfig implements CommandLineRunner {
     private final IngredientRepository ingredientRepository;
     private final RecipeRepository recipeRepository;
     private final ProductRepository productRepository;
+    private final ComboRepository comboRepository;
     private final PasswordEncoder passwordEncoder;
     private final PasswordGeneratorService passwordGeneratorService;
 
@@ -124,6 +128,7 @@ public class InitialDataConfig implements CommandLineRunner {
         createDemoIngredients(tenantId);
         createDemoRecipes(tenantId);
         createDemoProducts(tenantId);
+        createDemoCombos(tenantId);
     }
 
     private void createDemoIngredients(String tenantId) {
@@ -299,6 +304,76 @@ public class InitialDataConfig implements CommandLineRunner {
 
         productRepository.saveAll(products);
         log.info("7 demo products created: 3 with recipe, 2 without recipe, 2 add-ons");
+    }
+
+    private void createDemoCombos(String tenantId) {
+        if (comboRepository.existsByCodeAndTenantId("COM-001", tenantId)) {
+            log.debug("Demo combos already exist");
+            return;
+        }
+
+        Product hamburger = productRepository.findByCodeAndTenantId("PROD-001", tenantId).orElseThrow();
+        Product hotDog = productRepository.findByCodeAndTenantId("PROD-002", tenantId).orElseThrow();
+        Product fries = productRepository.findByCodeAndTenantId("PROD-003", tenantId).orElseThrow();
+        Product cola = productRepository.findByCodeAndTenantId("PROD-004", tenantId).orElseThrow();
+        Product water = productRepository.findByCodeAndTenantId("PROD-005", tenantId).orElseThrow();
+
+        Combo combo1 = buildCombo(tenantId, "COM-001", "Hamburger + Fries Combo",
+                "Classic hamburger with french fries and cola",
+                new BigDecimal("15.0000"),
+                List.of(
+                        buildComboDetail(hamburger, new BigDecimal("1"), null),
+                        buildComboDetail(fries, new BigDecimal("1"), null),
+                        buildComboDetail(cola, new BigDecimal("1"), null)
+                ));
+
+        Combo combo2 = buildCombo(tenantId, "COM-002", "Hot Dog + Fries Combo",
+                "Classic hot dog with french fries and mineral water",
+                new BigDecimal("12.0000"),
+                List.of(
+                        buildComboDetail(hotDog, new BigDecimal("1"), null),
+                        buildComboDetail(fries, new BigDecimal("1"), null),
+                        buildComboDetail(water, new BigDecimal("1"), null)
+                ));
+
+        comboRepository.saveAll(List.of(combo1, combo2));
+        log.info("2 demo combos created: Hamburger + Fries Combo, Hot Dog + Fries Combo");
+    }
+
+    private Combo buildCombo(String tenantId, String code, String name, String description,
+                             BigDecimal sellingPrice, List<ComboDetail> details) {
+        BigDecimal totalCost = details.stream()
+                .map(ComboDetail::getTotalCost)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        Combo combo = Combo.builder()
+                .tenantId(tenantId)
+                .code(code)
+                .name(name)
+                .description(description)
+                .sellingPrice(sellingPrice)
+                .totalCost(totalCost)
+                .active(true)
+                .details(new ArrayList<>())
+                .build();
+
+        for (ComboDetail detail : details) {
+            detail.setCombo(combo);
+            combo.getDetails().add(detail);
+        }
+
+        return combo;
+    }
+
+    private ComboDetail buildComboDetail(Product product, BigDecimal quantity, String notes) {
+        BigDecimal totalCost = quantity.multiply(product.getUnitCost()).setScale(4, RoundingMode.HALF_UP);
+        return ComboDetail.builder()
+                .product(product)
+                .quantity(quantity)
+                .unitCost(product.getUnitCost())
+                .totalCost(totalCost)
+                .notes(notes)
+                .build();
     }
 
     private Recipe buildRecipe(String tenantId, String code, String name, String description,

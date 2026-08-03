@@ -33,6 +33,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole("SUPER_ADMIN")
                         .requestMatchers("/ingredient/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                         .requestMatchers("/product/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                        .requestMatchers("/combo/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

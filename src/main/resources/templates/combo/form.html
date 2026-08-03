@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${combo.id} ? 'Edit combo' : 'New combo'">Combo - MiBombay</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body class="mb-dashboard">
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+    <div th:replace="~{fragments/sidebar :: sidebarOffcanvas}"></div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 d-none d-md-block mb-sidebar-col">
+                <div th:replace="~{fragments/sidebar :: sidebarInline}"></div>
+            </div>
+
+            <main class="col-md-9 col-lg-10 mb-main-col">
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <span th:text="${error}">Error</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div class="mb-dashboard-header">
+                    <h1 class="display-6" th:text="${combo.id} ? 'Edit combo' : 'New combo'">Title</h1>
+                    <p class="lead text-muted">Complete the form fields</p>
+                </div>
+
+                <form th:action="${combo.id} ? @{/combo/{id}(id=${combo.id})} : @{/combo}"
+                      th:object="${combo}" method="post">
+
+                    <!-- Combo Information -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <h5 class="card-title mb-3">
+                                <i class="bi bi-info-circle text-primary me-2"></i>Combo information
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label for="code" class="form-label">Code</label>
+                                    <input type="text" class="form-control" id="code"
+                                           th:field="*{code}"
+                                           th:classappend="${#fields.hasErrors('code')} ? 'is-invalid'"
+                                           placeholder="E.g.: COM-001">
+                                    <div class="invalid-feedback" th:each="err : ${#fields.errors('code')}" th:text="${err}">Error</div>
+                                </div>
+
+                                <div class="col-md-9">
+                                    <label for="name" class="form-label">Name</label>
+                                    <input type="text" class="form-control" id="name"
+                                           th:field="*{name}"
+                                           th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"
+                                           placeholder="E.g.: Hamburger + Fries Combo">
+                                    <div class="invalid-feedback" th:each="err : ${#fields.errors('name')}" th:text="${err}">Error</div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="description" rows="2"
+                                              th:field="*{description}"
+                                              th:classappend="${#fields.hasErrors('description')} ? 'is-invalid'"
+                                              placeholder="Optional description"></textarea>
+                                    <div class="invalid-feedback" th:each="err : ${#fields.errors('description')}" th:text="${err}">Error</div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label for="sellingPrice" class="form-label">Selling price</label>
+                                    <input type="number" step="0.0001" min="0" max="99999999.9999"
+                                           class="form-control" id="sellingPrice"
+                                           th:field="*{sellingPrice}"
+                                           th:classappend="${#fields.hasErrors('sellingPrice')} ? 'is-invalid'"
+                                           placeholder="0.00">
+                                    <div class="invalid-feedback" th:each="err : ${#fields.errors('sellingPrice')}" th:text="${err}">Error</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Products Table -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-bag text-primary me-2"></i>Products
+                                </h5>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="addDetailBtn">
+                                    <i class="bi bi-plus-lg me-1"></i>Add product
+                                </button>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle" id="detailsTable">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 35%">Product</th>
+                                            <th style="width: 15%">Quantity</th>
+                                            <th style="width: 15%">Unit cost</th>
+                                            <th style="width: 15%">Total cost</th>
+                                            <th style="width: 15%">Notes</th>
+                                            <th style="width: 5%"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="detail, stat : *{details}" class="detail-row">
+                                            <td>
+                                                <select class="form-select form-select-sm product-select"
+                                                        th:field="*{details[__${stat.index}__].productId}"
+                                                        th:classappend="${#fields.hasErrors('details[__${stat.index}__].productId')} ? 'is-invalid'">
+                                                    <option value="">Select...</option>
+                                                    <option th:each="prod : ${products}"
+                                                            th:value="${prod.id}"
+                                                            th:text="${prod.name}"
+                                                            th:data-cost="${prod.unitCost}">Product</option>
+                                                </select>
+                                                <div class="invalid-feedback" th:each="err : ${#fields.errors('details[__${stat.index}__].productId')}" th:text="${err}">Error</div>
+                                            </td>
+                                            <td>
+                                                <input type="number" step="0.0001" min="0.0001" max="99999999.9999"
+                                                       class="form-control form-control-sm quantity-input"
+                                                       th:field="*{details[__${stat.index}__].quantity}"
+                                                       th:classappend="${#fields.hasErrors('details[__${stat.index}__].quantity')} ? 'is-invalid'">
+                                                <div class="invalid-feedback" th:each="err : ${#fields.errors('details[__${stat.index}__].quantity')}" th:text="${err}">Error</div>
+                                            </td>
+                                            <td>
+                                                <input type="number" step="0.0001" min="0" max="99999999.9999"
+                                                       class="form-control form-control-sm unit-cost-input" readonly>
+                                                <input type="hidden" class="unit-cost-hidden"
+                                                       th:field="*{details[__${stat.index}__].unitCost}">
+                                            </td>
+                                            <td>
+                                                <input type="number" step="0.0001" min="0" max="99999999.9999"
+                                                       class="form-control form-control-sm total-cost-input" readonly>
+                                                <input type="hidden" class="total-cost-hidden"
+                                                       th:field="*{details[__${stat.index}__].totalCost}">
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control form-control-sm"
+                                                       th:field="*{details[__${stat.index}__].notes}"
+                                                       placeholder="Optional">
+                                            </td>
+                                            <td>
+                                                <input type="hidden" th:field="*{details[__${stat.index}__].id}">
+                                                <button type="button" class="btn btn-sm btn-outline-danger remove-detail-btn">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="d-flex justify-content-end mt-3">
+                                <div class="text-end">
+                                    <span class="text-muted me-3">Total cost:</span>
+                                    <strong class="fs-5" id="totalComboCost">0.00</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Margin display -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-4">
+                                    <label class="form-label">Margin</label>
+                                    <div class="form-control-plaintext fw-bold" id="marginDisplay">0.0000</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-2"></i>
+                            <span th:text="${combo.id} ? 'Update' : 'Create'">Save</span>
+                        </button>
+                        <a th:href="@{/combo}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/app.js}"></script>
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            var products = /*[[${products.content}]]*/ [];
+            var table = document.getElementById('detailsTable');
+            var tbody = table.querySelector('tbody');
+            var addBtn = document.getElementById('addDetailBtn');
+            var rowIndex = tbody.querySelectorAll('.detail-row').length;
+
+            function buildProductOptions() {
+                var html = '<option value="">Select...</option>';
+                products.forEach(function(prod) {
+                    html += '<option value="' + prod.id + '"'
+                        + ' data-cost="' + prod.unitCost + '">'
+                        + prod.name + '</option>';
+                });
+                return html;
+            }
+
+            function recalculateTotal() {
+                var total = 0;
+                tbody.querySelectorAll('.detail-row').forEach(function(row) {
+                    var totalCostHidden = row.querySelector('.total-cost-hidden');
+                    if (totalCostHidden && totalCostHidden.value) {
+                        total += parseFloat(totalCostHidden.value) || 0;
+                    }
+                });
+                document.getElementById('totalComboCost').textContent = total.toFixed(4);
+                updateMargin(total);
+            }
+
+            function updateMargin(totalCost) {
+                var sellingPrice = parseFloat(document.getElementById('sellingPrice').value) || 0;
+                var margin = sellingPrice - totalCost;
+                var marginDisplay = document.getElementById('marginDisplay');
+                marginDisplay.textContent = margin.toFixed(4);
+                marginDisplay.className = 'form-control-plaintext fw-bold ' + (margin >= 0 ? 'text-success' : 'text-danger');
+            }
+
+            function updateDetailCalculations(row) {
+                var select = row.querySelector('.product-select');
+                var quantityInput = row.querySelector('.quantity-input');
+                var unitCostInput = row.querySelector('.unit-cost-input');
+                var unitCostHidden = row.querySelector('.unit-cost-hidden');
+                var totalCostInput = row.querySelector('.total-cost-input');
+                var totalCostHidden = row.querySelector('.total-cost-hidden');
+
+                if (select.value) {
+                    var option = select.options[select.selectedIndex];
+                    var cost = parseFloat(option.getAttribute('data-cost')) || 0;
+                    unitCostInput.value = cost.toFixed(4);
+                    unitCostHidden.value = cost;
+
+                    var quantity = parseFloat(quantityInput.value) || 0;
+                    var totalCost = quantity * cost;
+                    totalCostInput.value = totalCost.toFixed(4);
+                    totalCostHidden.value = totalCost;
+                } else {
+                    unitCostInput.value = '';
+                    unitCostHidden.value = '';
+                    totalCostInput.value = '';
+                    totalCostHidden.value = '';
+                }
+                recalculateTotal();
+            }
+
+            function bindRowEvents(row) {
+                var select = row.querySelector('.product-select');
+                var quantityInput = row.querySelector('.quantity-input');
+                var removeBtn = row.querySelector('.remove-detail-btn');
+
+                select.addEventListener('change', function() { updateDetailCalculations(row); });
+                quantityInput.addEventListener('input', function() { updateDetailCalculations(row); });
+                removeBtn.addEventListener('click', function() {
+                    row.remove();
+                    recalculateTotal();
+                });
+            }
+
+            tbody.querySelectorAll('.detail-row').forEach(function(row) {
+                bindRowEvents(row);
+                var quantityInput = row.querySelector('.quantity-input');
+                var select = row.querySelector('.product-select');
+                if (quantityInput.value && select.value) {
+                    updateDetailCalculations(row);
+                }
+            });
+
+            document.getElementById('sellingPrice').addEventListener('input', function() {
+                var totalCost = 0;
+                tbody.querySelectorAll('.detail-row').forEach(function(row) {
+                    var totalCostHidden = row.querySelector('.total-cost-hidden');
+                    if (totalCostHidden && totalCostHidden.value) {
+                        totalCost += parseFloat(totalCostHidden.value) || 0;
+                    }
+                });
+                updateMargin(totalCost);
+            });
+
+            addBtn.addEventListener('click', function() {
+                var newRow = document.createElement('tr');
+                newRow.className = 'detail-row';
+                newRow.innerHTML =
+                    '<td>'
+                    + '<select class="form-select form-select-sm product-select" name="details[' + rowIndex + '].productId">'
+                    + buildProductOptions()
+                    + '</select>'
+                    + '</td>'
+                    + '<td>'
+                    + '<input type="number" step="0.0001" min="0.0001" max="99999999.9999" class="form-control form-control-sm quantity-input" name="details[' + rowIndex + '].quantity">'
+                    + '</td>'
+                    + '<td>'
+                    + '<input type="number" step="0.0001" min="0" max="99999999.9999" class="form-control form-control-sm unit-cost-input" readonly>'
+                    + '<input type="hidden" class="unit-cost-hidden" name="details[' + rowIndex + '].unitCost">'
+                    + '</td>'
+                    + '<td>'
+                    + '<input type="number" step="0.0001" min="0" max="99999999.9999" class="form-control form-control-sm total-cost-input" readonly>'
+                    + '<input type="hidden" class="total-cost-hidden" name="details[' + rowIndex + '].totalCost">'
+                    + '</td>'
+                    + '<td>'
+                    + '<input type="text" class="form-control form-control-sm" name="details[' + rowIndex + '].notes" placeholder="Optional">'
+                    + '</td>'
+                    + '<td>'
+                    + '<input type="hidden" name="details[' + rowIndex + '].id">'
+                    + '<button type="button" class="btn btn-sm btn-outline-danger remove-detail-btn"><i class="bi bi-trash"></i></button>'
+                    + '</td>';
+                tbody.appendChild(newRow);
+                bindRowEvents(newRow);
+                rowIndex++;
+            });
+
+            recalculateTotal();
+        });
+    </script>
+</body>
+</html>

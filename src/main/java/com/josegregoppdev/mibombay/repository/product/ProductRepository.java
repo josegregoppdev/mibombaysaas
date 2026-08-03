@@ -22,6 +22,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Optional<Product> findByIdAndTenantId(Long id, String tenantId);
 
+    Optional<Product> findByCodeAndTenantId(String code, String tenantId);
+
     boolean existsByCodeAndTenantId(String code, String tenantId);
 
     boolean existsByNameAndTenantId(String name, String tenantId);
