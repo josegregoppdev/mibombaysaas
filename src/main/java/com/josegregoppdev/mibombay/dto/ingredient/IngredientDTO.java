@@ -34,7 +34,7 @@ public class IngredientDTO {
     private String name;
 
     @Size(max = 500)
-    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\\s.,''():;\\-]*$", message = "The description contains disallowed characters")
+    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\\s.,''()/:;\\-&+]*$", message = "The description contains disallowed characters")
     private String description;
 
     private Category category;

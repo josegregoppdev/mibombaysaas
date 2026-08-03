@@ -38,6 +38,9 @@ class RecipeServiceTest {
     @Mock
     private IngredientRepository ingredientRepository;
 
+    @Mock
+    private com.josegregoppdev.mibombay.service.product.ProductService productService;
+
     @InjectMocks
     private RecipeService recipeService;
 

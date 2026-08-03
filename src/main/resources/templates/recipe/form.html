@@ -239,10 +239,8 @@
                 select.addEventListener('change', function() { updateDetailCalculations(row); });
                 quantityInput.addEventListener('input', function() { updateDetailCalculations(row); });
                 removeBtn.addEventListener('click', function() {
-                    if (tbody.querySelectorAll('.detail-row').length > 1) {
-                        row.remove();
-                        recalculateTotal();
-                    }
+                    row.remove();
+                    recalculateTotal();
                 });
             }
 
@@ -291,10 +289,8 @@
             tbody.querySelectorAll('.detail-row').forEach(function(row) {
                 const removeBtn = row.querySelector('.remove-detail-btn');
                 removeBtn.addEventListener('click', function() {
-                    if (tbody.querySelectorAll('.detail-row').length > 1) {
-                        row.remove();
-                        recalculateTotal();
-                    }
+                    row.remove();
+                    recalculateTotal();
                 });
             });
 

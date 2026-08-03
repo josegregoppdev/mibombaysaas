@@ -14,6 +14,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -101,6 +104,15 @@ public class ProductService {
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
         product.setActive(!product.getActive());
         productRepository.save(product);
+    }
+
+    @Transactional
+    public void syncProductCostsForRecipe(Long recipeId, String tenantId, BigDecimal newProductionCost) {
+        List<Product> products = productRepository.findByRecipeIdAndTenantId(recipeId, tenantId);
+        for (Product product : products) {
+            product.setUnitCost(newProductionCost);
+            productRepository.save(product);
+        }
     }
 
     private void linkRecipe(Product product, ProductDTO dto) {
