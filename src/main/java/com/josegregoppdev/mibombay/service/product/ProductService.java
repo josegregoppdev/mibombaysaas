@@ -15,6 +15,8 @@ import com.josegregoppdev.mibombay.repository.product.ProductRepository;
 import com.josegregoppdev.mibombay.repository.recipe.RecipeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,6 +55,16 @@ public class ProductService {
     public Page<ProductDTO> getPaginatedActiveProducts(String tenantId, Pageable pageable) {
         return productRepository.findByTenantIdAndActiveTrue(tenantId, pageable)
                 .map(this::mapToDtoWithRecipeInfo);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductDTO> getPosProducts(String tenantId) {
+        Page<Product> page = productRepository.findByTenantIdAndActiveTrue(tenantId, PageRequest.of(0, 1000));
+        List<ProductDTO> filtered = page.getContent().stream()
+                .filter(p -> p.getProductType() != ProductType.ADICIONAL)
+                .map(this::mapToDtoWithRecipeInfo)
+                .toList();
+        return new PageImpl<>(filtered, page.getPageable(), filtered.size());
     }
 
     @Transactional(readOnly = true)

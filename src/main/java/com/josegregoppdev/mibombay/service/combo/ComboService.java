@@ -10,6 +10,8 @@ import com.josegregoppdev.mibombay.repository.combo.ComboRepository;
 import com.josegregoppdev.mibombay.repository.product.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +39,16 @@ public class ComboService {
     @Transactional(readOnly = true)
     public Page<ComboDTO> getPaginatedCombos(String tenantId, Pageable pageable) {
         return getPaginatedCombos(tenantId, null, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ComboDTO> getPosCombos(String tenantId) {
+        Page<Combo> page = comboRepository.findByTenantId(tenantId, PageRequest.of(0, 1000));
+        List<ComboDTO> active = page.getContent().stream()
+                .filter(Combo::getActive)
+                .map(this::mapToDtoWithDetails)
+                .toList();
+        return new PageImpl<>(active, page.getPageable(), active.size());
     }
 
     @Transactional(readOnly = true)

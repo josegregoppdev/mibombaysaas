@@ -6,9 +6,8 @@ import com.josegregoppdev.mibombay.dto.sale.SaleDTO;
 import com.josegregoppdev.mibombay.dto.sale.SaleDetailDTO;
 import com.josegregoppdev.mibombay.model.sale.PaymentMethod;
 import com.josegregoppdev.mibombay.model.user.User;
-import com.josegregoppdev.mibombay.repository.combo.ComboRepository;
-import com.josegregoppdev.mibombay.repository.product.ProductRepository;
 import com.josegregoppdev.mibombay.repository.user.UserRepository;
+import com.josegregoppdev.mibombay.service.combo.ComboService;
 import com.josegregoppdev.mibombay.service.product.ProductService;
 import com.josegregoppdev.mibombay.service.sale.SaleService;
 import jakarta.servlet.http.HttpSession;
@@ -32,15 +31,14 @@ import java.util.List;
 public class SaleController {
 
     private final SaleService saleService;
-    private final ProductRepository productRepository;
-    private final ComboRepository comboRepository;
     private final UserRepository userRepository;
     private final ProductService productService;
+    private final ComboService comboService;
 
     @GetMapping("/pos")
     public String showPOS(Model model, HttpSession session) {
-        model.addAttribute("products", productRepository.findByTenantIdAndActiveTrue(tenantId(), org.springframework.data.domain.PageRequest.of(0, 1000)));
-        model.addAttribute("combos", comboRepository.findByTenantId(tenantId(), org.springframework.data.domain.PageRequest.of(0, 1000)));
+        model.addAttribute("products", productService.getPosProducts(tenantId()));
+        model.addAttribute("combos", comboService.getPosCombos(tenantId()));
         model.addAttribute("onHoldCount", saleService.getOnHoldSales(tenantId()).size());
         model.addAttribute("recipeData", productService.getRecipeDataForPos(tenantId()));
 

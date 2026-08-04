@@ -272,6 +272,7 @@ The `thymeleaf-restaurant` skill is the primary guide — it references HTMX and
 
 - Use Lombok annotations on entities/DTOs to reduce boilerplate
 - **DTOs**: `CompanyDTORequest`/`CompanyDTOResponse` for company, `UserDTORequest`/`UserDTOResponse` for user. The rest use simple `@RequestParam` without DTO
+- **Spring MVC + DTOs (form/view)**: This project uses Spring MVC. The form (Thymeleaf view) ALWAYS works with DTOs, never with JPA entities. Services return DTOs to the controller. The controller calls services, not repositories. Entities are never passed to the view.
 - **MapStruct**: `@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)` in interfaces inside `mapper/`
 - **Entities**: no Javax/Jakarta validations, JPA annotations only
 - **Validations**: in DTOs, not in entities
