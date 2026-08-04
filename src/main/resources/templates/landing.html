@@ -3,137 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MiBombay - Frictionless management for your restaurant</title>
+    <title>MiBombay — Restaurant management that moves at your pace</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body class="mb-landing">
     <div th:replace="~{fragments/navbar :: navbar}"></div>
-    
+
     <main class="mb-main">
+        <!-- Hero -->
         <section class="mb-hero">
             <div class="container">
-                <div class="row align-items-center min-vh-75">
+                <div class="row align-items-center g-5">
                     <div class="col-lg-7">
                         <h1 class="mb-hero-title">
-                            <em class="text-amber">Frictionless</em> management<br>
-                            for your restaurant
+                            Run your restaurant<br>
+                            <em>without friction</em>
                         </h1>
-                        <p class="lead mb-4 text-muted">
-                            Manage tables, menu and orders from one place.<br>
-                            Start free in two minutes.
+                        <p class="mb-hero-subtitle">
+                            One place for your menu, orders, and sales. Built for
+                            small restaurants that need speed, not complexity.
                         </p>
                         <div class="d-flex gap-3 flex-wrap">
                             <a th:href="@{/registration}" class="btn btn-amber btn-lg">
-                                <i class="bi bi-rocket-takeoff me-2"></i>Create my company
+                                <i class="bi bi-rocket-takeoff"></i>Create my company
                             </a>
-                            <a th:href="@{/login}" class="btn btn-outline-primary btn-lg">
+                            <a th:href="@{/login}" class="btn btn-outline-light btn-lg">
                                 I already have an account
                             </a>
                         </div>
                     </div>
                     <div class="col-lg-5 d-none d-lg-block">
                         <div class="mb-hero-visual">
-                            <div class="card mb-card-feature">
-                                <div class="card-body">
-                                    <i class="bi bi-grid-3x3-gap-fill text-amber fs-1"></i>
-                                    <h5 class="mt-3">Organized tables</h5>
-                                    <p class="text-muted mb-0">Visual control of each table's status</p>
-                                </div>
+                            <div class="mb-hero-card">
+                                <div class="stat-value">2 min</div>
+                                <div class="stat-label">to get started</div>
+                                <div class="divider"></div>
+                                <ul class="feature-list">
+                                    <li><i class="bi bi-check-circle-fill"></i> Create your company</li>
+                                    <li><i class="bi bi-check-circle-fill"></i> Set up your menu</li>
+                                    <li><i class="bi bi-check-circle-fill"></i> Start selling</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
-        
-        <section class="py-5 bg-light">
+
+        <!-- Features -->
+        <section class="mb-features">
             <div class="container">
-                <h2 class="text-center mb-5 display-6">Everything you need in one place</h2>
+                <div class="text-center mb-5">
+                    <span class="mb-section-label">What you get</span>
+                    <h2 class="mb-section-title">Everything in one place</h2>
+                    <p class="mb-section-subtitle mx-auto">
+                        From ingredients to the final sale. No spreadsheets, no chaos.
+                    </p>
+                </div>
                 <div class="row g-4">
-                    <div class="col-md-6 col-lg-3">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <div class="card-body text-center">
-                                <i class="bi bi-grid-3x3-gap text-primary fs-1 mb-3"></i>
-                                <h5>Table management</h5>
-                                <p class="text-muted mb-0">Control the status of your tables in real time</p>
-                            </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="mb-feature-card text-center text-sm-start">
+                            <div class="mb-feature-icon blue"><i class="bi bi-bag"></i></div>
+                            <h3>Menu &amp; Recipes</h3>
+                            <p>Build your menu with ingredients, recipes, and products. The system calculates costs automatically.</p>
                         </div>
                     </div>
-                    <div class="col-md-6 col-lg-3">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <div class="card-body text-center">
-                                <i class="bi bi-book text-primary fs-1 mb-3"></i>
-                                <h5>Digital menu</h5>
-                                <p class="text-muted mb-0">Manage your menu with ease</p>
-                            </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="mb-feature-card text-center text-sm-start">
+                            <div class="mb-feature-icon amber"><i class="bi bi-cart3"></i></div>
+                            <h3>Fast POS</h3>
+                            <p>Take orders in seconds. Search, tap, confirm. Hold sales and resume them later.</p>
                         </div>
                     </div>
-                    <div class="col-md-6 col-lg-3">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <div class="card-body text-center">
-                                <i class="bi bi-receipt text-primary fs-1 mb-3"></i>
-                                <h5>Fast orders</h5>
-                                <p class="text-muted mb-0">Take orders efficiently</p>
-                            </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="mb-feature-card text-center text-sm-start">
+                            <div class="mb-feature-icon green"><i class="bi bi-receipt"></i></div>
+                            <h3>Sales History</h3>
+                            <p>Every sale is recorded with frozen prices. Filter by date and payment method.</p>
                         </div>
                     </div>
-                    <div class="col-md-6 col-lg-3">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <div class="card-body text-center">
-                                <i class="bi bi-graph-up text-primary fs-1 mb-3"></i>
-                                <h5>Reports</h5>
-                                <p class="text-muted mb-0">Analyze your business performance</p>
-                            </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="mb-feature-card text-center text-sm-start">
+                            <div class="mb-feature-icon blue"><i class="bi bi-people"></i></div>
+                            <h3>Your Team</h3>
+                            <p>Admin and cashier roles. Each person sees only what they need.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
-        
-        <section class="py-5">
+
+        <!-- How it works -->
+        <section class="mb-how">
             <div class="container">
-                <h2 class="text-center mb-5 display-6">How it works</h2>
+                <div class="text-center mb-5">
+                    <span class="mb-section-label">Get started</span>
+                    <h2 class="mb-section-title">Three steps to run your restaurant</h2>
+                    <p class="mb-section-subtitle mx-auto">
+                        No training required. Your team will be up and running the same day.
+                    </p>
+                </div>
                 <div class="row g-4">
                     <div class="col-md-4">
-                        <div class="text-center">
+                        <div class="mb-step">
                             <div class="mb-step-number">1</div>
-                            <h5>Create your company</h5>
-                            <p class="text-muted">Register your restaurant in less than 2 minutes</p>
+                            <h4>Create your company</h4>
+                            <p>Fill in your restaurant details and the system sets up your admin and cashier accounts.</p>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="text-center">
+                        <div class="mb-step">
                             <div class="mb-step-number">2</div>
-                            <h5>Set up your team</h5>
-                            <p class="text-muted">Add cashiers and staff with specific roles</p>
+                            <h4>Build your menu</h4>
+                            <p>Add ingredients, create recipes, and define your products. Costs are calculated for you.</p>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="text-center">
+                        <div class="mb-step">
                             <div class="mb-step-number">3</div>
-                            <h5>Start operating</h5>
-                            <p class="text-muted">Manage tables, orders and more from day one</p>
+                            <h4>Start selling</h4>
+                            <p>Open the POS on any device. Take orders, hold sales, and confirm payments.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
-        
-        <section class="py-5 bg-dark text-white">
-            <div class="container text-center">
-                <h2 class="display-6 mb-4">Ready to get started?</h2>
-                <p class="lead mb-4">Join hundreds of restaurants already using MiBombay</p>
+
+        <!-- CTA -->
+        <section class="mb-cta">
+            <div class="container">
+                <h2>Ready when you are</h2>
+                <p class="lead">Create your account now and start managing your restaurant in minutes.</p>
                 <a th:href="@{/registration}" class="btn btn-amber btn-lg">
-                    <i class="bi bi-rocket-takeoff me-2"></i>Create my company now
+                    <i class="bi bi-rocket-takeoff"></i>Create my company now
                 </a>
             </div>
         </section>
     </main>
-    
+
     <div th:replace="~{fragments/footer :: footer}"></div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script th:src="@{/js/app.js}"></script>
 </body>

@@ -1,87 +1,89 @@
-# August 2, 2026
+# Today — 2026-08-03
 
-## Daily Summary
+Session log: sale module polish + "Edit recipe" feature.
 
-### Product Module
-- Created `ProductType` enum: CON_RECETA, SIN_RECETA, ADICIONAL
-- Created `ProductCategory` enum: FOOD, DRINKS, DESSERTS, SIDES, COMBOS, OTHERS
-- Created `Product` entity with optional `@ManyToOne Recipe` relationship
-- Created `ProductDTO` with validations
-- Created `ProductMapper`, `ProductRepository`, `ProductService`, `ProductController`
-- Created templates: `list.html` with ProductType filter, `form.html` with dynamic recipe/cost toggling
-- Added ProductType filter to product list (3 filters: name, category, type)
-- Product form dynamically shows/hides recipe dropdown and unitCost based on product type
-- Margin calculation displayed in form (sellingPrice - cost)
-- Added 7 demo products to InitialDataConfig: 3 CON_RECETA, 2 SIN_RECETA, 2 ADICIONAL
-- 27 tests added (16 service + 13 controller)
+## Objective
+- Polish the sale (POS) module: make it feel like a real restaurant bar POS, fix mobile overflow, and match the dark-blue sidebar tone.
+- Add an **"Edit recipe"** button in the cart so the cashier can see the recipe of a product/combo and uncheck ingredients the customer does not want. The exclusions are saved with the sale, without modifying the global recipe.
 
-### Recipe-Product Cost Sync
-- When a recipe is updated, all linked products automatically get their `unitCost` updated
-- Added `syncProductCostsForRecipe()` method to `ProductService`
-- `RecipeService.updateExistingRecipe()` calls sync after saving
-- Atomic operation within same transaction
+## Important Details
+- Java 21, Spring Boot 4.1.0, Thymeleaf, Bootstrap 5.3, MySQL, MapStruct, Lombok.
+- User communicates in English; some prompts were B1-level with typos.
+- Decisions: **JS-managed cart** (client-side) and **direct payment method buttons** (no modal). The cart must keep MiBombay navbar + sidebar visible (dashboard layout), NOT standalone full-screen.
+- No `SaleControllerTest` exists → free to change SaleController without breaking tests.
+- Confirmed sales cannot be cancelled (business rule); removed the broken cancel button from `sale/detail.html` that pointed to deleted endpoint `/sale/pos/cancel`.
+- Spring Security allows `/sale/**` to `ROLE_ADMIN`, `ROLE_CASHIER`, `ROLE_SUPER_ADMIN`.
+- Thymeleaf auto-adds CSRF tokens to forms using `th:action` → hidden inputs added dynamically by JS are safe.
+- Exclusions are saved in the existing `SaleDetailDTO.notes` field as a human-readable string (`"Without: onion, tomato"`). No DB migration. The global `Recipe` entity is never modified — exclusions are per-sale only.
+- On mobile, the cart is a right-side drawer opened by a floating action button (FAB). The products grid takes the full screen.
+- The combo editor shows a **tree** (combo → products → ingredients) with real product names. Products in the combo without a recipe appear with "(no customizations)". The "Edit recipe" button on a combo shows whenever the combo has at least one product (so the tree is always viewable).
 
-### Combo Module
-- Created `Combo` entity with `@OneToMany ComboDetail`
-- Created `ComboDetail` entity linking to Product with quantity
-- Created `ComboDTO`, `ComboDetailDTO`, `ComboMapper`, `ComboRepository`
-- Created `ComboService` with total cost calculation
-- Created `ComboController` with 6 endpoints
-- Created templates: `list.html` with margin display, `form.html` with dynamic product table
-- Added 2 demo combos to InitialDataConfig
-- 26 tests added (14 service + 12 controller)
+## Work State
+### Completed
+- **Sale module redesign** — introduced a `sd-` prefixed design system in `pos.html` (~250 lines of CSS): page headers, accent bars, glow list cards, info grid, styled tables, badges, pagination, buttons, empty states, alerts, fade animations, full POS layout classes with responsive rules. Rewrote `pos.html` as a two-column flex (product grid | 340–380px cart) with a JS cart array (`addToCart`, `changeQty`, `removeItem`, `clearCart`, `render`), search, category tabs, combos, payment selector, notes toggle, big green "CHARGE" button. Rewrote `sale/history.html`, `sale/on-hold.html`, `sale/detail.html` with the same system. Removed the cancel-sale form from `detail.html`.
+- **Mobile responsive fixes**:
+  - Cart overflow on phone → on mobile the POS lets the page scroll naturally (`height: auto`, `min-height: 0`, `overflow: visible` on products/grid), and caps the cart at `45vh` so it never blows the screen.
+  - Category tabs removed from `pos.html` (HTML + JS filter logic + CSS) — the products grid shows all products and combos; the search input filters by name. Unused `data-cat` attribute dropped from items.
+  - Cart color unified to `var(--mb-blue-900)` (`#0B2545`) in both `pos.html` and `styles.css` — same as the sidebar.
+- **Cart drawer on mobile** — On phone, the cart is hidden off-screen. A **floating action button (FAB)** pinned bottom-right (cart icon + amber count badge + total in `var(--mb-blue-900)`) opens the cart as a **right-side drawer** (`position: fixed; right: 0; width: 88%; max-width: 360px; transform: translateX(100%) → 0` with `0.28s ease`). A semi-transparent backdrop dims the products. Close via an X button in the cart header (hidden on desktop) or by tapping the backdrop. Desktop is unchanged (cart always visible on the right, no drawer, no FAB, no backdrop). All in `pos.html`.
+- **"Edit recipe" feature**:
+  - Backend: new DTOs `dto/sale/IngredientOptionDTO.java` (`{id, name}`) and `dto/sale/PosRecipeDataDTO.java` (three maps: `productIngredients: Map<String, List<IngredientOptionDTO>>`, `comboProductIds: Map<String, List<String>>`, `productNames: Map<String, String>`). String keys ensure clean Thymeleaf/JSON serialization.
+  - Repositories: added eager-fetch queries `ProductRepository.findAllActiveWithRecipeAndIngredients(tenantId)` (products + recipe + details + ingredient via JOIN FETCH + DISTINCT) and `ComboRepository.findAllActiveWithDetailsAndProducts(tenantId)` (combos + details + products). One query each, no lazy errors.
+  - Service: `ProductService.getRecipeDataForPos(tenantId)` builds the three maps. Injected `ComboRepository` into `ProductService`. `SaleController.showPOS()` calls the service and adds `recipeData` to the model, injected into `pos.html` via Thymeleaf inline JS as `window.recipeData`.
+  - Frontend: JS-managed cart items now carry `excludedIngredients: [{id, name}]`. Each cart row shows an "Edit recipe" button (amber pencil/list icon) when applicable, plus a "Without: …" exclusion badge with a × to clear. A Bootstrap modal (`#recipeModal`) opens with a dark-blue theme matching the cart:
+    - **Product**: shows the recipe's ingredients as checkboxes (all checked = include). Uncheck to exclude. Save / Cancel.
+    - **Combo**: shows a **tree** with the combo name as root (folder icon), each product as a branch (real name, amber, `├─`/`└─` connectors), and each ingredient as a leaf (checkbox). Products in the combo without a recipe appear as a branch with a "(no customizations)" leaf. CSS for the tree (indentation, left border line, connectors, empty-leaf style).
+    - Button rule: a product gets the button only if it has a recipe; a combo gets the button whenever it has at least one product (so the tree is always viewable to explain to the customer).
+  - On form submission, exclusions are serialized as `items[i].notes = "Without: onion, tomato"` in the hidden form. The existing `SaleService.createSaleFromCart` copies `notes` to `SaleDetail.notes`, so exclusions appear automatically on the sale detail/history page. The global `Recipe` is never modified.
+- **Tests** — Test count: **139 → 142** (BUILD SUCCESS). `ProductServiceTest` grew from 16 to 19: added the `ComboRepository` mock and three tests for `getRecipeDataForPos` (happy path, empty tenant, `productNames` populated for all active products). Fixed a missing `IngredientOptionDTO` import in the test.
 
-### Sales (POS) Module
-- Created `SaleState` enum: EN_ESPERA, CONFIRMADA, ANULADA
-- Created `PaymentMethod` enum: EFECTIVO, DATAFONO, TRANSFERENCIA
-- Created `Sale` entity with `@OneToMany SaleDetail` and `@ManyToOne User` (cashier)
-- Created `SaleDetail` entity with frozen product name, price, and cost (historical snapshot)
-- Created `SaleDTO`, `SaleDetailDTO`, `SaleMapper`, `SaleRepository`
-- Created `SaleService` with cart management, hold/confirm/cancel flows
-- Created `SaleController` with 9 endpoints (POS, add/remove/confirm/hold/cancel, on-hold, history)
-- Created POS template: full-screen interface with search, category tabs, dark cart panel, payment modal
-- Created on-hold template: amber accent cards with resume/delete
-- Created history template: responsive cards on phone, table on desktop
-- Created detail template: receipt-style layout
-- CASHIER role can access POS (added to SecurityConfig)
-- Cart stored in HTTP session (not database)
+### Active
+- (none)
 
-### Bug Fixes
-- Fixed `@Valid` on `List<RecipeDetailDTO>` — changed to `List<@Valid RecipeDetailDTO>` (Jakarta Bean Validation 3.1 syntax)
-- Fixed description/notes regex pattern to allow `/ : & +` characters
-- Removed redundant `@NotNull` from RecipeDetailDTO (service already handles nulls)
-- Restored initial empty detail row in RecipeController showForm()
+### Blocked
+- (none)
 
-### Tests
-- Total: 139 tests (up from 112)
-- All tests passing: BUILD SUCCESS
+## Next Move
+1. Manually verify the POS flow in the browser on desktop and phone: add product/combo → change qty → edit recipe (uncheck ingredients) → save → see badge → select payment → CHARGE submits; confirm exclusions appear in `sale/detail.html` as part of the notes. Hold Sale flow; resume an on-hold sale. The tree on a combo shows real product names with "(no customizations)" for products without a recipe.
+2. If the user wants a richer feature set from the reference template (search within the recipe editor, tabs for multiple concurrent orders, ingredient-exclusion modal at the product level instead of per cart item, a structured `excluded_ingredients` table), plan backend additions separately — those entities/endpoints do not exist yet.
 
-### Files Created Today
-- 3 enums: ProductType, ProductCategory, SaleState, PaymentMethod (4 total)
-- 4 entities: Product, Combo, ComboDetail, Sale, SaleDetail (5 total)
-- 4 DTOs: ProductDTO, ComboDTO, ComboDetailDTO, SaleDTO, SaleDetailDTO (5 total)
-- 4 mappers: ProductMapper, ComboMapper, SaleMapper (3 total)
-- 4 repositories: ProductRepository, ComboRepository, SaleRepository (3 total)
-- 4 services: ProductService, ComboService, SaleService (3 total)
-- 4 controllers: ProductController, ComboController, SaleController (3 total)
-- 10 templates: product/list, product/form, combo/list, combo/form, sale/pos, sale/on-hold, sale/history, sale/detail (8 total)
-- 6 test files: ProductServiceTest, ComboServiceTest, SaleServiceTest, ProductControllerTest, ComboControllerTest, SaleControllerTest (6 total)
+## Relevant Files
+- `AGENTS.md` — skills reference + test count + frontend/POS conventions updated.
+- `README.md` — test count badge, features, POS section updated.
+- `today.txt` — this file.
+- `src/main/resources/static/css/styles.css` — design tokens, flexbox sidebar fix, `sd-` sale design system, cart color aligned to `--mb-blue-900`.
+- `src/main/java/com/josegregoppdev/mibombay/dto/sale/CartSubmissionDTO.java` — form-bound cart payload (items, paymentMethod, observations).
+- `src/main/java/com/josegregoppdev/mibombay/dto/sale/IngredientOptionDTO.java` — `{id, name}` for the recipe editor.
+- `src/main/java/com/josegregoppdev/mibombay/dto/sale/PosRecipeDataDTO.java` — three maps sent to the POS page.
+- `src/main/java/com/josegregoppdev/mibombay/repository/product/ProductRepository.java` — `findAllActiveWithRecipeAndIngredients(tenantId)`.
+- `src/main/java/com/josegregoppdev/mibombay/repository/combo/ComboRepository.java` — `findAllActiveWithDetailsAndProducts(tenantId)`.
+- `src/main/java/com/josegregoppdev/mibombay/service/product/ProductService.java` — `getRecipeDataForPos(tenantId)`; `ComboRepository` injected.
+- `src/main/java/com/josegregoppdev/mibombay/controller/sale/SaleController.java` — `showPOS()` adds `recipeData` to the model.
+- `src/main/resources/templates/sale/pos.html` — JS cart, mobile drawer, FAB, modal, tree, exclusions serialized into `notes`.
+- `src/main/resources/templates/sale/history.html`, `sale/detail.html`, `sale/on-hold.html` — redesigned with `sd-` classes; cancel button removed from detail.
+- `src/main/resources/templates/fragments/sidebar.html`, `fragments/sidebar-admin.html` — dark blue sidebar + dividers.
+- `src/main/java/com/josegregoppdev/mibombay/config/SecurityConfig.java` — `/sale/**` allowed for ADMIN/CASHIER/SUPER_ADMIN.
+- `src/test/java/com/josegregoppdev/mibombay/service/product/ProductServiceTest.java` — 3 new tests for `getRecipeDataForPos`.
 
-### Files Modified Today
-- SecurityConfig.java — added /product/**, /combo/**, /sale/** rules
-- sidebar.html — added Products, Combos, POS links
-- InitialDataConfig.java — added 7 products, 2 combos, RecipeRepository/ProductRepository methods
-- TestDataFactory.java — added Product, Combo factory methods
-- RecipeDTO.java — fixed @Valid cascading
-- RecipeDetailDTO.java — fixed regex pattern
-- IngredientDTO.java — fixed regex pattern
-- ProductDTO.java — fixed regex pattern
-- RecipeRepository.java — added findByCodeAndTenantId, findByTenantIdAndActiveTrue
-- ProductRepository.java — added findByCodeAndTenantId
-- RecipeService.java — added ProductService dependency for cost sync
-
-## Pending for next session
-
-- Tables module (tables, rooms, availability management)
-- Adiciones module (add-on product groups)
-- Inventory module (stock management, movements)
+## Test summary
+| Class | Tests |
+|---|---|
+| `CompanyRegistrationServiceTest` | 7 |
+| `PasswordGeneratorServiceTest` | 8 |
+| `CustomUserDetailsServiceTest` | 7 |
+| `IngredientServiceTest` | 15 |
+| `RecipeServiceTest` | 14 |
+| `ProductServiceTest` | 19 (+3) |
+| `ComboServiceTest` | 14 |
+| `LandingControllerTest` | 1 |
+| `LoginControllerTest` | 6 |
+| `PasswordChangeControllerTest` | 4 |
+| `DashboardControllerTest` | 4 |
+| `CompanyRegistrationControllerTest` | 4 |
+| `AdminControllerTest` | 2 |
+| `IngredientControllerTest` | 13 |
+| `RecipeControllerTest` | 13 |
+| `ProductControllerTest` | 13 |
+| `ComboControllerTest` | 12 |
+| `MibombayApplicationTests` | 1 |
+| **Total** | **142** |

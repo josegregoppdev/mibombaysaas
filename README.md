@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/Spring%20Boot-4.1.0-6DB33F?style=flat-square&logo=spring-boot&logoColor=white" alt="Spring Boot 4.1.0">
   <img src="https://img.shields.io/badge/MySQL-8.0+-4479A1?style=flat-square&logo=mysql&logoColor=white" alt="MySQL">
   <img src="https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=flat-square&logo=bootstrap&logoColor=white" alt="Bootstrap 5.3">
-  <img src="https://img.shields.io/badge/Tests-139-brightgreen?style=flat-square" alt="139 Tests">
+  <img src="https://img.shields.io/badge/Tests-142-brightgreen?style=flat-square" alt="142 Tests">
   <img src="https://img.shields.io/badge/License-Proprietary-blue?style=flat-square" alt="License">
 </p>
 
@@ -31,12 +31,14 @@ The first version prioritizes the **POS (Point of Sale)** flow: the customer arr
 - **Self-registration** — Owners create their company and start using immediately
 - **Roles & permissions** — `SUPER_ADMIN`, `ADMIN`, `CASHIER` with Spring Security
 - **OWASP Top 10 Security** — BCrypt (strength 12), `@Valid` + `@Pattern`, Thymeleaf XSS, secure sessions, CSRF
-- **POS Interface** — Full-screen Point of Sale with product catalog, cart, hold/confirm flow
+- **POS Interface** — JS-managed cart in the dashboard layout with product catalog, search, cart, recipe exclusions, hold/confirm flow
 - **Product Management** — CON_RECETA (with recipe), SIN_RECETA (without recipe), ADICIONAL (add-ons)
 - **Recipe Management** — Ingredients + quantities, auto-calculated production cost
-- **Combo System** — Group products sold together at a single price
-- **Responsive UI** — Mobile-first design with Bootstrap 5.3
-- **139 unit tests** — JUnit 5 + Mockito with TestDataFactory
+- **Recipe exclusions in POS** — Per-sale ingredient unchecks saved in `notes`; global recipes are never modified
+- **Combo System** — Group products sold together at a single price; combo editor shows a tree of products and ingredients
+- **Mobile-first POS** — Right-side cart drawer with floating action button on phones; full-screen products grid
+- **Responsive UI** — Bootstrap 5.3, flexbox dashboard layout, offcanvas sidebar on mobile
+- **142 unit tests** — JUnit 5 + Mockito with TestDataFactory
 
 ---
 
@@ -148,13 +150,14 @@ Subdomain: `1` (access via `1.lvh.me:8080`)
 - Auto-calculated total cost and margin display
 
 ### POS (Point of Sale)
-- Full-screen interface at `/sale/pos`
-- Product catalog with search and category filtering
-- Cart with add/remove items
+- Embedded in the dashboard layout (navbar + sidebar visible) at `/sale/pos`
+- JS-managed cart: add products/combos, change quantity, remove items, clear cart
+- **Edit recipe** button per cart item: uncheck ingredients the customer does not want (per-sale, saved in `notes`; global recipe never changes). Combos show a tree (combo → products → ingredients) with real product names; products without a recipe appear with "(no customizations)"
 - **Hold Sale** — Save cart as on-hold, resume later
-- **Confirm Sale** — Select payment method (Cash, Card, Transfer)
+- **Confirm Sale** — Select payment method (Cash, Card, Transfer) and charge
 - On-hold sales list (cashier sees own, admin sees all)
 - Sales history with detail view
+- **Mobile**: cart is a right-side drawer opened by a floating action button; products grid takes the full screen
 
 ---
 
@@ -184,7 +187,7 @@ mibombay/
 │   │   ├── combo/        # list.html, form.html
 │   │   └── sale/         # pos.html, on-hold.html, history.html, detail.html
 │   └── static/           # CSS, JS
-└── src/test/             # 139 unit tests
+└── src/test/             # 142 unit tests
 ```
 
 ---

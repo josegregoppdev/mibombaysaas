@@ -3,51 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sale Detail - MiBombay</title>
+    <title>Sale #<span th:text="${sale.id}">1</span> — MiBombay</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
-    <style>
-        .sd-status-banner {
-            padding: 0.6rem 1rem; border-radius: 10px; margin-bottom: 1rem;
-            display: flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 0.85rem;
-        }
-        .sd-status-banner.confirmed { background: #d4edda; color: #155724; }
-        .sd-status-banner.cancelled { background: #f8d7da; color: #721c24; }
-        .sd-status-banner.onhold { background: #fff3cd; color: #856404; }
-
-        .sd-receipt {
-            background: #fff; border: 1px solid #E0E5EC; border-radius: 12px;
-            max-width: 480px; margin: 0 auto; overflow: hidden;
-        }
-        .sd-receipt-header {
-            background: var(--mb-blue-900); color: #fff; padding: 1rem; text-align: center;
-        }
-        .sd-receipt-header .brand { font-size: 1.2rem; font-weight: 700; }
-        .sd-receipt-header .brand .mi { color: #fff; }
-        .sd-receipt-header .brand .bombay { font-family: Georgia, serif; font-style: italic; color: var(--mb-amber-500); }
-        .sd-receipt-header .meta { font-size: 0.75rem; color: rgba(255,255,255,0.7); margin-top: 0.3rem; }
-
-        .sd-receipt-body { padding: 1rem; }
-        .sd-receipt-info { display: grid; grid-template-columns: auto 1fr; gap: 0.2rem 0.75rem; font-size: 0.8rem; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px dashed #dee2e6; }
-        .sd-receipt-info dt { font-weight: 500; color: #6c757d; }
-        .sd-receipt-info dd { font-weight: 600; color: #1A1A1A; margin: 0; }
-
-        .sd-receipt-items { margin-bottom: 0.75rem; }
-        .sd-receipt-item { display: flex; justify-content: space-between; align-items: baseline; padding: 0.3rem 0; font-size: 0.82rem; }
-        .sd-receipt-item .item-name { font-weight: 500; color: #1A1A1A; flex: 1; }
-        .sd-receipt-item .item-qty { color: #6c757d; min-width: 36px; text-align: right; margin-right: 0.5rem; }
-        .sd-receipt-item .item-price { font-weight: 600; color: var(--mb-blue-900); min-width: 70px; text-align: right; }
-
-        .sd-receipt-total {
-            border-top: 2px solid var(--mb-blue-900); padding-top: 0.5rem;
-            display: flex; justify-content: space-between; align-items: baseline;
-        }
-        .sd-receipt-total .label { font-size: 0.9rem; font-weight: 700; color: var(--mb-blue-900); }
-        .sd-receipt-total .amount { font-size: 1.3rem; font-weight: 700; color: var(--mb-blue-900); }
-
-        .sd-receipt-footer { text-align: center; padding: 0.75rem 1rem; background: #F8F9FA; font-size: 0.72rem; color: #6c757d; border-top: 1px dashed #dee2e6; }
-    </style>
 </head>
 <body class="mb-dashboard">
     <div th:replace="~{fragments/navbar :: navbar}"></div>
@@ -60,57 +19,104 @@
             </div>
 
             <main class="col-md-9 col-lg-10 mb-main-col">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h1 class="display-6">Sale #<span th:text="${sale.id}">1</span></h1>
-                    <a th:href="@{/sale/history}" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left me-2"></i>Back
+                <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i><span th:text="${message}">Message</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${error}">Error</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <div class="sd-page-header sd-fade sd-fade--1">
+                    <div>
+                        <h1 class="sd-page-title">Sale #<span th:text="${sale.id}">1</span></h1>
+                        <p class="sd-page-desc" th:text="${sale.state.displayName}">Confirmed</p>
+                        <div class="sd-title-accent"></div>
+                    </div>
+                    <div class="sd-page-actions">
+                        <a th:href="@{/sale/history}" class="sd-btn sd-btn--outline">
+                            <i class="bi bi-arrow-left"></i>Back
+                        </a>
+                    </div>
+                </div>
+
+                <div class="sd-info-grid sd-fade sd-fade--2">
+                    <div class="sd-info-card">
+                        <div class="sd-info-label">Cashier</div>
+                        <div class="sd-info-value" th:text="${sale.cashierName}">Cashier</div>
+                    </div>
+                    <div class="sd-info-card">
+                        <div class="sd-info-label">Date</div>
+                        <div class="sd-info-value" th:text="${#temporals.format(sale.saleDate, 'dd/MM/yyyy HH:mm')}">01/01/2025</div>
+                    </div>
+                    <div class="sd-info-card">
+                        <div class="sd-info-label">Payment</div>
+                        <div class="sd-info-value">
+                            <span class="sa-badge sa-badge--info" th:text="${sale.paymentMethod?.displayName ?: '\u2014'}">Cash</span>
+                        </div>
+                    </div>
+                    <div class="sd-info-card">
+                        <div class="sd-info-label">Total</div>
+                        <div class="sd-info-value sd-info-value--accent" th:text="'$' + ${#numbers.formatDecimal(sale.total, 1, 2)}">$0.00</div>
+                    </div>
+                    <div class="sd-info-card" th:if="${sale.observations}">
+                        <div class="sd-info-label">Notes</div>
+                        <div class="sd-info-value" style="font-size:0.88rem" th:text="${sale.observations}">Note</div>
+                    </div>
+                </div>
+
+                <div class="sd-list-card sd-fade sd-fade--3">
+                    <div class="sd-list-card-glow"></div>
+                    <div class="sd-list-card-header">
+                        <div class="sd-list-card-title">
+                            <i class="bi bi-list-ul"></i>
+                            <span>Items</span>
+                        </div>
+                    </div>
+
+                    <div class="sa-table-wrapper">
+                        <table class="sa-table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th class="sa-cell-right">Quantity</th>
+                                    <th class="sa-cell-right">Unit Price</th>
+                                    <th class="sa-cell-right">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="det : ${sale.details}" class="sd-table-row">
+                                    <td>
+                                        <span th:text="${det.productName ?: det.comboName}">Product</span>
+                                        <span th:if="${det.comboName}" class="sa-badge sa-badge--profit-high" style="font-size:0.7rem;margin-left:0.5rem">COMBO</span>
+                                    </td>
+                                    <td class="sa-cell-right" th:text="${#numbers.formatDecimal(det.quantity, 1, 2)}">0.00</td>
+                                    <td class="sa-cell-right" th:text="'$' + ${#numbers.formatDecimal(det.salePrice, 1, 2)}">$0.00</td>
+                                    <td class="sa-cell-right" th:text="'$' + ${#numbers.formatDecimal(det.totalPrice, 1, 2)}">$0.00</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="sd-table-row">
+                                    <td colspan="3" class="sa-cell-right"><strong>Subtotal:</strong></td>
+                                    <td class="sa-cell-right"><strong th:text="'$' + ${#numbers.formatDecimal(sale.total, 1, 2)}">$0.00</strong></td>
+                                </tr>
+                                <tr class="sd-table-row">
+                                    <td colspan="3" class="sa-cell-right"><strong>TOTAL:</strong></td>
+                                    <td class="sa-cell-right"><strong th:text="'$' + ${#numbers.formatDecimal(sale.total, 1, 2)}">$0.00</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="sd-form-actions sd-fade sd-fade--4">
+                    <a th:href="@{/sale/pos}" class="sd-btn">
+                        <i class="bi bi-plus-circle"></i>New Sale
                     </a>
-                </div>
-
-                <!-- Status Banner -->
-                <div class="sd-status-banner" th:classappend="${sale.state.name() == 'CONFIRMADA'} ? 'confirmed' : (${sale.state.name() == 'ANULADA'} ? 'cancelled' : 'onhold')">
-                    <i th:if="${sale.state.name() == 'CONFIRMADA'}" class="bi bi-check-circle-fill"></i>
-                    <i th:if="${sale.state.name() == 'ANULADA'}" class="bi bi-x-circle-fill"></i>
-                    <i th:if="${sale.state.name() == 'EN_ESPERA'}" class="bi bi-clock-fill"></i>
-                    <span th:text="${sale.state.displayName}">Status</span>
-                    <span class="ms-auto" th:text="${#temporals.format(sale.saleDate, 'dd/MM/yyyy HH:mm')}">Date</span>
-                </div>
-
-                <!-- Receipt Card -->
-                <div class="sd-receipt">
-                    <div class="sd-receipt-header">
-                        <div class="brand"><span class="mi">Mi</span><span class="bombay">Bombay</span></div>
-                        <div class="meta">Sale #<span th:text="${sale.id}">1</span> &mdash; <span th:text="${#temporals.format(sale.saleDate, 'dd/MM/yyyy HH:mm')}">Date</span></div>
-                    </div>
-                    <div class="sd-receipt-body">
-                        <dl class="sd-receipt-info">
-                            <dt>Cashier</dt>
-                            <dd th:text="${sale.cashierName}">-</dd>
-                            <dt>Payment</dt>
-                            <dd th:text="${sale.paymentMethod?.displayName ?: '---'}">-</dd>
-                            <th:block th:if="${sale.observations}">
-                                <dt>Notes</dt>
-                                <dd th:text="${sale.observations}">-</dd>
-                            </th:block>
-                        </dl>
-
-                        <div class="sd-receipt-items">
-                            <div th:each="item : ${sale.details}" class="sd-receipt-item">
-                                <span class="item-name" th:text="${item.productName ?: item.comboName}">Item</span>
-                                <span class="item-qty" th:text="'×' + ${item.quantity}">×1</span>
-                                <span class="item-price" th:text="'$' + ${item.totalPrice}">$0.00</span>
-                            </div>
-                        </div>
-
-                        <div class="sd-receipt-total">
-                            <span class="label">Total</span>
-                            <span class="amount" th:text="'$' + ${sale.total}">$0.00</span>
-                        </div>
-                    </div>
-                    <div class="sd-receipt-footer">
-                        <span th:text="${sale.details.size()}">0</span> items &bull;
-                        Thank you for your purchase
-                    </div>
+                    <a th:href="@{/sale/history}" class="sd-btn sd-btn--outline">
+                        <i class="bi bi-arrow-left"></i>History
+                    </a>
                 </div>
             </main>
         </div>
@@ -118,5 +124,15 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script th:src="@{/js/app.js}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.sd-fade').forEach(function(el, i) {
+                setTimeout(function() {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, 80 * i);
+            });
+        });
+    </script>
 </body>
 </html>

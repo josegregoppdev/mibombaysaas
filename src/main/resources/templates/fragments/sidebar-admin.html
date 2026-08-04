@@ -1,21 +1,34 @@
 <div th:fragment="sidebarAdminOffcanvas">
-    <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="sidebarOffcanvas">
+    <div class="offcanvas offcanvas-start mb-sidebar-offcanvas" tabindex="-1" id="sidebarOffcanvas" aria-label="Admin sidebar">
         <div class="offcanvas-header">
-            <h5 class="offcanvas-title">Admin</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+            <h5 class="offcanvas-title mb-brand">
+                <span class="mb-brand-mi">Mi</span><span class="mb-brand-bombay">Bombay</span>
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body p-0">
+            <div class="mb-sidebar-header">
+                <h6>Admin Panel</h6>
+            </div>
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a class="nav-link" th:classappend="${#request.requestURI.endsWith('/admin/dashboard')} ? 'active'" th:href="@{/admin/dashboard}">
-                        <i class="bi bi-speedometer2 me-2"></i>
-                        Dashboard
+                    <a class="nav-link" th:classappend="${#request.requestURI.endsWith('/admin/dashboard')} ? 'active'"
+                       th:href="@{/admin/dashboard}">
+                        <i class="bi bi-speedometer2"></i>Dashboard
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:classappend="${#request.requestURI.endsWith('/admin/companies')} ? 'active'" th:href="@{/admin/companies}">
-                        <i class="bi bi-building me-2"></i>
-                        Companies
+                    <a class="nav-link" th:classappend="${#request.requestURI.endsWith('/admin/companies')} ? 'active'"
+                       th:href="@{/admin/companies}">
+                        <i class="bi bi-building"></i>Companies
+                    </a>
+                </li>
+                <li class="nav-item mt-3">
+                    <hr class="sidebar-divider">
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/change-password}">
+                        <i class="bi bi-key"></i>Change password
                     </a>
                 </li>
             </ul>
@@ -25,19 +38,27 @@
 
 <nav th:fragment="sidebarAdminInline" class="mb-sidebar">
     <div class="mb-sidebar-header">
-        <h6 class="mb-0">Admin</h6>
+        <h6>Admin Panel</h6>
     </div>
     <ul class="nav flex-column">
         <li class="nav-item">
-            <a class="nav-link" th:classappend="${#request.requestURI.endsWith('/admin/dashboard')} ? 'active'" th:href="@{/admin/dashboard}">
-                <i class="bi bi-speedometer2 me-2"></i>
-                Dashboard
+            <a class="nav-link" th:classappend="${#request.requestURI.endsWith('/admin/dashboard')} ? 'active'"
+               th:href="@{/admin/dashboard}">
+                <i class="bi bi-speedometer2"></i>Dashboard
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" th:classappend="${#request.requestURI.endsWith('/admin/companies')} ? 'active'" th:href="@{/admin/companies}">
-                <i class="bi bi-building me-2"></i>
-                Companies
+            <a class="nav-link" th:classappend="${#request.requestURI.endsWith('/admin/companies')} ? 'active'"
+               th:href="@{/admin/companies}">
+                <i class="bi bi-building"></i>Companies
+            </a>
+        </li>
+        <li class="nav-item mt-3">
+            <hr class="sidebar-divider">
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:href="@{/change-password}">
+                <i class="bi bi-key"></i>Change password
             </a>
         </li>
     </ul>

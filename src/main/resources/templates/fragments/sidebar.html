@@ -5,42 +5,45 @@
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
-    <div class="offcanvas-body">
-        <nav class="mb-sidebar-nav">
+    <div class="offcanvas-body p-0">
+        <nav>
             <ul class="nav flex-column">
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/dashboard}">
-                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                        <i class="bi bi-speedometer2"></i>Dashboard
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/ingredient}">
-                        <i class="bi bi-journal-text me-2"></i>Ingredients
+                        <i class="bi bi-journal-text"></i>Ingredients
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/recipe}">
-                        <i class="bi bi-journal-bookmark me-2"></i>Recipes
+                        <i class="bi bi-journal-bookmark"></i>Recipes
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/product}">
-                        <i class="bi bi-bag me-2"></i>Products
+                        <i class="bi bi-bag"></i>Products
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/combo}">
-                        <i class="bi bi-grid-3x3-gap me-2"></i>Combos
+                        <i class="bi bi-grid-3x3-gap"></i>Combos
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/sale/pos}">
-                        <i class="bi bi-shop me-2"></i>POS
+                        <i class="bi bi-shop"></i>POS
                     </a>
                 </li>
                 <li class="nav-item mt-3">
+                    <hr class="sidebar-divider">
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" th:href="@{/change-password}">
-                        <i class="bi bi-key me-2"></i>Change password
+                        <i class="bi bi-key"></i>Change password
                     </a>
                 </li>
             </ul>
@@ -49,40 +52,46 @@
 </div>
 
 <nav th:fragment="sidebarInline" class="mb-sidebar d-none d-md-block">
+    <div class="mb-sidebar-header">
+        <h6>Navigation</h6>
+    </div>
     <ul class="nav flex-column">
         <li class="nav-item">
             <a class="nav-link" th:href="@{/dashboard}">
-                <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                <i class="bi bi-speedometer2"></i>Dashboard
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" th:href="@{/ingredient}">
-                <i class="bi bi-journal-text me-2"></i>Ingredients
+                <i class="bi bi-journal-text"></i>Ingredients
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" th:href="@{/recipe}">
-                <i class="bi bi-journal-bookmark me-2"></i>Recipes
+                <i class="bi bi-journal-bookmark"></i>Recipes
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" th:href="@{/product}">
-                <i class="bi bi-bag me-2"></i>Products
+                <i class="bi bi-bag"></i>Products
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" th:href="@{/combo}">
-                <i class="bi bi-grid-3x3-gap me-2"></i>Combos
+                <i class="bi bi-grid-3x3-gap"></i>Combos
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" th:href="@{/sale/pos}">
-                <i class="bi bi-shop me-2"></i>POS
+                <i class="bi bi-shop"></i>POS
             </a>
         </li>
         <li class="nav-item mt-3">
+            <hr class="sidebar-divider">
+        </li>
+        <li class="nav-item">
             <a class="nav-link" th:href="@{/change-password}">
-                <i class="bi bi-key me-2"></i>Change password
+                <i class="bi bi-key"></i>Change password
             </a>
         </li>
     </ul>

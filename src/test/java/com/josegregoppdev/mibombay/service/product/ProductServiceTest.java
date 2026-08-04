@@ -1,11 +1,14 @@
 package com.josegregoppdev.mibombay.service.product;
 
 import com.josegregoppdev.mibombay.dto.product.ProductDTO;
+import com.josegregoppdev.mibombay.dto.sale.IngredientOptionDTO;
+import com.josegregoppdev.mibombay.dto.sale.PosRecipeDataDTO;
 import com.josegregoppdev.mibombay.mapper.product.ProductMapper;
 import com.josegregoppdev.mibombay.model.product.Product;
 import com.josegregoppdev.mibombay.model.product.ProductCategory;
 import com.josegregoppdev.mibombay.model.product.ProductType;
 import com.josegregoppdev.mibombay.model.recipe.Recipe;
+import com.josegregoppdev.mibombay.repository.combo.ComboRepository;
 import com.josegregoppdev.mibombay.repository.product.ProductRepository;
 import com.josegregoppdev.mibombay.repository.recipe.RecipeRepository;
 import org.junit.jupiter.api.Test;
@@ -20,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,6 +43,9 @@ class ProductServiceTest {
 
     @Mock
     private RecipeRepository recipeRepository;
+
+    @Mock
+    private ComboRepository comboRepository;
 
     @InjectMocks
     private ProductService productService;
@@ -274,5 +281,52 @@ class ProductServiceTest {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> productService.toggleProductActiveStatus(99L, TENANT_ID));
         assertTrue(ex.getMessage().contains("not found"));
+    }
+
+    @Test
+    void getRecipeDataForPos_returnsProductIngredientsAndComboProductIds() {
+        Product productWithRecipe = createProduct();
+        Product productWithoutRecipe = createProductWithoutRecipe();
+        when(productRepository.findAllActiveWithRecipeAndIngredients(TENANT_ID))
+                .thenReturn(List.of(productWithRecipe, productWithoutRecipe));
+        when(comboRepository.findAllActiveWithDetailsAndProducts(TENANT_ID))
+                .thenReturn(Collections.emptyList());
+
+        PosRecipeDataDTO result = productService.getRecipeDataForPos(TENANT_ID);
+
+        assertNotNull(result);
+        assertTrue(result.getProductIngredients().containsKey(String.valueOf(productWithRecipe.getId())));
+        assertFalse(result.getProductIngredients().get(String.valueOf(productWithRecipe.getId())).isEmpty());
+        assertTrue(result.getProductIngredients().containsKey(String.valueOf(productWithoutRecipe.getId())));
+        assertTrue(result.getProductIngredients().get(String.valueOf(productWithoutRecipe.getId())).isEmpty());
+    }
+
+    @Test
+    void getRecipeDataForPos_populatesProductNamesForAllActiveProducts() {
+        Product productWithRecipe = createProduct();
+        Product productWithoutRecipe = createProductWithoutRecipe();
+        when(productRepository.findAllActiveWithRecipeAndIngredients(TENANT_ID))
+                .thenReturn(List.of(productWithRecipe, productWithoutRecipe));
+        when(comboRepository.findAllActiveWithDetailsAndProducts(TENANT_ID))
+                .thenReturn(Collections.emptyList());
+
+        PosRecipeDataDTO result = productService.getRecipeDataForPos(TENANT_ID);
+
+        assertEquals(productWithRecipe.getName(), result.getProductNames().get(String.valueOf(productWithRecipe.getId())));
+        assertEquals(productWithoutRecipe.getName(), result.getProductNames().get(String.valueOf(productWithoutRecipe.getId())));
+    }
+
+    @Test
+    void getRecipeDataForPop_emptyTenant_returnsEmptyMaps() {
+        when(productRepository.findAllActiveWithRecipeAndIngredients(TENANT_ID))
+                .thenReturn(Collections.emptyList());
+        when(comboRepository.findAllActiveWithDetailsAndProducts(TENANT_ID))
+                .thenReturn(Collections.emptyList());
+
+        PosRecipeDataDTO result = productService.getRecipeDataForPos(TENANT_ID);
+
+        assertNotNull(result);
+        assertTrue(result.getProductIngredients().isEmpty());
+        assertTrue(result.getComboProductIds().isEmpty());
     }
 }

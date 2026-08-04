@@ -1,11 +1,16 @@
 package com.josegregoppdev.mibombay.service.product;
 
 import com.josegregoppdev.mibombay.dto.product.ProductDTO;
+import com.josegregoppdev.mibombay.dto.sale.IngredientOptionDTO;
+import com.josegregoppdev.mibombay.dto.sale.PosRecipeDataDTO;
 import com.josegregoppdev.mibombay.mapper.product.ProductMapper;
+import com.josegregoppdev.mibombay.model.combo.Combo;
 import com.josegregoppdev.mibombay.model.product.Product;
 import com.josegregoppdev.mibombay.model.product.ProductCategory;
 import com.josegregoppdev.mibombay.model.product.ProductType;
 import com.josegregoppdev.mibombay.model.recipe.Recipe;
+import com.josegregoppdev.mibombay.model.recipe.RecipeDetail;
+import com.josegregoppdev.mibombay.repository.combo.ComboRepository;
 import com.josegregoppdev.mibombay.repository.product.ProductRepository;
 import com.josegregoppdev.mibombay.repository.recipe.RecipeRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +20,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +32,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
     private final RecipeRepository recipeRepository;
+    private final ComboRepository comboRepository;
 
     @Transactional(readOnly = true)
     public Page<ProductDTO> getPaginatedProducts(String tenantId, String name,
@@ -113,6 +122,45 @@ public class ProductService {
             product.setUnitCost(newProductionCost);
             productRepository.save(product);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public PosRecipeDataDTO getRecipeDataForPos(String tenantId) {
+        PosRecipeDataDTO result = PosRecipeDataDTO.builder()
+                .productIngredients(new HashMap<>())
+                .comboProductIds(new HashMap<>())
+                .productNames(new HashMap<>())
+                .build();
+
+        List<Product> products = productRepository.findAllActiveWithRecipeAndIngredients(tenantId);
+        for (Product product : products) {
+            List<IngredientOptionDTO> ingredients = new ArrayList<>();
+            if (product.getRecipe() != null && product.getRecipe().getDetails() != null) {
+                for (RecipeDetail detail : product.getRecipe().getDetails()) {
+                    if (detail.getIngredient() != null) {
+                        ingredients.add(IngredientOptionDTO.builder()
+                                .id(detail.getIngredient().getId())
+                                .name(detail.getIngredient().getName())
+                                .build());
+                    }
+                }
+            }
+            result.getProductIngredients().put(String.valueOf(product.getId()), ingredients);
+            result.getProductNames().put(String.valueOf(product.getId()), product.getName());
+        }
+
+        List<Combo> combos = comboRepository.findAllActiveWithDetailsAndProducts(tenantId);
+        for (Combo combo : combos) {
+            List<String> productIds = new ArrayList<>();
+            if (combo.getDetails() != null) {
+                combo.getDetails().stream()
+                        .filter(d -> d.getProduct() != null)
+                        .forEach(d -> productIds.add(String.valueOf(d.getProduct().getId())));
+            }
+            result.getComboProductIds().put(String.valueOf(combo.getId()), productIds);
+        }
+
+        return result;
     }
 
     private void linkRecipe(Product product, ProductDTO dto) {
