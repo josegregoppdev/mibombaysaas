@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <strong>Sistema de gestión SaaS multi-tenant para restaurantes</strong>
+  <strong>SaaS multi-tenant restaurant management system</strong>
 </p>
 
 <p align="center">
@@ -11,273 +11,262 @@
   <img src="https://img.shields.io/badge/Spring%20Boot-4.1.0-6DB33F?style=flat-square&logo=spring-boot&logoColor=white" alt="Spring Boot 4.1.0">
   <img src="https://img.shields.io/badge/MySQL-8.0+-4479A1?style=flat-square&logo=mysql&logoColor=white" alt="MySQL">
   <img src="https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=flat-square&logo=bootstrap&logoColor=white" alt="Bootstrap 5.3">
+  <img src="https://img.shields.io/badge/Tests-142-brightgreen?style=flat-square" alt="142 Tests">
   <img src="https://img.shields.io/badge/License-Proprietary-blue?style=flat-square" alt="License">
 </p>
 
 ---
 
-## Descripción
+## Description
 
-**MiBombay** es una plataforma SaaS multi-tenant para la gestión integral de restaurantes. Permite a los dueños de restaurantes crear su empresa, gestionar mesas, menú, pedidos y reportes desde un solo lugar.
+**MiBombay** is a multi-tenant SaaS platform for restaurant management. Restaurant owners create their company, and the system automatically creates an admin and a cashier. Everything works with `tenantId` isolation.
 
-Cada restaurante opera como un tenant aislado con su propio `tenantId`, garantizando la separación completa de datos entre empresas.
+The first version prioritizes the **POS (Point of Sale)** flow: the customer arrives, places an order, pays, and receives the order. The architecture allows adding tables, waiters, reservations, kitchen, deliveries, and other modules later without breaking the current flow.
 
 ---
 
-## Características
+## Features
 
-- **Multi-tenant** — Aislamiento de datos por empresa con `tenantId`
-- **Auto-registro** — Los clientes crean su empresa y empiezan a usar el sistema inmediatamente
-- **Roles y permisos** — Sistema de roles (`ADMIN`, `CAJERO`) con Spring Security
-- **Seguridad OWASP Top 10** — BCrypt (strength 12), `@Valid` + `@Pattern` anti-inyección, Thymeleaf XSS escape, sesiones seguras, CSRF
-- **UI moderna** — Bootstrap 5.3 con diseño responsivo mobile-first y paleta personalizada
-- **Arquitectura escalable** — Preparado para futuras funcionalidades (mesas, menú, pedidos, reportes)
-- **16+ tests unitarios** — JUnit 5 + Mockito con TestDataFactory
+- **Multi-tenant** — Data isolation per restaurant with `tenantId`
+- **Self-registration** — Owners create their company and start using immediately
+- **Roles & permissions** — `SUPER_ADMIN`, `ADMIN`, `CASHIER` with Spring Security
+- **OWASP Top 10 Security** — BCrypt (strength 12), `@Valid` + `@Pattern`, Thymeleaf XSS, secure sessions, CSRF
+- **POS Interface** — JS-managed cart in the dashboard layout with product catalog, search, cart, recipe exclusions, hold/confirm flow
+- **Product Management** — CON_RECETA (with recipe), SIN_RECETA (without recipe), ADICIONAL (add-ons)
+- **Recipe Management** — Ingredients + quantities, auto-calculated production cost
+- **Recipe exclusions in POS** — Per-sale ingredient unchecks saved in `notes`; global recipes are never modified
+- **Combo System** — Group products sold together at a single price; combo editor shows a tree of products and ingredients
+- **Mobile-first POS** — Right-side cart drawer with floating action button on phones; full-screen products grid
+- **Responsive UI** — Bootstrap 5.3, flexbox dashboard layout, offcanvas sidebar on mobile
+- **142 unit tests** — JUnit 5 + Mockito with TestDataFactory
 
 ---
 
 ## Tech Stack
 
-| Tecnología | Versión | Uso |
+| Technology | Version | Purpose |
 |---|---|---|
-| **Java** | 21 | Lenguaje base |
-| **Spring Boot** | 4.1.0 | Framework principal |
-| **Spring Security** | - | Autenticación y autorización |
-| **Spring Data JPA** | - | Persistencia de datos |
-| **Thymeleaf** | - | Motor de plantillas server-side |
-| **MySQL** | 8.0+ | Base de datos |
-| **Bootstrap** | 5.3 | Framework CSS (via CDN) |
-| **Bootstrap Icons** | 1.11+ | Iconografía (via CDN) |
-| **Lombok** | - | Reducción de boilerplate |
-| **MapStruct** | 1.6.3 | Mapeo DTO ↔ Entidad |
-| **Maven** | - | Gestión de dependencias |
+| **Java** | 21 | Core language |
+| **Spring Boot** | 4.1.0 | Main framework |
+| **Spring Security** | - | Authentication & authorization |
+| **Spring Data JPA** | - | Data persistence |
+| **Thymeleaf** | - | Server-side template engine |
+| **MySQL** | 8.0+ | Database |
+| **Bootstrap** | 5.3 | CSS framework (via CDN) |
+| **Bootstrap Icons** | 1.11+ | Icons (via CDN) |
+| **Lombok** | - | Boilerplate reduction |
+| **MapStruct** | 1.6.3 | DTO ↔ Entity mapping |
+| **Maven** | - | Dependency management |
 
 ---
 
-## Instalación
+## Installation
 
-### Requisitos previos
+### Prerequisites
 
 - Java 21+
 - MySQL 8.0+
-- Maven (o usar el wrapper incluido `./mvnw`)
+- Maven (or use the included wrapper `./mvnw`)
 
-### Pasos
+### Steps
 
-1. **Clonar el repositorio**
+1. **Clone the repository**
    ```bash
    git clone https://github.com/tu-usuario/mibombay.git
    cd mibombay
    ```
 
-2. **Configurar la base de datos**
+2. **Configure the database**
 
-   Copia la plantilla de configuración:
+   Copy the configuration template:
    ```bash
    cp src/main/resources/application.properties.example src/main/resources/application-dev.properties
    ```
 
-   Edita `application-dev.properties` con tus credenciales de MySQL:
+   Edit `application-dev.properties` with your MySQL credentials:
    ```properties
    spring.datasource.url=jdbc:mysql://localhost:3306/mibombay?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
-   spring.datasource.username=tu_usuario
-   spring.datasource.password=tu_contraseña
+   spring.datasource.username=your_user
+   spring.datasource.password=your_password
    ```
 
-3. **Compilar el proyecto**
+3. **Compile the project**
    ```bash
    ./mvnw clean compile
    ```
 
-4. **Ejecutar la aplicación**
+4. **Run the application**
    ```bash
    ./mvnw spring-boot:run
    ```
 
-5. **Abrir en el navegador**
+5. **Open in browser**
    
-   Navega a [http://localhost:8080](http://localhost:8080)
+   Navigate to [http://localhost:8080](http://localhost:8080)
 
 ---
 
-## Uso
+## Demo Data
 
-### Registro de empresa
+The system auto-creates a demo restaurant on startup:
 
-1. Visita la página principal y haz clic en **"Crear mi empresa"**
-2. Completa el formulario con los datos de tu empresa y del encargado
-3. El sistema creará automáticamente:
-   - Tu empresa con un `tenantId` único
-   - Un usuario **ADMIN** (el encargado) con la contraseña que elegiste
-   - Un usuario **CAJERO** con contraseña temporal generada automáticamente
-4. Guarda las credenciales del cajero (solo se muestran una vez)
+| Role | Email | Password |
+|---|---|---|
+| Admin | `demo@mibombay.com` | `demo1234` |
+| Cashier | `demo_cashier@mibombay.com` | *(temporary, shown once)* |
 
-### Inicio de sesión
+Subdomain: `1` (access via `1.lvh.me:8080`)
 
-1. Ingresa tu email y contraseña
-2. Si es tu primer login como cajero, deberás cambiar la contraseña temporal
-3. Accede al dashboard con la información de tu empresa
+**Demo data includes:**
+- 10 ingredients
+- 3 recipes (Classic Hamburger, Hot Dog, French Fries)
+- 7 products (3 with recipe, 2 without, 2 add-ons)
+- 2 combos (Hamburger + Fries + Cola, Hot Dog + Fries + Water)
 
 ---
 
-## Estructura del Proyecto
+## Modules
+
+### Ingredients
+- CRUD with code, name, category, unit of measure, cost, stock
+- Active/inactive toggle
+- 9 categories (Meats, Dairy, Breads, Vegetables, Fruits, Grains, Condiments, Beverages, Others)
+
+### Recipes
+- Recipe with ingredients and quantities
+- Auto-calculated production cost
+- Ingredient selection with auto-fill cost and unit
+
+### Products
+- **CON_RECETA** — Links to a recipe, cost from recipe's production cost
+- **SIN_RECETA** — Standalone item with purchase cost (e.g., bottled drinks)
+- **ADICIONAL** — Add-on product, may have optional recipe
+- **Product categories**: Food, Drinks, Desserts, Sides, Combos, Others
+- Product-Recipe cost sync: updating a recipe auto-updates linked products
+
+### Combos
+- Groups products sold together at a single price
+- Product selection with quantities
+- Auto-calculated total cost and margin display
+
+### POS (Point of Sale)
+- Embedded in the dashboard layout (navbar + sidebar visible) at `/sale/pos`
+- JS-managed cart: add products/combos, change quantity, remove items, clear cart
+- **Edit recipe** button per cart item: uncheck ingredients the customer does not want (per-sale, saved in `notes`; global recipe never changes). Combos show a tree (combo → products → ingredients) with real product names; products without a recipe appear with "(no customizations)"
+- **Hold Sale** — Save cart as on-hold, resume later
+- **Confirm Sale** — Select payment method (Cash, Card, Transfer) and charge
+- On-hold sales list (cashier sees own, admin sees all)
+- Sales history with detail view
+- **Mobile**: cart is a right-side drawer opened by a floating action button; products grid takes the full screen
+
+---
+
+## Project Structure
 
 ```
 mibombay/
-├── src/
-│   ├── main/
-│   │   ├── java/com/josegregoppdev/mibombay/
-│   │   │   ├── MibombayApplication.java
-│   │   │   ├── common/              # Utilidades transversales
-│   │   │   │   ├── audit/           # AuditableEntity
-│   │   │   │   ├── tenant/          # TenantContext, TenantFilter
-│   │   │   │   └── exception/       # GlobalExceptionHandler
-│   │   │   ├── model/               # Entidades JPA
-│   │   │   │   ├── usuario/         # Usuario, Rol
-│   │   │   │   └── empresa/         # Empresa
-│   │   │   ├── repository/          # Repositorios Spring Data JPA
-│   │   │   │   ├── usuario/
-│   │   │   │   └── empresa/
-│   │   │   ├── service/             # Lógica de negocio
-│   │   │   │   ├── usuario/         # CustomUserDetailsService, PasswordGeneratorService
-│   │   │   │   └── empresa/         # RegistroEmpresaService
-│   │   │   ├── controller/          # Controladores web
-│   │   │   │   ├── landing/         # LandingController
-│   │   │   │   ├── auth/            # LoginController, PasswordChangeController
-│   │   │   │   ├── empresa/         # RegistroEmpresaController
-│   │   │   │   └── dashboard/       # DashboardController
-│   │   │   └── config/              # Configuraciones Spring
-│   │   │       ├── SecurityConfig.java
-│   │   │       └── PasswordEncoderConfig.java
-│   │   └── resources/
-│   │       ├── application.properties
-│   │       ├── application-dev.properties
-│   │       ├── application-prod.properties
-│   │       ├── application.properties.example
-│   │       ├── templates/           # Plantillas Thymeleaf
-│   │       │   ├── fragments/       # Fragmentos reutilizables
-│   │       │   ├── landing.html
-│   │       │   ├── login.html
-│   │       │   ├── registro.html
-│   │       │   ├── registro-exitoso.html
-│   │       │   ├── cambiar-password.html
-│   │       │   └── dashboard.html
-│   │       └── static/
-│   │           ├── css/styles.css   # Tokens + overrides de Bootstrap
-│   │           └── js/app.js        # Interacciones mínimas
-│   └── test/
-├── pom.xml
-└── README.md
+├── src/main/java/com/josegregoppdev/mibombay/
+│   ├── common/           # audit/, tenant/, exception/
+│   ├── model/            # JPA entities
+│   │   ├── ingredient/   # Ingredient, Category, UnitOfMeasure
+│   │   ├── recipe/       # Recipe, RecipeDetail
+│   │   ├── product/      # Product, ProductType, ProductCategory
+│   │   ├── combo/        # Combo, ComboDetail
+│   │   └── sale/         # Sale, SaleDetail, SaleState, PaymentMethod
+│   ├── dto/              # DTOs with Bean Validation
+│   ├── mapper/           # MapStruct interfaces
+│   ├── repository/       # Spring Data JPA
+│   ├── service/          # Business logic
+│   ├── controller/       # Web controllers
+│   └── config/           # Security, initial data
+├── src/main/resources/
+│   ├── templates/        # Thymeleaf templates
+│   │   ├── ingredient/   # list.html, form.html
+│   │   ├── recipe/       # list.html, form.html
+│   │   ├── product/      # list.html, form.html
+│   │   ├── combo/        # list.html, form.html
+│   │   └── sale/         # pos.html, on-hold.html, history.html, detail.html
+│   └── static/           # CSS, JS
+└── src/test/             # 142 unit tests
 ```
 
 ---
 
-## Arquitectura Multi-Tenant
+## Multi-Tenant Architecture
 
-El sistema utiliza **aislamiento por `tenantId`** en cada entidad del dominio:
-
-- Cada empresa recibe un `tenantId` único al registrarse (formato: `tnt_` + UUID)
-- El campo `subdominio` en `Empresa` está preparado para futuros subdominios
-- `TenantContext` (ThreadLocal) mantiene el tenant actual durante el request
-- `TenantFilter` limpia el contexto al final de cada request para evitar fugas
-- Todas las queries filtran por `tenantId` para garantizar el aislamiento
+- Each restaurant has a unique `tenantId` (format: `tnt_` + UUID)
+- `TenantContext` (ThreadLocal) holds the current request tenant
+- `TenantFilter` extracts the subdomain from the `Host` header
+- All queries filter by `tenantId` for data isolation
+- Session cookie works across subdomains (`Domain=lvh.me` for dev)
 
 ---
 
-## Seguridad (OWASP Top 10)
+## Security (OWASP Top 10)
 
-### A01 — Broken Access Control
-- CSRF habilitado por defecto
-- Logout invalida sesión y borra JSESSIONID
-- Máximo 1 sesión por usuario
-- DTOs evitan mass assignment
-
-### A02 — Cryptographic Failures
-- BCryptPasswordEncoder con strength 12
-- Documento del encargado hasheado con BCrypt
-- Contraseñas temporales generadas con `SecureRandom`
-
-### A03 — Injection
-- Thymeleaf escapa HTML automáticamente (XSS)
-- JPA/Spring Data usa prepared statements (SQL injection)
-- `@Valid` en DTOs con `@Pattern` para bloquear caracteres maliciosos (`< > " &`)
-
-### A05 — Security Misconfiguration
-- Session timeout: 10 minutos de inactividad
-- Session fixation mitigation: `migrateSession()`
-- Headers: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`
-- Perfiles de configuración dev/prod separados
-
-### A07 — Identification & Authentication Failures
-- BCrypt para passwords
-- Email único global
-- Roles: `ADMIN` y `CAJERO` (enum `Rol`)
-- Cambio de contraseña forzado al primer login del cajero
+| Control | Implementation |
+|---|---|
+| **A01** Broken Access Control | CSRF, session invalidation, max 1 session, DTO mass assignment prevention |
+| **A02** Cryptographic Failures | BCrypt strength 12, SecureRandom for temp passwords |
+| **A03** Injection | Thymeleaf XSS escape, JPA prepared statements, `@Pattern` validation |
+| **A05** Security Misconfiguration | 10-min session timeout, session fixation mitigation, security headers |
+| **A07** Auth Failures | BCrypt passwords, unique email, role-based access, forced password change |
 
 ---
 
-## Comandos útiles
+## Commands
 
 ```bash
-# Compilar
-./mvnw compile
+# Run dev server
+./mvnw spring-boot:run
 
-# Ejecutar tests
+# Run all tests
 ./mvnw test
 
-# Ejecutar un test específico
-./mvnw test -Dtest=NombreClaseTest
+# Run specific test class
+./mvnw test -Dtest=ProductServiceTest
 
-# Construir JAR
+# Build JAR
 ./mvnw clean package
-
-# Ejecutar la aplicación
-./mvnw spring-boot:run
 ```
 
 ---
 
 ## Roadmap
 
-- [x] Seguridad OWASP Top 10 (A01-A07)
-- [x] DTOs con validación + MapStruct
-- [ ] Mobile-First responsive design (Offcanvas sidebar)
-- [ ] Gestión de mesas (estados, asignación de meseros)
-- [ ] Menú digital (categorías, productos, precios)
-- [ ] Sistema de pedidos (toma de pedidos, estados)
-- [ ] Reportes y análisis (ventas, productos más vendidos)
-- [ ] Múltiples sucursales por empresa
-- [ ] Subdominios reales por empresa
-- [ ] Recuperación de contraseña por email
-- [ ] Autenticación de dos factores (2FA)
+- [x] SaaS multi-tenant with subdomain resolution
+- [x] Authentication & authorization (3 roles)
+- [x] OWASP Top 10 security
+- [x] Ingredient management
+- [x] Recipe management with ingredients
+- [x] Product management (3 types)
+- [x] Combo system
+- [x] POS interface (hold/confirm flow)
+- [x] Sales history
+- [x] Mobile-first responsive design
+- [ ] Tables management
+- [ ] Adiciones (add-on product groups)
+- [ ] Inventory management
+- [ ] Supplier & purchase management
+- [ ] Cash register & closing
+- [ ] PDF receipt generation
+- [ ] X and Z reports
 
 ---
 
-## Contribución
+## License
 
-Este es un proyecto en desarrollo activo. Si deseas contribuir:
-
-1. Fork el repositorio
-2. Crea una rama para tu feature (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit tus cambios (`git commit -m 'Agregar nueva funcionalidad'`)
-4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
-5. Abre un Pull Request
+Proprietary — All rights reserved.
 
 ---
 
-## Licencia
+## Contact
 
-Este proyecto es de código propietario. Todos los derechos reservados.
-
----
-
-## Contacto
-
-**Desarrollado por**: Jose Gregorio  
-**Proyecto**: MiBombay - Sistema de gestión para restaurantes
+**Developer**: Jose Gregorio  
+**Project**: MiBombay — Restaurant Management System
 
 ---
 
 <p align="center">
-  <strong>Mi<span style="font-style: italic; color: #F4A261;">Bombay</span></strong> — Gestión sin fricción para tu restaurante
+  <strong>Mi<span style="font-style: italic; color: #F4A261;">Bombay</span></strong> — Seamless management for your restaurant
 </p>

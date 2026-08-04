@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -28,4 +29,12 @@ public interface ComboRepository extends JpaRepository<Combo, Long> {
     Page<Combo> findByFilters(@Param("tenantId") String tenantId,
                               @Param("name") String name,
                               Pageable pageable);
+
+    @Query("""
+            SELECT DISTINCT c FROM Combo c
+            LEFT JOIN FETCH c.details d
+            LEFT JOIN FETCH d.product p
+            WHERE c.tenantId = :tenantId AND c.active = true
+            """)
+    List<Combo> findAllActiveWithDetailsAndProducts(@Param("tenantId") String tenantId);
 }

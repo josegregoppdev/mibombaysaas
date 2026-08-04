@@ -41,4 +41,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                                 @Param("category") ProductCategory category,
                                 @Param("productType") ProductType productType,
                                 Pageable pageable);
+
+    @Query("""
+            SELECT DISTINCT p FROM Product p
+            LEFT JOIN FETCH p.recipe r
+            LEFT JOIN FETCH r.details d
+            LEFT JOIN FETCH d.ingredient i
+            WHERE p.tenantId = :tenantId AND p.active = true
+            """)
+    List<Product> findAllActiveWithRecipeAndIngredients(@Param("tenantId") String tenantId);
 }

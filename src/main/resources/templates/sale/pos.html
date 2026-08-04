@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>POS — MiBombay</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .sd-pos-page {
+            display: flex; flex-direction: column;
+            height: calc(100vh - var(--mb-nav-height) - 4rem);
+            min-height: 500px;
+        }
+        .sd-pos-layout { display: flex; flex: 1; overflow: hidden; border-radius: var(--mb-radius-lg); border: 1px solid var(--mb-border-light); }
+
+        /* Products panel */
+        .sd-pos-products { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--mb-bg); min-width: 0; }
+        .sd-pos-search { padding: 0.6rem 0.75rem; display: flex; align-items: center; border-bottom: 1px solid var(--mb-border-light); background: #fff; position: relative; flex-shrink: 0; }
+        .sd-pos-search i { position: absolute; left: 1.3rem; color: var(--mb-text-light); font-size: 0.85rem; }
+        .sd-pos-search-input { width: 100%; padding: 0.45rem 0.75rem 0.45rem 2.3rem; border: 1.5px solid var(--mb-border-light); border-radius: var(--mb-radius-sm); font-size: 0.85rem; background: var(--mb-blue-50); min-height: 38px; }
+        .sd-pos-search-input:focus { outline: none; border-color: var(--mb-blue-400); box-shadow: 0 0 0 0.15rem rgba(30,90,150,0.1); background: #fff; }
+
+        .sd-pos-grid { flex: 1; overflow-y: auto; padding: 0.6rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; align-content: start; }
+        .sd-pos-item { background: #fff; border: 1.5px solid var(--mb-border-light); border-radius: 10px; padding: 0.6rem 0.4rem; text-align: center; cursor: pointer; transition: all 0.12s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80px; position: relative; user-select: none; }
+        .sd-pos-item:hover { border-color: var(--mb-blue-300); box-shadow: var(--mb-shadow); transform: translateY(-1px); }
+        .sd-pos-item:active { transform: scale(0.96); }
+        .sd-pos-item-icon { font-size: 1.5rem; margin-bottom: 0.15rem; line-height: 1; }
+        .sd-pos-item-name { font-size: 0.78rem; font-weight: 600; color: var(--mb-text); margin-bottom: 0.05rem; line-height: 1.1; }
+        .sd-pos-item-price { font-size: 0.85rem; font-weight: 700; color: var(--mb-blue-700); }
+        .sd-pos-item-badge { position: absolute; top: 5px; right: 5px; font-size: 0.55rem; background: var(--mb-amber-500); color: #fff; padding: 0.08rem 0.4rem; border-radius: 8px; font-weight: 700; letter-spacing: 0.03em; }
+        .sd-pos-item.combo { border-left: 3px solid var(--mb-amber-500); }
+
+        /* Cart panel */
+        .sd-pos-cart { width: 340px; background: var(--mb-blue-900); color: #E8ECF1; display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; }
+        .sd-pos-cart-header { padding: 0.6rem 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+        .sd-pos-cart-header-title { display: flex; align-items: center; gap: 0.4rem; font-weight: 600; font-size: 0.88rem; color: #fff; }
+        .sd-pos-cart-count { background: var(--mb-amber-500); color: #1A1A1A; border-radius: 12px; padding: 0.08rem 0.5rem; font-size: 0.7rem; font-weight: 700; min-width: 22px; text-align: center; }
+        .sd-pos-cart-clear { background: none; border: none; color: rgba(255,255,255,0.35); font-size: 1rem; cursor: pointer; padding: 0.25rem; border-radius: 6px; }
+        .sd-pos-cart-clear:hover { color: var(--mb-error); background: rgba(230,57,70,0.12); }
+        .sd-pos-cart-header-actions { display: flex; align-items: center; gap: 0.2rem; }
+        .sd-pos-cart-close { display: none; background: none; border: none; color: rgba(255,255,255,0.35); font-size: 1.1rem; cursor: pointer; padding: 0.25rem; border-radius: 6px; }
+        .sd-pos-cart-close:hover { color: #fff; background: rgba(255,255,255,0.08); }
+
+        .sd-pos-cart-items { flex: 1; overflow-y: auto; padding: 0.4rem 0.5rem; min-height: 100px; }
+        .sd-pos-cart-empty { text-align: center; padding: 2.5rem 1rem; color: rgba(255,255,255,0.25); }
+        .sd-pos-cart-empty i { font-size: 2.2rem; display: block; margin-bottom: 0.5rem; opacity: 0.4; }
+        .sd-pos-cart-empty p { font-size: 0.8rem; margin: 0; }
+
+        .sd-pos-cart-row { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 0.5rem; margin-bottom: 0.3rem; }
+        .sd-pos-cart-row-name { font-size: 0.82rem; font-weight: 500; color: #fff; margin-bottom: 0.05rem; }
+        .sd-pos-cart-row-price { font-size: 0.7rem; color: rgba(255,255,255,0.4); }
+        .sd-pos-cart-row-controls { display: flex; align-items: center; justify-content: space-between; margin-top: 0.4rem; }
+        .sd-pos-qty-group { display: flex; align-items: center; gap: 0.25rem; }
+        .sd-pos-qty-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; transition: all 0.15s; }
+        .sd-pos-qty-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .sd-pos-qty-val { font-size: 0.8rem; font-weight: 600; color: #fff; min-width: 26px; text-align: center; }
+        .sd-pos-cart-row-sub { font-size: 0.85rem; font-weight: 600; color: #fff; }
+        .sd-pos-cart-row-del { background: none; border: none; color: rgba(255,255,255,0.3); font-size: 1rem; cursor: pointer; padding: 0.15rem 0.25rem; margin-left: 0.25rem; }
+        .sd-pos-cart-row-del:hover { color: var(--mb-error); }
+        .sd-pos-cart-row-edit { background: none; border: none; color: var(--mb-amber-500); font-size: 0.95rem; cursor: pointer; padding: 0.15rem 0.3rem; margin-left: 0.25rem; border-radius: 4px; }
+        .sd-pos-cart-row-edit:hover { background: rgba(244,162,97,0.15); }
+        .sd-pos-cart-row-excluded { font-size: 0.7rem; color: var(--mb-amber-500); margin-top: 0.3rem; display: flex; align-items: center; gap: 0.3rem; }
+        .sd-pos-cart-row-excluded .sd-pos-cart-row-excluded-clear { background: none; border: none; color: rgba(255,255,255,0.35); font-size: 0.8rem; cursor: pointer; padding: 0; line-height: 1; }
+        .sd-pos-cart-row-excluded .sd-pos-cart-row-excluded-clear:hover { color: var(--mb-error); }
+
+        /* Cart footer */
+        .sd-pos-cart-footer { border-top: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; padding: 0.6rem 0.75rem 0.75rem; }
+        .sd-pos-notes-toggle { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: rgba(255,255,255,0.5); cursor: pointer; margin-bottom: 0.4rem; padding: 0.3rem 0.5rem; border-radius: 6px; transition: all 0.15s; background: none; border: none; width: 100%; text-align: left; }
+        .sd-pos-notes-toggle:hover { color: #fff; background: rgba(255,255,255,0.06); }
+        .sd-pos-notes-input { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; color: #fff; padding: 0.4rem 0.5rem; font-size: 0.78rem; margin-bottom: 0.5rem; resize: none; min-height: 60px; font-family: inherit; }
+        .sd-pos-notes-input::placeholder { color: rgba(255,255,255,0.3); }
+        .sd-pos-notes-input:focus { outline: none; border-color: var(--mb-amber-400); }
+
+        .sd-pos-total { display: flex; align-items: baseline; justify-content: space-between; margin: 0.3rem 0 0.6rem; padding-top: 0.4rem; border-top: 1px dashed rgba(255,255,255,0.12); }
+        .sd-pos-total-label { font-size: 0.78rem; color: rgba(255,255,255,0.5); font-weight: 500; }
+        .sd-pos-total-val { font-size: 1.6rem; font-weight: 700; color: #fff; }
+
+        .sd-pos-pago-label { font-size: 0.72rem; font-weight: 600; color: rgba(255,255,255,0.5); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.04em; }
+        .sd-pos-pago-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.35rem; margin-bottom: 0.5rem; }
+        .sd-pos-pago-opt { background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 0.45rem 0.3rem; cursor: pointer; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 0.15rem; color: rgba(255,255,255,0.6); }
+        .sd-pos-pago-opt:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #fff; }
+        .sd-pos-pago-opt.selected { background: var(--mb-amber-500); border-color: var(--mb-amber-500); color: #1A1A1A; }
+        .sd-pos-pago-opt i { font-size: 1.1rem; }
+        .sd-pos-pago-opt span { font-size: 0.7rem; font-weight: 600; }
+
+        .sd-pos-btn-pagar { width: 100%; padding: 0.7rem; border-radius: 10px; font-size: 0.92rem; font-weight: 700; background: var(--mb-success); border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.4rem; min-height: 52px; box-shadow: 0 2px 10px rgba(42,157,143,0.35); transition: all 0.15s; letter-spacing: 0.02em; }
+        .sd-pos-btn-pagar:hover:not(:disabled) { background: #249486; box-shadow: 0 4px 14px rgba(42,157,143,0.45); transform: translateY(-1px); }
+        .sd-pos-btn-pagar:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
+
+        .sd-pos-btn-hold { width: 100%; padding: 0.5rem; border-radius: 8px; font-size: 0.82rem; font-weight: 600; background: transparent; border: 1.5px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.7); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.35rem; min-height: 42px; margin-bottom: 0.5rem; transition: all 0.15s; }
+        .sd-pos-btn-hold:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.3); color: #fff; }
+
+        /* Recipe edit modal */
+        .sd-recipe-modal { background: var(--mb-blue-900); color: #E8ECF1; border: 1px solid rgba(255,255,255,0.1); }
+        .sd-recipe-modal .modal-header { border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sd-recipe-modal .modal-footer { border-top: 1px solid rgba(255,255,255,0.1); }
+        .sd-recipe-modal .modal-title { color: #fff; font-size: 1rem; }
+        .sd-recipe-help { font-size: 0.78rem; color: rgba(255,255,255,0.55); margin-bottom: 0.6rem; }
+        .sd-recipe-check { display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.4rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+        .sd-recipe-check:hover { background: rgba(255,255,255,0.05); }
+        .sd-recipe-check input { width: 16px; height: 16px; cursor: pointer; accent-color: var(--mb-amber-500); }
+        .sd-recipe-empty { font-size: 0.85rem; color: rgba(255,255,255,0.5); font-style: italic; padding: 0.5rem 0; }
+
+        /* Recipe tree (combo view) */
+        .sd-recipe-tree { font-size: 0.88rem; }
+        .sd-recipe-tree-root { font-weight: 700; color: #fff; padding: 0.3rem 0; margin-bottom: 0.3rem; }
+        .sd-recipe-tree-root i { color: var(--mb-amber-500); margin-right: 0.3rem; }
+        .sd-recipe-tree-list, .sd-recipe-tree-leaves { list-style: none; padding-left: 1.1rem; margin: 0; border-left: 1px solid rgba(255,255,255,0.12); }
+        .sd-recipe-tree-product { padding: 0.25rem 0 0.25rem 0.3rem; }
+        .sd-recipe-tree-product-name { font-weight: 600; color: var(--mb-amber-500); padding: 0.15rem 0; }
+        .sd-recipe-tree-product-name i { margin-right: 0.3rem; opacity: 0.85; }
+        .sd-recipe-tree-connector { color: rgba(255,255,255,0.35); font-family: monospace; margin-right: 0.25rem; user-select: none; }
+        .sd-recipe-tree-leaf { padding: 0.1rem 0; }
+        .sd-recipe-tree-leaf-connector { display: inline-block; min-width: 1.2rem; }
+        .sd-recipe-tree-empty-leaf { color: rgba(255,255,255,0.45); font-style: italic; font-size: 0.82rem; padding: 0.15rem 0 0.15rem 1.2rem; }
+
+        .sd-pos-cart-fab { display: none; }
+
+        @media (max-width: 767.98px) {
+            .sd-pos-page { height: auto; min-height: 0; }
+            .sd-pos-layout { flex-direction: column; overflow: visible; }
+            .sd-pos-products { flex: none; overflow: visible; }
+            .sd-pos-grid { flex: none; overflow: visible; grid-template-columns: repeat(3, 1fr); }
+
+            .sd-pos-cart {
+                position: fixed;
+                top: var(--mb-nav-height);
+                right: 0;
+                bottom: 0;
+                width: 88%;
+                max-width: 360px;
+                height: auto;
+                max-height: none;
+                transform: translateX(100%);
+                transition: transform 0.28s ease;
+                z-index: 1055;
+                border-top: none;
+                border-left: 1px solid rgba(255,255,255,0.08);
+                box-shadow: -4px 0 20px rgba(0,0,0,0.35);
+            }
+            .sd-pos-cart.open { transform: translateX(0); }
+
+            .sd-pos-cart-backdrop {
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 1050;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.2s, visibility 0.2s;
+            }
+            .sd-pos-cart-backdrop.open { opacity: 1; visibility: visible; }
+
+            .sd-pos-cart-fab {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                position: fixed;
+                bottom: 1rem;
+                right: 1rem;
+                z-index: 1045;
+                background: var(--mb-blue-900);
+                color: #fff;
+                border: none;
+                border-radius: 50px;
+                padding: 0.7rem 1.1rem;
+                box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+                font-weight: 600;
+                cursor: pointer;
+                min-height: 48px;
+            }
+            .sd-pos-cart-fab-total { font-size: 0.9rem; }
+            .sd-pos-cart-fab-count {
+                background: var(--mb-amber-500);
+                color: #1A1A1A;
+                border-radius: 12px;
+                padding: 0.1rem 0.5rem;
+                font-size: 0.75rem;
+                font-weight: 700;
+            }
+
+            .sd-pos-cart-close { display: flex; }
+        }
+        @media (min-width: 992px) {
+            .sd-pos-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (min-width: 1400px) {
+            .sd-pos-grid { grid-template-columns: repeat(4, 1fr); }
+            .sd-pos-cart { width: 380px; }
+        }
+    </style>
+</head>
+<body class="mb-dashboard">
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+    <div th:replace="~{fragments/sidebar :: sidebarOffcanvas}"></div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 d-none d-md-block mb-sidebar-col">
+                <div th:replace="~{fragments/sidebar :: sidebarInline}"></div>
+            </div>
+
+            <main class="col-md-9 col-lg-10 mb-main-col" style="padding:1.5rem">
+                <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i><span th:text="${message}">Message</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${error}">Error</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <div class="sd-pos-page">
+                    <div class="sd-pos-layout">
+                        <!-- Products Panel -->
+                        <div class="sd-pos-products">
+                            <div class="sd-pos-search">
+                                <i class="bi bi-search"></i>
+                                <input type="text" class="sd-pos-search-input" id="searchInput" placeholder="Search products..." autofocus>
+                            </div>
+
+                            <div class="sd-pos-grid" id="productGrid">
+                                <!-- Combos -->
+                                <div th:each="cmb : ${combos.content}" class="sd-pos-item combo"
+                                     th:attr="data-id=${cmb.id},data-name=${cmb.name},data-price=${cmb.sellingPrice},data-type='combo'">
+                                    <div class="sd-pos-item-icon"><i class="bi bi-star-fill" style="color:var(--mb-amber-500)"></i></div>
+                                    <div class="sd-pos-item-name" th:text="${cmb.name}">Combo</div>
+                                    <div class="sd-pos-item-price" th:text="'$' + ${#numbers.formatDecimal(cmb.sellingPrice, 1, 0)}">$0</div>
+                                    <div class="sd-pos-item-badge">COMBO</div>
+                                </div>
+                                <!-- Products -->
+                                <div th:each="prod : ${products.content}" class="sd-pos-item"
+                                     th:attr="data-id=${prod.id},data-name=${prod.name},data-price=${prod.sellingPrice},data-type='product'">
+                                    <div class="sd-pos-item-icon">
+                                        <i th:if="${prod.category?.name() == 'FOOD'}" class="bi bi-egg-fried" style="color:#E63946"></i>
+                                        <i th:if="${prod.category?.name() == 'DRINKS'}" class="bi bi-cup-straw" style="color:var(--mb-blue-500)"></i>
+                                        <i th:if="${prod.category?.name() == 'DESSERTS'}" class="bi bi-cake" style="color:#E8A0BF"></i>
+                                        <i th:if="${prod.category?.name() == 'SIDES'}" class="bi bi-egg" style="color:var(--mb-amber-500)"></i>
+                                        <i th:unless="${prod.category?.name() == 'FOOD' or prod.category?.name() == 'DRINKS' or prod.category?.name() == 'DESSERTS' or prod.category?.name() == 'SIDES'}" class="bi bi-box" style="color:var(--mb-text-muted)"></i>
+                                    </div>
+                                    <div class="sd-pos-item-name" th:text="${prod.name}">Product</div>
+                                    <div class="sd-pos-item-price" th:text="'$' + ${#numbers.formatDecimal(prod.sellingPrice, 1, 0)}">$0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cart Panel -->
+                        <div class="sd-pos-cart">
+                            <div class="sd-pos-cart-header">
+                                <div class="sd-pos-cart-header-title">
+                                    <i class="bi bi-cart3"></i>
+                                    <span>Cart</span>
+                                    <span class="sd-pos-cart-count" id="cartCount">0</span>
+                                </div>
+                                <div class="sd-pos-cart-header-actions">
+                                    <button type="button" class="sd-pos-cart-close" id="cartClose" title="Close cart">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                    <button type="button" class="sd-pos-cart-clear" id="clearBtn" title="Clear cart">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="sd-pos-cart-items" id="cartItems">
+                                <div class="sd-pos-cart-empty" id="cartEmpty">
+                                    <i class="bi bi-bag"></i>
+                                    <p>Tap a product to add it</p>
+                                </div>
+                            </div>
+
+                            <div class="sd-pos-cart-footer" id="cartFooter" style="display:none">
+                                <button type="button" class="sd-pos-notes-toggle" id="notesToggle">
+                                    <i class="bi bi-chat-dots"></i>
+                                    <span id="notesToggleLabel">Add note</span>
+                                </button>
+                                <textarea class="sd-pos-notes-input" id="notesInput" placeholder="Notes for this sale..." style="display:none"></textarea>
+
+                                <div class="sd-pos-total">
+                                    <span class="sd-pos-total-label">TOTAL</span>
+                                    <span class="sd-pos-total-val" id="cartTotalVal">$0</span>
+                                </div>
+
+                                <div class="sd-pos-pago-label">Payment method</div>
+                                <div class="sd-pos-pago-grid">
+                                    <button type="button" class="sd-pos-pago-opt" data-metodo="EFECTIVO">
+                                        <i class="bi bi-cash-stack"></i><span>Cash</span>
+                                    </button>
+                                    <button type="button" class="sd-pos-pago-opt" data-metodo="DATAFONO">
+                                        <i class="bi bi-credit-card-2-front"></i><span>Card</span>
+                                    </button>
+                                    <button type="button" class="sd-pos-pago-opt" data-metodo="TRANSFERENCIA">
+                                        <i class="bi bi-bank"></i><span>Transfer</span>
+                                    </button>
+                                </div>
+
+                                <button type="button" class="sd-pos-btn-hold" id="holdBtn">
+                                    <i class="bi bi-pause-circle"></i>Hold Sale
+                                </button>
+
+                                <button type="button" class="sd-pos-btn-pagar" id="chargeBtn" disabled>
+                                    <i class="bi bi-check-lg"></i><span id="chargeLabel">CHARGE</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hidden form for submission -->
+                <form id="saleForm" th:action="@{/sale/pos/confirm}" method="post" style="display:none">
+                    <div id="formFields"></div>
+                    <input type="hidden" name="paymentMethod" id="formPaymentMethod" value="">
+                    <input type="hidden" name="observations" id="formObservations" value="">
+                </form>
+                <form id="holdForm" th:action="@{/sale/pos/hold}" method="post" style="display:none">
+                    <div id="holdFormFields"></div>
+                    <input type="hidden" name="observations" id="holdFormObservations" value="">
+                </form>
+
+                <div class="modal fade" id="recipeModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+                        <div class="modal-content sd-recipe-modal">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="recipeModalTitle">Edit recipe</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="recipeModalBody"></div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-primary" id="recipeModalSave">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sd-pos-cart-backdrop" id="cartBackdrop"></div>
+                <button type="button" class="sd-pos-cart-fab" id="cartFab" aria-label="Open cart">
+                    <i class="bi bi-cart3"></i>
+                    <span class="sd-pos-cart-fab-count" id="cartFabCount">0</span>
+                    <span class="sd-pos-cart-fab-total" id="cartFabTotal">$0</span>
+                </button>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        var cart = [];
+        var selectedMetodo = null;
+        var recipeData = /*[[${recipeData}]]*/ {productIngredients: {}, comboProductIds: {}};
+
+        // Prefill from resume
+        var prefill = /*[[${prefillCart}]]*/ null;
+        if (prefill && Array.isArray(prefill)) {
+            prefill.forEach(function(item) {
+                if (item.productId) {
+                    cart.push({type: 'product', id: item.productId, name: item.productName, price: item.salePrice, quantity: item.quantity, excludedIngredients: []});
+                } else if (item.comboId) {
+                    cart.push({type: 'combo', id: item.comboId, name: item.comboName, price: item.salePrice, quantity: item.quantity, excludedIngredients: []});
+                }
+            });
+        }
+
+        function fmt(val) {
+            return '$' + Number(val).toLocaleString('es-CO', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+        }
+
+        function getTotal() {
+            return cart.reduce(function(s, i) { return s + i.quantity * i.price; }, 0);
+        }
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, function(c) {
+                return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+            });
+        }
+
+        function canEditRecipe(item) {
+            if (!recipeData) return false;
+            if (item.type === 'product') {
+                var list = recipeData.productIngredients[String(item.id)];
+                return Array.isArray(list) && list.length > 0;
+            } else if (item.type === 'combo') {
+                var pids = recipeData.comboProductIds[String(item.id)];
+                return Array.isArray(pids) && pids.length > 0;
+            }
+            return false;
+        }
+
+        function getProductName(productId) {
+            if (!recipeData || !recipeData.productNames) return null;
+            return recipeData.productNames[String(productId)] || null;
+        }
+
+        function getProductIngredients(productId) {
+            if (!recipeData) return [];
+            var list = recipeData.productIngredients[String(productId)];
+            return Array.isArray(list) ? list : [];
+        }
+
+        function getComboAllProducts(comboId) {
+            if (!recipeData) return [];
+            var pids = recipeData.comboProductIds[String(comboId)] || [];
+            return pids.map(function(pid) {
+                var ings = recipeData.productIngredients[String(pid)] || [];
+                return {
+                    productId: parseInt(pid),
+                    name: getProductName(pid) || ('Product #' + pid),
+                    ingredients: ings
+                };
+            });
+        }
+
+        function addToCart(type, id, name, price) {
+            var existing = cart.find(function(i) { return i.type === type && i.id === id; });
+            if (existing) {
+                existing.quantity++;
+            } else {
+                cart.push({type: type, id: id, name: name, price: price, quantity: 1, excludedIngredients: []});
+            }
+            render();
+        }
+
+        function changeQty(idx, delta) {
+            cart[idx].quantity += delta;
+            if (cart[idx].quantity <= 0) cart.splice(idx, 1);
+            render();
+        }
+
+        function removeItem(idx) {
+            cart.splice(idx, 1);
+            render();
+        }
+
+        function clearCart() {
+            if (cart.length === 0) return;
+            if (!confirm('Clear cart?')) return;
+            cart = [];
+            render();
+        }
+
+        function render() {
+            var items = document.getElementById('cartItems');
+            var empty = document.getElementById('cartEmpty');
+            var footer = document.getElementById('cartFooter');
+            var count = document.getElementById('cartCount');
+            var totalVal = document.getElementById('cartTotalVal');
+            var chargeBtn = document.getElementById('chargeBtn');
+            var chargeLabel = document.getElementById('chargeLabel');
+
+            count.textContent = cart.length;
+            var fabCount = document.getElementById('cartFabCount');
+            var fabTotal = document.getElementById('cartFabTotal');
+            if (fabCount) fabCount.textContent = cart.length;
+            if (fabTotal) fabTotal.textContent = fmt(getTotal());
+
+            if (cart.length === 0) {
+                empty.style.display = '';
+                items.querySelectorAll('.sd-pos-cart-row').forEach(function(el) { el.remove(); });
+                footer.style.display = 'none';
+                return;
+            }
+
+            empty.style.display = 'none';
+            footer.style.display = '';
+            items.querySelectorAll('.sd-pos-cart-row').forEach(function(el) { el.remove(); });
+
+            cart.forEach(function(item, i) {
+                var row = document.createElement('div');
+                row.className = 'sd-pos-cart-row';
+                var editBtnHtml = canEditRecipe(item)
+                    ? '<button type="button" class="sd-pos-cart-row-edit" data-act="edit-recipe" data-idx="' + i + '" title="Edit recipe"><i class="bi bi-list-check"></i></button>'
+                    : '';
+                var excludedHtml = '';
+                if (item.excludedIngredients && item.excludedIngredients.length > 0) {
+                    excludedHtml = '<div class="sd-pos-cart-row-excluded">' +
+                        '<i class="bi bi-slash-circle"></i>' +
+                        '<span>Without: ' + escapeHtml(item.excludedIngredients.map(function(e){return e.name;}).join(', ')) + '</span>' +
+                        '<button type="button" class="sd-pos-cart-row-excluded-clear" data-act="clear-excluded" data-idx="' + i + '" title="Clear exclusions">&times;</button>' +
+                        '</div>';
+                }
+                row.innerHTML =
+                    '<div class="sd-pos-cart-row-name">' + escapeHtml(item.name) + '</div>' +
+                    '<div class="sd-pos-cart-row-price">' + fmt(item.price) + ' each</div>' +
+                    excludedHtml +
+                    '<div class="sd-pos-cart-row-controls">' +
+                        '<div class="sd-pos-qty-group">' +
+                            '<button type="button" class="sd-pos-qty-btn" data-act="minus" data-idx="' + i + '">&minus;</button>' +
+                            '<span class="sd-pos-qty-val">' + item.quantity + '</span>' +
+                            '<button type="button" class="sd-pos-qty-btn" data-act="plus" data-idx="' + i + '">+</button>' +
+                        '</div>' +
+                        '<div style="display:flex;align-items:center;gap:0.25rem">' +
+                            '<span class="sd-pos-cart-row-sub">' + fmt(item.quantity * item.price) + '</span>' +
+                            editBtnHtml +
+                            '<button type="button" class="sd-pos-cart-row-del" data-act="del" data-idx="' + i + '">&times;</button>' +
+                        '</div>' +
+                    '</div>';
+                items.appendChild(row);
+            });
+
+            var total = getTotal();
+            totalVal.textContent = fmt(total);
+            chargeLabel.textContent = 'CHARGE ' + fmt(total);
+            chargeBtn.disabled = !selectedMetodo;
+        }
+
+        // Product click → add
+        document.getElementById('productGrid').addEventListener('click', function(e) {
+            var item = e.target.closest('.sd-pos-item');
+            if (!item) return;
+            addToCart(item.dataset.type, parseInt(item.dataset.id), item.dataset.name, parseFloat(item.dataset.price));
+            item.style.transform = 'scale(0.94)';
+            setTimeout(function() { item.style.transform = ''; }, 120);
+        });
+
+        // Qty controls
+        document.getElementById('cartItems').addEventListener('click', function(e) {
+            var btn = e.target.closest('[data-act]');
+            if (!btn) return;
+            var idx = parseInt(btn.dataset.idx);
+            if (btn.dataset.act === 'plus') changeQty(idx, 1);
+            else if (btn.dataset.act === 'minus') changeQty(idx, -1);
+            else if (btn.dataset.act === 'del') removeItem(idx);
+            else if (btn.dataset.act === 'edit-recipe') openRecipeEditor(idx);
+            else if (btn.dataset.act === 'clear-excluded') { cart[idx].excludedIngredients = []; render(); }
+        });
+
+        // Clear
+        document.getElementById('clearBtn').addEventListener('click', clearCart);
+
+        // Search
+        document.getElementById('searchInput').addEventListener('input', function() {
+            var q = this.value.toLowerCase();
+            document.querySelectorAll('.sd-pos-item').forEach(function(el) {
+                el.style.display = (el.dataset.name || '').toLowerCase().includes(q) ? '' : 'none';
+            });
+        });
+
+        // Notes toggle
+        document.getElementById('notesToggle').addEventListener('click', function() {
+            var input = document.getElementById('notesInput');
+            var label = document.getElementById('notesToggleLabel');
+            if (input.style.display === 'none') {
+                input.style.display = '';
+                label.textContent = 'Hide note';
+                input.focus();
+            } else {
+                input.style.display = 'none';
+                label.textContent = 'Add note';
+            }
+        });
+
+        // Payment selection
+        document.querySelectorAll('.sd-pos-pago-opt').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.sd-pos-pago-opt').forEach(function(b) { b.classList.remove('selected'); });
+                this.classList.add('selected');
+                selectedMetodo = this.dataset.metodo;
+                render();
+            });
+        });
+
+        // Recipe editor
+        var editingCartIdx = -1;
+        var recipeModal = null;
+        var recipeModalEl = document.getElementById('recipeModal');
+        if (recipeModalEl && window.bootstrap) {
+            recipeModal = new bootstrap.Modal(recipeModalEl);
+        }
+
+        function openRecipeEditor(idx) {
+            var item = cart[idx];
+            if (!item || !canEditRecipe(item)) return;
+            editingCartIdx = idx;
+
+            var title = document.getElementById('recipeModalTitle');
+            var body = document.getElementById('recipeModalBody');
+            title.textContent = item.name + ' — Edit recipe';
+
+            var excludedIds = (item.excludedIngredients || []).map(function(e) { return e.id; });
+
+            if (item.type === 'product') {
+                var ings = getProductIngredients(item.id);
+                var html = '<p class="sd-recipe-help">Uncheck the ingredients the customer does not want.</p>';
+                html += '<div class="sd-recipe-tree">';
+                html += renderProductBranch(item.name, ings, excludedIds);
+                html += '</div>';
+                body.innerHTML = html;
+            } else if (item.type === 'combo') {
+                var groups = getComboAllProducts(item.id);
+                var html = '<p class="sd-recipe-help">Uncheck the ingredients the customer does not want.</p>';
+                html += '<div class="sd-recipe-tree">';
+                html += '<div class="sd-recipe-tree-root"><i class="bi bi-folder2-open"></i> ' + escapeHtml(item.name) + '</div>';
+                html += '<ul class="sd-recipe-tree-list">';
+                groups.forEach(function(g, idx) {
+                    var isLast = idx === groups.length - 1;
+                    html += renderComboProductNode(g, excludedIds, isLast);
+                });
+                html += '</ul>';
+                html += '</div>';
+                body.innerHTML = html;
+            }
+
+            if (recipeModal) recipeModal.show();
+        }
+
+        function renderComboProductNode(group, excludedIds, isLast) {
+            var connector = isLast ? '└─' : '├─';
+            var html = '<li class="sd-recipe-tree-product">';
+            html += '<div class="sd-recipe-tree-product-name"><span class="sd-recipe-tree-connector">' + connector + '</span> <i class="bi bi-box"></i> ' + escapeHtml(group.name) + '</div>';
+            if (group.ingredients.length > 0) {
+                html += '<ul class="sd-recipe-tree-leaves">';
+                group.ingredients.forEach(function(ing, j) {
+                    var leafConnector = isLast ? '&nbsp;&nbsp;' : '│&nbsp;';
+                    var checked = excludedIds.indexOf(ing.id) === -1;
+                    html += '<li class="sd-recipe-tree-leaf">';
+                    html += '<span class="sd-recipe-tree-connector sd-recipe-tree-leaf-connector">' + leafConnector + '</span>';
+                    html += '<label class="sd-recipe-check">';
+                    html += '<input type="checkbox" data-ing-id="' + ing.id + '" data-ing-name="' + escapeHtml(ing.name) + '"' + (checked ? ' checked' : '') + '>';
+                    html += '<span>' + escapeHtml(ing.name) + '</span>';
+                    html += '</label>';
+                    html += '</li>';
+                });
+                html += '</ul>';
+            } else {
+                html += '<div class="sd-recipe-tree-empty-leaf">(no customizations)</div>';
+            }
+            html += '</li>';
+            return html;
+        }
+
+        function renderProductBranch(name, ingredients, excludedIds) {
+            var html = '<div class="sd-recipe-tree-product">';
+            html += '<div class="sd-recipe-tree-product-name"><i class="bi bi-box"></i> ' + escapeHtml(name) + '</div>';
+            if (ingredients.length === 0) {
+                html += '<div class="sd-recipe-tree-empty-leaf">(no customizations)</div>';
+            } else {
+                html += '<ul class="sd-recipe-tree-leaves">';
+                ingredients.forEach(function(ing) {
+                    var checked = excludedIds.indexOf(ing.id) === -1;
+                    html += '<li class="sd-recipe-tree-leaf">';
+                    html += '<label class="sd-recipe-check">';
+                    html += '<input type="checkbox" data-ing-id="' + ing.id + '" data-ing-name="' + escapeHtml(ing.name) + '"' + (checked ? ' checked' : '') + '>';
+                    html += '<span>' + escapeHtml(ing.name) + '</span>';
+                    html += '</label>';
+                    html += '</li>';
+                });
+                html += '</ul>';
+            }
+            html += '</div>';
+            return html;
+        }
+
+        function saveRecipeEditor() {
+            if (editingCartIdx < 0 || !cart[editingCartIdx]) return;
+            var body = document.getElementById('recipeModalBody');
+            var checks = body.querySelectorAll('input[type="checkbox"][data-ing-id]');
+            var excluded = [];
+            checks.forEach(function(cb) {
+                if (!cb.checked) {
+                    excluded.push({id: parseInt(cb.dataset.ingId), name: cb.dataset.ingName});
+                }
+            });
+            cart[editingCartIdx].excludedIngredients = excluded;
+            editingCartIdx = -1;
+            if (recipeModal) recipeModal.hide();
+            render();
+        }
+
+        var recipeSaveBtn = document.getElementById('recipeModalSave');
+        if (recipeSaveBtn) recipeSaveBtn.addEventListener('click', saveRecipeEditor);
+
+        // Build form fields from cart
+        function buildFormFields(containerId) {
+            var container = document.getElementById(containerId);
+            container.innerHTML = '';
+            cart.forEach(function(item, i) {
+                var typeInput = document.createElement('input');
+                typeInput.type = 'hidden';
+                typeInput.name = 'items[' + i + '].' + (item.type === 'combo' ? 'comboId' : 'productId');
+                typeInput.value = item.id;
+                container.appendChild(typeInput);
+
+                var qtyInput = document.createElement('input');
+                qtyInput.type = 'hidden';
+                qtyInput.name = 'items[' + i + '].quantity';
+                qtyInput.value = item.quantity;
+                container.appendChild(qtyInput);
+
+                if (item.excludedIngredients && item.excludedIngredients.length > 0) {
+                    var names = item.excludedIngredients.map(function(e) { return e.name; }).join(', ');
+                    var notesInput = document.createElement('input');
+                    notesInput.type = 'hidden';
+                    notesInput.name = 'items[' + i + '].notes';
+                    notesInput.value = 'Without: ' + names;
+                    container.appendChild(notesInput);
+                }
+            });
+        }
+
+        // Charge (confirm)
+        document.getElementById('chargeBtn').addEventListener('click', function() {
+            if (cart.length === 0) { alert('Cart is empty'); return; }
+            if (!selectedMetodo) { alert('Select a payment method'); return; }
+            buildFormFields('formFields');
+            document.getElementById('formPaymentMethod').value = selectedMetodo;
+            document.getElementById('formObservations').value = document.getElementById('notesInput').value;
+            document.getElementById('saleForm').submit();
+        });
+
+        // Hold
+        document.getElementById('holdBtn').addEventListener('click', function() {
+            if (cart.length === 0) { alert('Cart is empty'); return; }
+            buildFormFields('holdFormFields');
+            document.getElementById('holdFormObservations').value = document.getElementById('notesInput').value;
+            document.getElementById('holdForm').submit();
+        });
+
+        // Drawer controls (mobile)
+        function openCartDrawer() {
+            var cartEl = document.querySelector('.sd-pos-cart');
+            var backdrop = document.getElementById('cartBackdrop');
+            if (cartEl) cartEl.classList.add('open');
+            if (backdrop) backdrop.classList.add('open');
+        }
+        function closeCartDrawer() {
+            var cartEl = document.querySelector('.sd-pos-cart');
+            var backdrop = document.getElementById('cartBackdrop');
+            if (cartEl) cartEl.classList.remove('open');
+            if (backdrop) backdrop.classList.remove('open');
+        }
+        var cartFab = document.getElementById('cartFab');
+        if (cartFab) cartFab.addEventListener('click', openCartDrawer);
+        var cartClose = document.getElementById('cartClose');
+        if (cartClose) cartClose.addEventListener('click', closeCartDrawer);
+        var cartBackdrop = document.getElementById('cartBackdrop');
+        if (cartBackdrop) cartBackdrop.addEventListener('click', closeCartDrawer);
+
+        // Initial render
+        render();
+    </script>
+</body>
+</html>
