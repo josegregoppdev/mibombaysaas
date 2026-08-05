@@ -1,7 +1,7 @@
 package com.josegregoppdev.mibombay.controller.admin;
 
-import com.josegregoppdev.mibombay.model.company.Company;
-import com.josegregoppdev.mibombay.repository.company.CompanyRepository;
+import com.josegregoppdev.mibombay.dto.company.CompanyDTOResponse;
+import com.josegregoppdev.mibombay.service.company.CompanyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,13 +15,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final CompanyRepository companyRepository;
+    private final CompanyService companyService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        List<Company> companies = companyRepository.findAll();
+        List<CompanyDTOResponse> companies = companyService.getAllCompanies();
         long total = companies.size();
-        long activeCount = companies.stream().filter(Company::getActive).count();
+        long activeCount = companies.stream().filter(c -> Boolean.TRUE.equals(c.getActive())).count();
         long inactiveCount = total - activeCount;
 
         model.addAttribute("total", total);
@@ -32,7 +32,7 @@ public class AdminController {
 
     @GetMapping("/companies")
     public String companies(Model model) {
-        List<Company> companies = companyRepository.findAll();
+        List<CompanyDTOResponse> companies = companyService.getAllCompanies();
         model.addAttribute("companies", companies);
         return "admin/companies";
     }

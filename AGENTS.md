@@ -166,22 +166,20 @@ Real properties files are in `.gitignore`.
 | `CompanyRegistrationServiceTest` | 7 |
 | `PasswordGeneratorServiceTest` | 8 |
 | `CustomUserDetailsServiceTest` | 7 |
+| `UserServiceTest` | 4 |
 | `IngredientServiceTest` | 15 |
 | `RecipeServiceTest` | 14 |
 | `ProductServiceTest` | 19 |
 | `ComboServiceTest` | 14 |
 | `LandingControllerTest` | 1 |
 | `LoginControllerTest` | 6 |
-| `PasswordChangeControllerTest` | 4 |
-| `DashboardControllerTest` | 4 |
 | `CompanyRegistrationControllerTest` | 4 |
-| `AdminControllerTest` | 2 |
 | `IngredientControllerTest` | 13 |
 | `RecipeControllerTest` | 13 |
 | `ProductControllerTest` | 13 |
 | `ComboControllerTest` | 12 |
 | `MibombayApplicationTests` | 1 |
-| Total | 142 |
+| Total | 150 |
 
 ```bash
 ./mvnw test
@@ -272,7 +270,7 @@ The `thymeleaf-restaurant` skill is the primary guide — it references HTMX and
 
 - Use Lombok annotations on entities/DTOs to reduce boilerplate
 - **DTOs**: `CompanyDTORequest`/`CompanyDTOResponse` for company, `UserDTORequest`/`UserDTOResponse` for user. The rest use simple `@RequestParam` without DTO
-- **Spring MVC + DTOs (form/view)**: This project uses Spring MVC. The form (Thymeleaf view) ALWAYS works with DTOs, never with JPA entities. Services return DTOs to the controller. The controller calls services, not repositories. Entities are never passed to the view.
+- **Spring MVC + DTOs and thin controllers**: This project uses Spring MVC. The form (Thymeleaf view) ALWAYS works with DTOs, never with JPA entities. Services return DTOs to the controller. The controller calls services, never repositories. **Business logic (validation rules, entity mutations, persistence operations) lives in the service layer**, not in the controller. The controller only does presentation: form binding, input validation that compares form fields, calling the service, handling service exceptions, and returning the view.
 - **MapStruct**: `@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)` in interfaces inside `mapper/`
 - **Entities**: no Javax/Jakarta validations, JPA annotations only
 - **Validations**: in DTOs, not in entities

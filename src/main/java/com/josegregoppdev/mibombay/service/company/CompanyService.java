@@ -15,11 +15,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class CompanyRegistrationService {
+public class CompanyService {
 
     private final CompanyRepository companyRepository;
     private final UserRepository userRepository;
@@ -75,6 +76,20 @@ public class CompanyRegistrationService {
                 .cashierEmail(cashierEmail)
                 .cashierPassword(cashierPassword)
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public CompanyDTOResponse getCompanyByTenantId(String tenantId) {
+        Company company = companyRepository.findByTenantId(tenantId)
+                .orElseThrow(() -> new IllegalArgumentException("Company not found"));
+        return companyMapper.toResponse(company);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CompanyDTOResponse> getAllCompanies() {
+        return companyRepository.findAll().stream()
+                .map(companyMapper::toResponse)
+                .toList();
     }
 
     private void validateSubdomain(String subdomain) {

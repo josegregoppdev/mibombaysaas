@@ -2,7 +2,7 @@ package com.josegregoppdev.mibombay.controller.company;
 
 import com.josegregoppdev.mibombay.dto.company.CompanyDTORequest;
 import com.josegregoppdev.mibombay.dto.company.CompanyDTOResponse;
-import com.josegregoppdev.mibombay.service.company.CompanyRegistrationService;
+import com.josegregoppdev.mibombay.service.company.CompanyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequiredArgsConstructor
 public class CompanyRegistrationController {
 
-    private final CompanyRegistrationService companyRegistrationService;
+    private final CompanyService companyService;
 
     @GetMapping
     public String showForm(Model model) {
@@ -35,7 +35,7 @@ public class CompanyRegistrationController {
         }
 
         try {
-            CompanyDTOResponse result = companyRegistrationService.register(companyRequest);
+            CompanyDTOResponse result = companyService.register(companyRequest);
             model.addAttribute("result", result);
             return "registration-success";
         } catch (IllegalArgumentException e) {

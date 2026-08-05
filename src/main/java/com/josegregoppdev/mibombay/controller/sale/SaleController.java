@@ -5,11 +5,10 @@ import com.josegregoppdev.mibombay.dto.sale.CartSubmissionDTO;
 import com.josegregoppdev.mibombay.dto.sale.SaleDTO;
 import com.josegregoppdev.mibombay.dto.sale.SaleDetailDTO;
 import com.josegregoppdev.mibombay.model.sale.PaymentMethod;
-import com.josegregoppdev.mibombay.model.user.User;
-import com.josegregoppdev.mibombay.repository.user.UserRepository;
 import com.josegregoppdev.mibombay.service.combo.ComboService;
 import com.josegregoppdev.mibombay.service.product.ProductService;
 import com.josegregoppdev.mibombay.service.sale.SaleService;
+import com.josegregoppdev.mibombay.service.user.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -31,9 +30,9 @@ import java.util.List;
 public class SaleController {
 
     private final SaleService saleService;
-    private final UserRepository userRepository;
     private final ProductService productService;
     private final ComboService comboService;
+    private final UserService userService;
 
     @GetMapping("/pos")
     public String showPOS(Model model, HttpSession session) {
@@ -162,9 +161,7 @@ public class SaleController {
             throw new IllegalArgumentException("Not authenticated");
         }
         String email = auth.getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        return user.getId();
+        return userService.getUserByEmail(email).getId();
     }
 
     private boolean isAdmin() {
