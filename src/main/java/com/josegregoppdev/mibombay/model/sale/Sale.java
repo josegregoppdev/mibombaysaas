@@ -40,6 +40,9 @@ public class Sale extends AuditableEntity {
     @Column(name = "payment_method", length = 20)
     private PaymentMethod paymentMethod;
 
+    @Column(name = "amount_received", precision = 12, scale = 4)
+    private BigDecimal amountReceived;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cashier_id", nullable = false)
     private User cashier;

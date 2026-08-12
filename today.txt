@@ -1,41 +1,54 @@
-# Today — 2026-08-03
+# Today — 2026-08-11
 
-Session log: sale module polish + "Edit recipe" feature.
+Session log: Supplier module (encrypted CRUD) + default supplier (isDefault) for demo and new companies.
 
 ## Objective
-- Polish the sale (POS) module: make it feel like a real restaurant bar POS, fix mobile overflow, and match the dark-blue sidebar tone.
-- Add an **"Edit recipe"** button in the cart so the cashier can see the recipe of a product/combo and uncheck ingredients the customer does not want. The exclusions are saved with the sale, without modifying the global recipe.
+- Build the complete Supplier module: CRUD with AES-256-GCM encryption for document and phone, masked values in the list, pagination + filters, active toggle.
+- Add a protected default supplier (`Proveedor Principal`) auto-created for the demo restaurant and every new company.
 
 ## Important Details
 - Java 21, Spring Boot 4.1.0, Thymeleaf, Bootstrap 5.3, MySQL, MapStruct, Lombok.
-- User communicates in English; some prompts were B1-level with typos.
-- Decisions: **JS-managed cart** (client-side) and **direct payment method buttons** (no modal). The cart must keep MiBombay navbar + sidebar visible (dashboard layout), NOT standalone full-screen.
-- No `SaleControllerTest` exists → free to change SaleController without breaking tests.
-- Confirmed sales cannot be cancelled (business rule); removed the broken cancel button from `sale/detail.html` that pointed to deleted endpoint `/sale/pos/cancel`.
-- Spring Security allows `/sale/**` to `ROLE_ADMIN`, `ROLE_CASHIER`, `ROLE_SUPER_ADMIN`.
-- Thymeleaf auto-adds CSRF tokens to forms using `th:action` → hidden inputs added dynamically by JS are safe.
-- Exclusions are saved in the existing `SaleDetailDTO.notes` field as a human-readable string (`"Without: onion, tomato"`). No DB migration. The global `Recipe` entity is never modified — exclusions are per-sale only.
-- On mobile, the cart is a right-side drawer opened by a floating action button (FAB). The products grid takes the full screen.
-- The combo editor shows a **tree** (combo → products → ingredients) with real product names. Products in the combo without a recipe appear with "(no customizations)". The "Edit recipe" button on a combo shows whenever the combo has at least one product (so the tree is always viewable).
+- User communicates in English (B1), prefers Spanish for quick questions.
+- Supplier mirrors the Customer module's encryption scheme: `documentEncrypted`/`phoneEncrypted` (AES-256-GCM) + `documentLookupHash`/`phoneLookupHash` (HMAC-SHA256).
+- Unlike Customer, Supplier is now fully mirrored: default supplier protected exactly like Consumidor Final.
 
 ## Work State
 ### Completed
-- **Sale module redesign** — introduced a `sd-` prefixed design system in `pos.html` (~250 lines of CSS): page headers, accent bars, glow list cards, info grid, styled tables, badges, pagination, buttons, empty states, alerts, fade animations, full POS layout classes with responsive rules. Rewrote `pos.html` as a two-column flex (product grid | 340–380px cart) with a JS cart array (`addToCart`, `changeQty`, `removeItem`, `clearCart`, `render`), search, category tabs, combos, payment selector, notes toggle, big green "CHARGE" button. Rewrote `sale/history.html`, `sale/on-hold.html`, `sale/detail.html` with the same system. Removed the cancel-sale form from `detail.html`.
-- **Mobile responsive fixes**:
-  - Cart overflow on phone → on mobile the POS lets the page scroll naturally (`height: auto`, `min-height: 0`, `overflow: visible` on products/grid), and caps the cart at `45vh` so it never blows the screen.
-  - Category tabs removed from `pos.html` (HTML + JS filter logic + CSS) — the products grid shows all products and combos; the search input filters by name. Unused `data-cat` attribute dropped from items.
-  - Cart color unified to `var(--mb-blue-900)` (`#0B2545`) in both `pos.html` and `styles.css` — same as the sidebar.
-- **Cart drawer on mobile** — On phone, the cart is hidden off-screen. A **floating action button (FAB)** pinned bottom-right (cart icon + amber count badge + total in `var(--mb-blue-900)`) opens the cart as a **right-side drawer** (`position: fixed; right: 0; width: 88%; max-width: 360px; transform: translateX(100%) → 0` with `0.28s ease`). A semi-transparent backdrop dims the products. Close via an X button in the cart header (hidden on desktop) or by tapping the backdrop. Desktop is unchanged (cart always visible on the right, no drawer, no FAB, no backdrop). All in `pos.html`.
-- **"Edit recipe" feature**:
-  - Backend: new DTOs `dto/sale/IngredientOptionDTO.java` (`{id, name}`) and `dto/sale/PosRecipeDataDTO.java` (three maps: `productIngredients: Map<String, List<IngredientOptionDTO>>`, `comboProductIds: Map<String, List<String>>`, `productNames: Map<String, String>`). String keys ensure clean Thymeleaf/JSON serialization.
-  - Repositories: added eager-fetch queries `ProductRepository.findAllActiveWithRecipeAndIngredients(tenantId)` (products + recipe + details + ingredient via JOIN FETCH + DISTINCT) and `ComboRepository.findAllActiveWithDetailsAndProducts(tenantId)` (combos + details + products). One query each, no lazy errors.
-  - Service: `ProductService.getRecipeDataForPos(tenantId)` builds the three maps. Injected `ComboRepository` into `ProductService`. `SaleController.showPOS()` calls the service and adds `recipeData` to the model, injected into `pos.html` via Thymeleaf inline JS as `window.recipeData`.
-  - Frontend: JS-managed cart items now carry `excludedIngredients: [{id, name}]`. Each cart row shows an "Edit recipe" button (amber pencil/list icon) when applicable, plus a "Without: …" exclusion badge with a × to clear. A Bootstrap modal (`#recipeModal`) opens with a dark-blue theme matching the cart:
-    - **Product**: shows the recipe's ingredients as checkboxes (all checked = include). Uncheck to exclude. Save / Cancel.
-    - **Combo**: shows a **tree** with the combo name as root (folder icon), each product as a branch (real name, amber, `├─`/`└─` connectors), and each ingredient as a leaf (checkbox). Products in the combo without a recipe appear as a branch with a "(no customizations)" leaf. CSS for the tree (indentation, left border line, connectors, empty-leaf style).
-    - Button rule: a product gets the button only if it has a recipe; a combo gets the button whenever it has at least one product (so the tree is always viewable to explain to the customer).
-  - On form submission, exclusions are serialized as `items[i].notes = "Without: onion, tomato"` in the hidden form. The existing `SaleService.createSaleFromCart` copies `notes` to `SaleDetail.notes`, so exclusions appear automatically on the sale detail/history page. The global `Recipe` is never modified.
-- **Tests** — Test count: **139 → 142** (BUILD SUCCESS). `ProductServiceTest` grew from 16 to 19: added the `ComboRepository` mock and three tests for `getRecipeDataForPos` (happy path, empty tenant, `productNames` populated for all active products). Fixed a missing `IngredientOptionDTO` import in the test.
+
+- **Supplier entity** (NEW): `model/supplier/Supplier.java` — name, documentEncrypted, phoneEncrypted, email, address, contactName, documentLookupHash, phoneLookupHash, active. JPA annotations only.
+
+- **SupplierRepository** (NEW): `findByIdAndTenantId`, `existsByTenantIdAndDocumentLookupHash(AndIdNot)`, `findByFilters(tenantId, name, document, pageable)`.
+
+- **SupplierDTO** (NEW): validations mirroring Customer — `@NotBlank` name/document, `@Pattern` text guards, `documentMasked`/`phoneMasked` display fields, `active` Boolean.
+
+- **SupplierMapper** (NEW): MapStruct `toDto`/`toEntity`.
+
+- **SupplierService** (NEW): paginated list with mask, create (encrypt + duplicate-document check), update (re-encrypt on changed document/phone, optional fields only if non-null), toggle active status.
+
+- **SupplierController** (NEW): `/supplier` list (filters + pagination), `/new`, POST create, `/{id}/edit`, POST update, `/{id}/toggle-status`. Same shape as Ingredient/Customer controllers.
+
+- **templates/supplier/list.html** (NEW): filter card (name + document), table (name, masked document, masked phone, contact, status badge, actions), empty state, pagination preserving filters.
+- **templates/supplier/form.html** (NEW): Bootstrap form. Edit form pre-fills decrypted document/phone from the DTO (unlike Customer, whose edit form leaves them blank) so values are re-encrypted on save.
+
+- **SecurityConfig**: `/supplier/**` restricted to `ADMIN` and `SUPER_ADMIN`.
+- **fragments/sidebar.html**: Added "Suppliers" link (bi-truck) in both offcanvas and inline fragments, after Movements.
+
+- **TestDataFactory**: Added `createSupplier()`, `createInactiveSupplier()`, `createDefaultSupplier()`, `createSupplierDTO()`, `createNewSupplierDTO()`.
+
+- **Default supplier (`isDefault`)**:
+  - `Supplier` entity + `SupplierDTO`: new `isDefault` Boolean.
+  - `SupplierRepository`: `findByTenantIdAndIsDefaultTrue`.
+  - `SupplierService.ensureDefaultSupplier(tenantId)`: creates `Proveedor Principal` (NIT 900001111, phone 3110001111) if missing. `updateExistingSupplier` only edits name/address for the default; `toggleSupplierActiveStatus` refuses ("The default supplier cannot be deactivated"). `toDtoWithMask` fills isDefault.
+  - Seeded in `InitialDataConfig.createDemoRestaurant()` and `CompanyService.register()` — demo + every new company.
+  - `supplier/list.html`: "Default" badge; edit/toggle hidden for the default. `supplier/form.html`: note "Only name and address can be edited", readonly document/phone/email/contactName, disabled save when default.
+
+- **SupplierServiceTest** (NEW, 13 tests): create with encryption + duplicate-doc exception, update re-encrypt + not-found, toggle + not-found, paginated mask, name filter, get-by-id not-found, default: update-limit, toggle-refuse, ensure-existing, ensure-create.
+
+- **SupplierControllerTest** (NEW, 13 tests): list (no filters / with filters), showForm, create (success / validation error / exception), showEditForm (exists / missing → redirect), update (success / validation error / exception), toggleStatus (success / missing).
+
+- **Tests**: 207 passing (203 previous + 4 new supplier default tests).
+- **AGENTS.md**: structure tree (model/dto/mapper/repository/service/controller), test table (22 new → 203), Supplier convention bullet.
+- **README.md**: Supplier Management feature, structure tree, test count 203.
 
 ### Active
 - (none)
@@ -44,46 +57,46 @@ Session log: sale module polish + "Edit recipe" feature.
 - (none)
 
 ## Next Move
-1. Manually verify the POS flow in the browser on desktop and phone: add product/combo → change qty → edit recipe (uncheck ingredients) → save → see badge → select payment → CHARGE submits; confirm exclusions appear in `sale/detail.html` as part of the notes. Hold Sale flow; resume an on-hold sale. The tree on a combo shows real product names with "(no customizations)" for products without a recipe.
-2. If the user wants a richer feature set from the reference template (search within the recipe editor, tabs for multiple concurrent orders, ingredient-exclusion modal at the product level instead of per cart item, a structured `excluded_ingredients` table), plan backend additions separately — those entities/endpoints do not exist yet.
+1. Manually test `/supplier` as ADMIN (demo@mibombay.com): create supplier, verify masked values in list, edit (values pre-filled), toggle status.
+2. Wire purchase/stock-in flow to Supplier (Phase 4 of movement plan) — needs Purchase entity first.
+3. Next planned module is **Tables** (tables, rooms, availability).
 
 ## Relevant Files
-- `AGENTS.md` — skills reference + test count + frontend/POS conventions updated.
-- `README.md` — test count badge, features, POS section updated.
-- `today.txt` — this file.
-- `src/main/resources/static/css/styles.css` — design tokens, flexbox sidebar fix, `sd-` sale design system, cart color aligned to `--mb-blue-900`.
-- `src/main/java/com/josegregoppdev/mibombay/dto/sale/CartSubmissionDTO.java` — form-bound cart payload (items, paymentMethod, observations).
-- `src/main/java/com/josegregoppdev/mibombay/dto/sale/IngredientOptionDTO.java` — `{id, name}` for the recipe editor.
-- `src/main/java/com/josegregoppdev/mibombay/dto/sale/PosRecipeDataDTO.java` — three maps sent to the POS page.
-- `src/main/java/com/josegregoppdev/mibombay/repository/product/ProductRepository.java` — `findAllActiveWithRecipeAndIngredients(tenantId)`.
-- `src/main/java/com/josegregoppdev/mibombay/repository/combo/ComboRepository.java` — `findAllActiveWithDetailsAndProducts(tenantId)`.
-- `src/main/java/com/josegregoppdev/mibombay/service/product/ProductService.java` — `getRecipeDataForPos(tenantId)`; `ComboRepository` injected.
-- `src/main/java/com/josegregoppdev/mibombay/controller/sale/SaleController.java` — `showPOS()` adds `recipeData` to the model.
-- `src/main/resources/templates/sale/pos.html` — JS cart, mobile drawer, FAB, modal, tree, exclusions serialized into `notes`.
-- `src/main/resources/templates/sale/history.html`, `sale/detail.html`, `sale/on-hold.html` — redesigned with `sd-` classes; cancel button removed from detail.
-- `src/main/resources/templates/fragments/sidebar.html`, `fragments/sidebar-admin.html` — dark blue sidebar + dividers.
-- `src/main/java/com/josegregoppdev/mibombay/config/SecurityConfig.java` — `/sale/**` allowed for ADMIN/CASHIER/SUPER_ADMIN.
-- `src/test/java/com/josegregoppdev/mibombay/service/product/ProductServiceTest.java` — 3 new tests for `getRecipeDataForPos`.
+- `src/main/java/.../model/supplier/Supplier.java` — NEW.
+- `src/main/java/.../repository/supplier/SupplierRepository.java` — NEW.
+- `src/main/java/.../dto/supplier/SupplierDTO.java` — NEW.
+- `src/main/java/.../mapper/supplier/SupplierMapper.java` — NEW.
+- `src/main/java/.../service/supplier/SupplierService.java` — NEW.
+- `src/main/java/.../controller/supplier/SupplierController.java` — NEW.
+- `src/main/resources/templates/supplier/list.html` + `form.html` — NEW.
+- `src/main/java/.../config/SecurityConfig.java` — `/supplier/**` rule.
+- `src/main/resources/templates/fragments/sidebar.html` — Suppliers link.
+- `src/main/java/.../config/InitialDataConfig.java` + `service/company/CompanyService.java` — seed default supplier.
+- `src/test/java/.../service/supplier/SupplierServiceTest.java` — NEW, 13 tests.
+- `src/test/java/.../controller/supplier/SupplierControllerTest.java` — NEW, 13 tests.
 
 ## Test summary
 | Class | Tests |
 |---|---|
-| `CompanyRegistrationServiceTest` | 7 |
+| `CompanyServiceTest` | 9 |
 | `PasswordGeneratorServiceTest` | 8 |
 | `CustomUserDetailsServiceTest` | 7 |
+| `UserServiceTest` | 4 |
 | `IngredientServiceTest` | 15 |
 | `RecipeServiceTest` | 14 |
-| `ProductServiceTest` | 19 (+3) |
-| `ComboServiceTest` | 14 |
+| `ProductServiceTest` | 21 |
+| `ComboServiceTest` | 15 |
+| `InventarioServiceTest` | 11 |
+| `MovementServiceTest` | 10 |
+| `CustomerServiceTest` | 6 |
+| `SupplierServiceTest` | 13 (+13) |
 | `LandingControllerTest` | 1 |
-| `LoginControllerTest` | 6 |
-| `PasswordChangeControllerTest` | 4 |
-| `DashboardControllerTest` | 4 |
 | `CompanyRegistrationControllerTest` | 4 |
-| `AdminControllerTest` | 2 |
 | `IngredientControllerTest` | 13 |
 | `RecipeControllerTest` | 13 |
 | `ProductControllerTest` | 13 |
-| `ComboControllerTest` | 12 |
+| `ComboControllerTest` | 13 |
+| `MovementControllerTest` | 3 |
+| `SupplierControllerTest` | 13 (+13) |
 | `MibombayApplicationTests` | 1 |
-| **Total** | **142** |
+| **Total** | **207** |

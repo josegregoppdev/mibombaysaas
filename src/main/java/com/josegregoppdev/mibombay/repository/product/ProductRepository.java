@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,6 +21,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findByTenantIdAndActiveTrue(String tenantId, Pageable pageable);
 
+    List<Product> findByTenantIdAndActiveTrueAndProductTypeOrderByNameAsc(String tenantId, ProductType productType);
+
     Optional<Product> findByIdAndTenantId(Long id, String tenantId);
 
     Optional<Product> findByCodeAndTenantId(String code, String tenantId);
@@ -29,6 +32,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     boolean existsByNameAndTenantId(String name, String tenantId);
 
     List<Product> findByRecipeIdAndTenantId(Long recipeId, String tenantId);
+
+    List<Product> findByTenantIdAndIdIn(String tenantId, Collection<Long> ids);
 
     @Query("""
             SELECT p FROM Product p WHERE p.tenantId = :tenantId

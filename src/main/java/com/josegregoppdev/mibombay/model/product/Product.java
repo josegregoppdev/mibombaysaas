@@ -48,6 +48,14 @@ public class Product extends AuditableEntity {
     @Builder.Default
     private BigDecimal unitCost = BigDecimal.ZERO;
 
+    @Column(name = "current_stock", nullable = false, precision = 12, scale = 4)
+    @Builder.Default
+    private BigDecimal currentStock = BigDecimal.ZERO;
+
+    @Column(name = "minimum_stock", nullable = false, precision = 12, scale = 4)
+    @Builder.Default
+    private BigDecimal minimumStock = BigDecimal.ZERO;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recipe_id")
     private Recipe recipe;

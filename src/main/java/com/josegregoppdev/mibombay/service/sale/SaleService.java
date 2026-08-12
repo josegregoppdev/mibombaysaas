@@ -14,6 +14,7 @@ import com.josegregoppdev.mibombay.repository.combo.ComboRepository;
 import com.josegregoppdev.mibombay.repository.product.ProductRepository;
 import com.josegregoppdev.mibombay.repository.sale.SaleRepository;
 import com.josegregoppdev.mibombay.repository.user.UserRepository;
+import com.josegregoppdev.mibombay.service.inventory.InventarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +36,7 @@ public class SaleService {
     private final ProductRepository productRepository;
     private final ComboRepository comboRepository;
     private final UserRepository userRepository;
+    private final InventarioService inventarioService;
 
     @Transactional(readOnly = true)
     public Page<SaleDTO> getPaginatedSales(String tenantId, SaleState state, Pageable pageable) {
@@ -72,13 +74,16 @@ public class SaleService {
 
     @Transactional
     public SaleDTO createSaleFromCart(List<SaleDetailDTO> cartItems, String tenantId, Long cashierId,
-                                      String observations) {
+                                      String observations, BigDecimal amountReceived) {
         if (cartItems == null || cartItems.isEmpty()) {
             throw new IllegalArgumentException("Cannot create an empty sale");
         }
 
         User cashier = userRepository.findById(cashierId)
                 .orElseThrow(() -> new IllegalArgumentException("Cashier not found"));
+        if (!tenantId.equals(cashier.getTenantId())) {
+            throw new IllegalArgumentException("Cashier not found");
+        }
 
         Sale sale = Sale.builder()
                 .tenantId(tenantId)
@@ -86,6 +91,7 @@ public class SaleService {
                 .state(SaleState.EN_ESPERA)
                 .cashier(cashier)
                 .observations(observations)
+                .amountReceived(amountReceived)
                 .details(new ArrayList<>())
                 .build();
 
@@ -96,16 +102,17 @@ public class SaleService {
             detail.setSale(sale);
             detail.setQuantity(item.getQuantity());
             detail.setNotes(item.getNotes());
+            detail.setObservation(item.getObservation());
 
             if (item.getProductId() != null) {
-                Product product = productRepository.findById(item.getProductId())
+                Product product = productRepository.findByIdAndTenantId(item.getProductId(), tenantId)
                         .orElseThrow(() -> new IllegalArgumentException("Product not found: " + item.getProductId()));
                 detail.setProductId(product.getId());
                 detail.setProductName(product.getName());
                 detail.setSalePrice(product.getSellingPrice());
                 detail.setUnitCost(product.getUnitCost());
             } else if (item.getComboId() != null) {
-                Combo combo = comboRepository.findById(item.getComboId())
+                Combo combo = comboRepository.findByIdAndTenantId(item.getComboId(), tenantId)
                         .orElseThrow(() -> new IllegalArgumentException("Combo not found: " + item.getComboId()));
                 detail.setComboId(combo.getId());
                 detail.setComboName(combo.getName());
@@ -134,8 +141,13 @@ public class SaleService {
             throw new IllegalArgumentException("Only on-hold sales can be confirmed");
         }
 
+        if (paymentMethod == null) {
+            throw new IllegalArgumentException("The payment method is required");
+        }
+
         sale.setState(SaleState.CONFIRMADA);
         sale.setPaymentMethod(paymentMethod);
+        inventarioService.consumeForSale(sale);
         sale = saleRepository.save(sale);
         return saleMapper.toDto(sale);
     }

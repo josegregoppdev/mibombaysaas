@@ -2,6 +2,7 @@ package com.josegregoppdev.mibombay.dto.product;
 
 import com.josegregoppdev.mibombay.model.product.ProductCategory;
 import com.josegregoppdev.mibombay.model.product.ProductType;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -50,6 +51,14 @@ public class ProductDTO {
     @PositiveOrZero(message = "The unit cost cannot be negative")
     @Digits(integer = 8, fraction = 4, message = "Maximum 8 integer digits and 4 decimals")
     private BigDecimal unitCost;
+
+    @PositiveOrZero(message = "The current stock cannot be negative")
+    @Digits(integer = 8, fraction = 4, message = "Maximum 8 integer digits and 4 decimals")
+    private BigDecimal currentStock;
+
+    @PositiveOrZero(message = "The minimum stock cannot be negative")
+    @Digits(integer = 8, fraction = 4, message = "Maximum 8 integer digits and 4 decimals")
+    private BigDecimal minimumStock;
 
     private Long recipeId;
 

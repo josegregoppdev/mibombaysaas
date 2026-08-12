@@ -9,6 +9,9 @@ import com.josegregoppdev.mibombay.model.user.User;
 import com.josegregoppdev.mibombay.repository.company.CompanyRepository;
 import com.josegregoppdev.mibombay.repository.user.UserRepository;
 import com.josegregoppdev.mibombay.service.user.PasswordGeneratorService;
+import com.josegregoppdev.mibombay.service.configuration.TenantConfigurationService;
+import com.josegregoppdev.mibombay.service.customer.CustomerService;
+import com.josegregoppdev.mibombay.service.supplier.SupplierService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -44,6 +47,15 @@ class CompanyServiceTest {
 
     @Mock
     private CompanyMapper companyMapper;
+
+    @Mock
+    private TenantConfigurationService tenantConfigurationService;
+
+    @Mock
+    private CustomerService customerService;
+
+    @Mock
+    private SupplierService supplierService;
 
     @InjectMocks
     private CompanyService service;

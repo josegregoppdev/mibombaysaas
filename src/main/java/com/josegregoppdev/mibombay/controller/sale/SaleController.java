@@ -1,6 +1,7 @@
 package com.josegregoppdev.mibombay.controller.sale;
 
 import com.josegregoppdev.mibombay.common.tenant.TenantContext;
+import jakarta.validation.Valid;
 import com.josegregoppdev.mibombay.dto.sale.CartSubmissionDTO;
 import com.josegregoppdev.mibombay.dto.sale.SaleDTO;
 import com.josegregoppdev.mibombay.dto.sale.SaleDetailDTO;
@@ -37,6 +38,7 @@ public class SaleController {
     @GetMapping("/pos")
     public String showPOS(Model model, HttpSession session) {
         model.addAttribute("products", productService.getPosProducts(tenantId()));
+        model.addAttribute("posAddOnProducts", productService.getAllActiveProductsFlat(tenantId()));
         model.addAttribute("combos", comboService.getPosCombos(tenantId()));
         model.addAttribute("onHoldCount", saleService.getOnHoldSales(tenantId()).size());
         model.addAttribute("recipeData", productService.getRecipeDataForPos(tenantId()));
@@ -51,7 +53,7 @@ public class SaleController {
     }
 
     @PostMapping("/pos/confirm")
-    public String confirmSale(@ModelAttribute CartSubmissionDTO submission,
+    public String confirmSale(@Valid @ModelAttribute CartSubmissionDTO submission,
                               RedirectAttributes redirectAttributes) {
         try {
             List<SaleDetailDTO> cart = submission.getItems();
@@ -61,7 +63,7 @@ public class SaleController {
             }
 
             Long cashierId = getCurrentUserId();
-            SaleDTO sale = saleService.createSaleFromCart(cart, tenantId(), cashierId, submission.getObservations());
+            SaleDTO sale = saleService.createSaleFromCart(cart, tenantId(), cashierId, submission.getObservations(), submission.getAmountReceived());
             saleService.confirmSale(sale.getId(), submission.getPaymentMethod(), tenantId());
 
             redirectAttributes.addFlashAttribute("message", "Sale confirmed successfully");
@@ -72,7 +74,7 @@ public class SaleController {
     }
 
     @PostMapping("/pos/hold")
-    public String holdSale(@ModelAttribute CartSubmissionDTO submission,
+    public String holdSale(@Valid @ModelAttribute CartSubmissionDTO submission,
                            RedirectAttributes redirectAttributes) {
         try {
             List<SaleDetailDTO> cart = submission.getItems();
@@ -82,7 +84,7 @@ public class SaleController {
             }
 
             Long cashierId = getCurrentUserId();
-            saleService.createSaleFromCart(cart, tenantId(), cashierId, submission.getObservations());
+            saleService.createSaleFromCart(cart, tenantId(), cashierId, submission.getObservations(), null);
 
             redirectAttributes.addFlashAttribute("message", "Sale put on hold");
         } catch (IllegalArgumentException e) {

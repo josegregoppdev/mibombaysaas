@@ -1,0 +1,77 @@
+# Today — 2026-08-08
+
+Session log: POS add-on feature + bug fixes.
+
+## Objective
+- Add a `+` button on cart rows to let cashiers add extra products.
+- Initially planned Adicion groups (entities, DTOs, service, controller, templates, tests) — then deleted all because it was over-engineered.
+- Final design: add-on = any product with `productType = ADICIONAL`. No extra entities needed.
+- Fix cascade delete bug and DOM cleanup bug.
+
+## Important Details
+- Java 21, Spring Boot 4.1.0, Thymeleaf, Bootstrap 5.3, MySQL, MapStruct, Lombok.
+- User communicates in English (B1 level), prefers Spanish for quick questions.
+- User clarified: "no comprendo porq la entidad adiciones ni detalle adicion, necesito es q en la venta o sale se refleje el producto adicion" — the sale already reflects add-ons via `SaleDetail`. No extra entities needed.
+- An add-on is a `Product` with `productType = ADICIONAL`. The POS modal shows only ADICIONAL products.
+- The `+` button was initially placed on the product card (grid), then moved to the cart row per user request.
+- Add-ons are separate `SaleDetail` rows with `parentIdx` tracked in the JS cart array (UI-only, not persisted).
+- User wanted the tree visual style (like the "Edit recipe" modal) — reuses `sd-recipe-tree` CSS classes.
+
+## Work State
+### Completed
+
+- **Phase 1 (Adicion entities — later deleted)**: Created Adicion + DetalleAdicion entities, DTOs, mapper, repos, service, controller, templates. Added 28 tests. All worked. Then deleted everything because the user said "no comprendo porq la entidad adiciones ni detalle adicion".
+
+- **Phase 2 (Simple model)**: Add-on = `Product` with `productType = ADICIONAL`. No extra entities. `ProductService.getAllActiveProductsFlat()` returns all active products. Modal shows search + grid of all products.
+
+- **Phase 3 (Filter to ADICIONAL only)**: Changed `getAllActiveProductsFlat` to filter by `ProductType.ADICIONAL` only.
+
+- **Phase 4 (Tree visual)**: Changed cart rendering to show add-ons as a tree with `├─`/`└─` connectors, reusing `sd-recipe-tree` CSS classes.
+
+- **Bug fix 1 — Cascade delete**: When deleting a parent (or decrementing to qty 0), all its add-ons are also deleted. Changed `removeItem` and `changeQty` to cascade delete.
+
+- **Bug fix 2 — DOM cleanup**: The `render()` function only removed `.sd-pos-cart-row` elements, but add-ons are rendered as `<ul class="sd-recipe-tree-list">`. Added `.sd-recipe-tree-list` to the `querySelectorAll` selectors.
+
+- **Tests**: 150 passing (same as before — no new tests added, 28 Adicion tests removed).
+
+- **Docs updated**: AGENTS.md, today.txt, README.md (test count, Adicion convention, features list).
+
+### Active
+- (none)
+
+### Blocked
+- (none)
+
+## Next Move
+1. Manually test the POS flow: add product with recipe → see `+` in cart row → click → modal with ADICIONAL products → search → click product → add-on as tree branch under parent → delete parent → cascade deletes add-ons → no orphan elements.
+2. Next planned module is **Tables** (tables, rooms, availability).
+
+## Relevant Files
+- `AGENTS.md` — test table at 150, Adicion convention updated (no entities, just Product).
+- `today.txt` — session log.
+- `today-8-8-26.txt` — this file.
+- `src/main/java/com/josegregoppdev/mibombay/service/product/ProductService.java` — `getAllActiveProductsFlat` filters by `ProductType.ADICIONAL`.
+- `src/main/java/com/josegregoppdev/mibombay/controller/sale/SaleController.java` — passes `posAddOnProducts`.
+- `src/main/resources/templates/sale/pos.html` — search + grid modal, tree rendering, cascade delete, DOM cleanup fix.
+- `src/test/java/com/josegregoppdev/mibombay/testdata/TestDataFactory.java` — cleaned up (Adicion methods removed).
+
+## Test summary
+| Class | Tests |
+|---|---|
+| `CompanyRegistrationServiceTest` | 7 |
+| `PasswordGeneratorServiceTest` | 8 |
+| `CustomUserDetailsServiceTest` | 7 |
+| `UserServiceTest` | 4 |
+| `IngredientServiceTest` | 15 |
+| `RecipeServiceTest` | 14 |
+| `ProductServiceTest` | 19 |
+| `ComboServiceTest` | 14 |
+| `LandingControllerTest` | 1 |
+| `LoginControllerTest` | 6 |
+| `CompanyRegistrationControllerTest` | 4 |
+| `IngredientControllerTest` | 13 |
+| `RecipeControllerTest` | 13 |
+| `ProductControllerTest` | 13 |
+| `ComboControllerTest` | 13 |
+| `MibombayApplicationTests` | 1 |
+| **Total** | **150** |

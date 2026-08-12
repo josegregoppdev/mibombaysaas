@@ -68,6 +68,22 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
+    public List<ProductDTO> getAllActiveProductsFlat(String tenantId) {
+        return productRepository.findByTenantIdAndActiveTrue(tenantId, PageRequest.of(0, 1000))
+                .getContent().stream()
+                .filter(p -> p.getProductType() == ProductType.ADICIONAL)
+                .map(this::mapToDtoWithRecipeInfo)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductDTO> getAllActiveSinRecetaProductsFlat(String tenantId) {
+        return productRepository.findByTenantIdAndActiveTrueAndProductTypeOrderByNameAsc(
+                        tenantId, ProductType.SIN_RECETA)
+                .stream().map(this::mapToDtoWithRecipeInfo).toList();
+    }
+
+    @Transactional(readOnly = true)
     public ProductDTO getProductById(Long id, String tenantId) {
         Product product = productRepository.findByIdAndTenantId(id, tenantId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
@@ -86,6 +102,12 @@ public class ProductService {
         Product product = productMapper.toEntity(dto);
         product.setTenantId(tenantId);
         product.setActive(true);
+        if (product.getCurrentStock() == null) {
+            product.setCurrentStock(BigDecimal.ZERO);
+        }
+        if (product.getMinimumStock() == null) {
+            product.setMinimumStock(BigDecimal.ZERO);
+        }
 
         linkRecipe(product, dto);
         product = productRepository.save(product);
@@ -113,6 +135,12 @@ public class ProductService {
         product.setProductType(dto.getProductType());
         product.setSellingPrice(dto.getSellingPrice());
         product.setUnitCost(dto.getUnitCost() != null ? dto.getUnitCost() : product.getUnitCost());
+        if (dto.getCurrentStock() != null) {
+            product.setCurrentStock(dto.getCurrentStock());
+        }
+        if (dto.getMinimumStock() != null) {
+            product.setMinimumStock(dto.getMinimumStock());
+        }
 
         linkRecipe(product, dto);
         product = productRepository.save(product);
@@ -176,15 +204,12 @@ public class ProductService {
     }
 
     private void linkRecipe(Product product, ProductDTO dto) {
-        if (product.getProductType() == ProductType.CON_RECETA) {
+        if (product.getProductType() == ProductType.CON_RECETA || product.getProductType() == ProductType.ADICIONAL) {
             if (dto.getRecipeId() == null) {
-                throw new IllegalArgumentException("A recipe is required for products with recipe");
+                throw new IllegalArgumentException("A recipe is required for "
+                        + (product.getProductType() == ProductType.CON_RECETA
+                        ? "products with recipe" : "add-on products"));
             }
-            Recipe recipe = recipeRepository.findByIdAndTenantId(dto.getRecipeId(), product.getTenantId())
-                    .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
-            product.setRecipe(recipe);
-            product.setUnitCost(recipe.getProductionCost());
-        } else if (product.getProductType() == ProductType.ADICIONAL && dto.getRecipeId() != null) {
             Recipe recipe = recipeRepository.findByIdAndTenantId(dto.getRecipeId(), product.getTenantId())
                     .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
             product.setRecipe(recipe);

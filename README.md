@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/Spring%20Boot-4.1.0-6DB33F?style=flat-square&logo=spring-boot&logoColor=white" alt="Spring Boot 4.1.0">
   <img src="https://img.shields.io/badge/MySQL-8.0+-4479A1?style=flat-square&logo=mysql&logoColor=white" alt="MySQL">
   <img src="https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=flat-square&logo=bootstrap&logoColor=white" alt="Bootstrap 5.3">
-  <img src="https://img.shields.io/badge/Tests-142-brightgreen?style=flat-square" alt="142 Tests">
+  <img src="https://img.shields.io/badge/Tests-181-brightgreen?style=flat-square" alt="181 Tests">
   <img src="https://img.shields.io/badge/License-Proprietary-blue?style=flat-square" alt="License">
 </p>
 
@@ -32,13 +32,18 @@ The first version prioritizes the **POS (Point of Sale)** flow: the customer arr
 - **Roles & permissions** — `SUPER_ADMIN`, `ADMIN`, `CASHIER` with Spring Security
 - **OWASP Top 10 Security** — BCrypt (strength 12), `@Valid` + `@Pattern`, Thymeleaf XSS, secure sessions, CSRF
 - **POS Interface** — JS-managed cart in the dashboard layout with product catalog, search, cart, recipe exclusions, hold/confirm flow
-- **Product Management** — CON_RECETA (with recipe), SIN_RECETA (without recipe), ADICIONAL (add-ons)
+- **Product Management** — CON_RECETA (with recipe), SIN_RECETA (without recipe, with stock), ADICIONAL (add-ons, requires recipe)
 - **Recipe Management** — Ingredients + quantities, auto-calculated production cost
 - **Recipe exclusions in POS** — Per-sale ingredient unchecks saved in `notes`; global recipes are never modified
+- **Add-ons in POS** — `+` button on cart rows opens a search + grid of all products; add-ons are separate lines indented under the parent
 - **Combo System** — Group products sold together at a single price; combo editor shows a tree of products and ingredients
 - **Mobile-first POS** — Right-side cart drawer with floating action button on phones; full-screen products grid
 - **Responsive UI** — Bootstrap 5.3, flexbox dashboard layout, offcanvas sidebar on mobile
-- **142 unit tests** — JUnit 5 + Mockito with TestDataFactory
+- **Inventory on Sale** — `InventarioService` consumes stock and records immutable `Movement` records on every confirmed sale
+- **Customer Management** — CRUD with AES-256-GCM encryption for DNI and phone. Default customer `Consumidor Final` auto-created per tenant
+- **Supplier Management** — CRUD with AES-256-GCM encryption for document and phone. Masked values in the list; edit form pre-fills decrypted values. Default supplier `Proveedor Principal` auto-created per tenant (protected, only name/address editable)
+- **Movement Report** — Read-only inventory movement history at `/movement` with type and date-range filters (ADMIN only)
+- **207 unit tests** — JUnit 5 + Mockito with TestDataFactory
 
 ---
 
@@ -172,6 +177,8 @@ mibombay/
 │   │   ├── recipe/       # Recipe, RecipeDetail
 │   │   ├── product/      # Product, ProductType, ProductCategory
 │   │   ├── combo/        # Combo, ComboDetail
+│   │   ├── customer/     # Customer (DNI/phone encrypted AES-256-GCM)
+│   │   ├── supplier/     # Supplier (document/phone encrypted AES-256-GCM)
 │   │   └── sale/         # Sale, SaleDetail, SaleState, PaymentMethod
 │   ├── dto/              # DTOs with Bean Validation
 │   ├── mapper/           # MapStruct interfaces
@@ -185,9 +192,11 @@ mibombay/
 │   │   ├── recipe/       # list.html, form.html
 │   │   ├── product/      # list.html, form.html
 │   │   ├── combo/        # list.html, form.html
+│   │   ├── customer/     # list.html, form.html
+│   │   ├── supplier/     # list.html, form.html
 │   │   └── sale/         # pos.html, on-hold.html, history.html, detail.html
 │   └── static/           # CSS, JS
-└── src/test/             # 142 unit tests
+└── src/test/             # 207 unit tests
 ```
 
 ---
@@ -245,7 +254,7 @@ mibombay/
 - [x] Sales history
 - [x] Mobile-first responsive design
 - [ ] Tables management
-- [ ] Adiciones (add-on product groups)
+- [x] Adiciones (add-on products via `+` in POS cart rows)
 - [ ] Inventory management
 - [ ] Supplier & purchase management
 - [ ] Cash register & closing

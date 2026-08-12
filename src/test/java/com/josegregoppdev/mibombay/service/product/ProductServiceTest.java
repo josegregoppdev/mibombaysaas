@@ -170,6 +170,22 @@ class ProductServiceTest {
     }
 
     @Test
+    void createNewProduct_adicionalWithoutRecipe_throwsException() {
+        ProductDTO dto = createAddonProductDTO();
+        when(productRepository.existsByCodeAndTenantId(dto.getCode(), TENANT_ID)).thenReturn(false);
+        when(productRepository.existsByNameAndTenantId(dto.getName(), TENANT_ID)).thenReturn(false);
+        Product product = Product.builder()
+                .productType(ProductType.ADICIONAL)
+                .tenantId(TENANT_ID)
+                .build();
+        when(productMapper.toEntity(dto)).thenReturn(product);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> productService.createNewProduct(dto, TENANT_ID));
+        assertTrue(ex.getMessage().contains("recipe"));
+    }
+
+    @Test
     void createNewProduct_duplicateCode_throwsException() {
         ProductDTO dto = createProductDTO();
         when(productRepository.existsByCodeAndTenantId(dto.getCode(), TENANT_ID)).thenReturn(true);

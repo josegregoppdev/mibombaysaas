@@ -1,5 +1,6 @@
 package com.josegregoppdev.mibombay.dto.sale;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -38,4 +39,6 @@ public class SaleDetailDTO {
     private BigDecimal totalPrice;
 
     private String notes;
+
+    private String observation;
 }

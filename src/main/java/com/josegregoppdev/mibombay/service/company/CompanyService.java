@@ -8,6 +8,9 @@ import com.josegregoppdev.mibombay.model.user.Role;
 import com.josegregoppdev.mibombay.model.user.User;
 import com.josegregoppdev.mibombay.repository.company.CompanyRepository;
 import com.josegregoppdev.mibombay.repository.user.UserRepository;
+import com.josegregoppdev.mibombay.service.configuration.TenantConfigurationService;
+import com.josegregoppdev.mibombay.service.customer.CustomerService;
+import com.josegregoppdev.mibombay.service.supplier.SupplierService;
 import com.josegregoppdev.mibombay.service.user.PasswordGeneratorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,6 +30,9 @@ public class CompanyService {
     private final PasswordEncoder passwordEncoder;
     private final PasswordGeneratorService passwordGeneratorService;
     private final CompanyMapper companyMapper;
+    private final TenantConfigurationService tenantConfigurationService;
+    private final CustomerService customerService;
+    private final SupplierService supplierService;
 
     @Transactional
     public CompanyDTOResponse register(CompanyDTORequest dto) {
@@ -69,7 +75,13 @@ public class CompanyService {
                 .active(true)
                 .mustChangePassword(true)
                 .build();
-        userRepository.save(cashier);
+            userRepository.save(cashier);
+
+        tenantConfigurationService.getByTenantId(tenantId);
+
+        customerService.ensureDefaultCustomer(tenantId);
+
+        supplierService.ensureDefaultSupplier(tenantId);
 
         return CompanyDTOResponse.builder()
                 .companyName(dto.getName())
