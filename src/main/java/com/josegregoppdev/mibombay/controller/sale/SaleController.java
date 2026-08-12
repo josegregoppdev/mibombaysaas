@@ -1,16 +1,15 @@
 package com.josegregoppdev.mibombay.controller.sale;
 
 import com.josegregoppdev.mibombay.common.tenant.TenantContext;
+import jakarta.validation.Valid;
 import com.josegregoppdev.mibombay.dto.sale.CartSubmissionDTO;
 import com.josegregoppdev.mibombay.dto.sale.SaleDTO;
 import com.josegregoppdev.mibombay.dto.sale.SaleDetailDTO;
 import com.josegregoppdev.mibombay.model.sale.PaymentMethod;
-import com.josegregoppdev.mibombay.model.user.User;
-import com.josegregoppdev.mibombay.repository.combo.ComboRepository;
-import com.josegregoppdev.mibombay.repository.product.ProductRepository;
-import com.josegregoppdev.mibombay.repository.user.UserRepository;
+import com.josegregoppdev.mibombay.service.combo.ComboService;
 import com.josegregoppdev.mibombay.service.product.ProductService;
 import com.josegregoppdev.mibombay.service.sale.SaleService;
+import com.josegregoppdev.mibombay.service.user.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -32,15 +31,15 @@ import java.util.List;
 public class SaleController {
 
     private final SaleService saleService;
-    private final ProductRepository productRepository;
-    private final ComboRepository comboRepository;
-    private final UserRepository userRepository;
     private final ProductService productService;
+    private final ComboService comboService;
+    private final UserService userService;
 
     @GetMapping("/pos")
     public String showPOS(Model model, HttpSession session) {
-        model.addAttribute("products", productRepository.findByTenantIdAndActiveTrue(tenantId(), org.springframework.data.domain.PageRequest.of(0, 1000)));
-        model.addAttribute("combos", comboRepository.findByTenantId(tenantId(), org.springframework.data.domain.PageRequest.of(0, 1000)));
+        model.addAttribute("products", productService.getPosProducts(tenantId()));
+        model.addAttribute("posAddOnProducts", productService.getAllActiveProductsFlat(tenantId()));
+        model.addAttribute("combos", comboService.getPosCombos(tenantId()));
         model.addAttribute("onHoldCount", saleService.getOnHoldSales(tenantId()).size());
         model.addAttribute("recipeData", productService.getRecipeDataForPos(tenantId()));
 
@@ -54,7 +53,7 @@ public class SaleController {
     }
 
     @PostMapping("/pos/confirm")
-    public String confirmSale(@ModelAttribute CartSubmissionDTO submission,
+    public String confirmSale(@Valid @ModelAttribute CartSubmissionDTO submission,
                               RedirectAttributes redirectAttributes) {
         try {
             List<SaleDetailDTO> cart = submission.getItems();
@@ -64,7 +63,7 @@ public class SaleController {
             }
 
             Long cashierId = getCurrentUserId();
-            SaleDTO sale = saleService.createSaleFromCart(cart, tenantId(), cashierId, submission.getObservations());
+            SaleDTO sale = saleService.createSaleFromCart(cart, tenantId(), cashierId, submission.getObservations(), submission.getAmountReceived());
             saleService.confirmSale(sale.getId(), submission.getPaymentMethod(), tenantId());
 
             redirectAttributes.addFlashAttribute("message", "Sale confirmed successfully");
@@ -75,7 +74,7 @@ public class SaleController {
     }
 
     @PostMapping("/pos/hold")
-    public String holdSale(@ModelAttribute CartSubmissionDTO submission,
+    public String holdSale(@Valid @ModelAttribute CartSubmissionDTO submission,
                            RedirectAttributes redirectAttributes) {
         try {
             List<SaleDetailDTO> cart = submission.getItems();
@@ -85,7 +84,7 @@ public class SaleController {
             }
 
             Long cashierId = getCurrentUserId();
-            saleService.createSaleFromCart(cart, tenantId(), cashierId, submission.getObservations());
+            saleService.createSaleFromCart(cart, tenantId(), cashierId, submission.getObservations(), null);
 
             redirectAttributes.addFlashAttribute("message", "Sale put on hold");
         } catch (IllegalArgumentException e) {
@@ -164,9 +163,7 @@ public class SaleController {
             throw new IllegalArgumentException("Not authenticated");
         }
         String email = auth.getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        return user.getId();
+        return userService.getUserByEmail(email).getId();
     }
 
     private boolean isAdmin() {

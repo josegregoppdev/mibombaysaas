@@ -19,8 +19,22 @@ import com.josegregoppdev.mibombay.model.product.ProductCategory;
 import com.josegregoppdev.mibombay.model.product.ProductType;
 import com.josegregoppdev.mibombay.model.recipe.Recipe;
 import com.josegregoppdev.mibombay.model.recipe.RecipeDetail;
+import com.josegregoppdev.mibombay.model.sale.Sale;
+import com.josegregoppdev.mibombay.model.sale.SaleDetail;
 import com.josegregoppdev.mibombay.model.user.Role;
 import com.josegregoppdev.mibombay.model.user.User;
+
+import com.josegregoppdev.mibombay.model.customer.Customer;
+import com.josegregoppdev.mibombay.dto.movement.MovementDTO;
+import com.josegregoppdev.mibombay.model.movement.Movement;
+import com.josegregoppdev.mibombay.model.movement.MovementType;
+import com.josegregoppdev.mibombay.dto.supplier.SupplierDTO;
+import com.josegregoppdev.mibombay.model.supplier.Supplier;
+import com.josegregoppdev.mibombay.dto.purchase.PurchaseDetailDTO;
+import com.josegregoppdev.mibombay.dto.purchase.PurchaseDTO;
+import com.josegregoppdev.mibombay.dto.purchase.PurchaseCartSubmissionDTO;
+import com.josegregoppdev.mibombay.model.purchase.Purchase;
+import com.josegregoppdev.mibombay.model.purchase.PurchaseDetail;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -357,6 +371,331 @@ public class TestDataFactory {
                 .sellingPrice(new BigDecimal("10.0000"))
                 .totalCost(new BigDecimal("5.0000"))
                 .active(false)
+                .build();
+    }
+
+    // -- Add-on product factory methods --
+
+    public static Product createAddonProduct() {
+        return Product.builder()
+                .id(4L)
+                .tenantId(TENANT_ID)
+                .code("ADD-001")
+                .name("Extra Cheese")
+                .category(ProductCategory.FOOD)
+                .productType(ProductType.ADICIONAL)
+                .sellingPrice(new BigDecimal("1.5000"))
+                .unitCost(new BigDecimal("0.8000"))
+                .active(true)
+                .build();
+    }
+
+    public static Product createAddonProduct2() {
+        return Product.builder()
+                .id(5L)
+                .tenantId(TENANT_ID)
+                .code("ADD-002")
+                .name("Extra Meat")
+                .category(ProductCategory.FOOD)
+                .productType(ProductType.ADICIONAL)
+                .sellingPrice(new BigDecimal("2.5000"))
+                .unitCost(new BigDecimal("1.8000"))
+                .active(true)
+                .build();
+    }
+
+    public static Product createProductSinReceta() {
+        return Product.builder()
+                .id(2L)
+                .tenantId(TENANT_ID)
+                .code("PROD-002")
+                .name("Bottled Cola")
+                .category(ProductCategory.DRINKS)
+                .productType(ProductType.SIN_RECETA)
+                .sellingPrice(new BigDecimal("3.5000"))
+                .unitCost(new BigDecimal("1.8000"))
+                .currentStock(new BigDecimal("100"))
+                .minimumStock(new BigDecimal("20"))
+                .active(true)
+                .build();
+    }
+
+    public static Product createProductWithRecipe() {
+        Recipe recipe = createRecipe();
+        return Product.builder()
+                .id(1L)
+                .tenantId(TENANT_ID)
+                .code("PROD-001")
+                .name("Classic Hamburger")
+                .category(ProductCategory.FOOD)
+                .productType(ProductType.CON_RECETA)
+                .sellingPrice(new BigDecimal("12.0000"))
+                .unitCost(recipe.getProductionCost())
+                .recipe(recipe)
+                .active(true)
+                .build();
+    }
+
+    public static Combo createComboWithDetails(ComboDetail... details) {
+        Combo combo = Combo.builder()
+                .id(1L)
+                .tenantId(TENANT_ID)
+                .code("COM-001")
+                .name("Test Combo")
+                .sellingPrice(new BigDecimal("15.0000"))
+                .totalCost(new BigDecimal("5.0000"))
+                .active(true)
+                .details(new ArrayList<>())
+                .build();
+        for (ComboDetail d : details) {
+            d.setCombo(combo);
+            combo.getDetails().add(d);
+        }
+        return combo;
+    }
+
+    public static Customer createCustomer() {
+        return Customer.builder()
+                .id(1L)
+                .tenantId(TENANT_ID)
+                .fullName("Juan Perez")
+                .documentEncrypted("enc:doc")
+                .phoneEncrypted("enc:phone")
+                .address("Carrera 1 # 1-01")
+                .documentLookupHash("hash-doc")
+                .phoneLookupHash("hash-phone")
+                .active(true)
+                .isDefault(false)
+                .build();
+    }
+
+    public static Customer createDefaultCustomer() {
+        return Customer.builder()
+                .id(1L)
+                .tenantId(TENANT_ID)
+                .fullName("Consumidor Final")
+                .documentEncrypted("enc:99999999")
+                .phoneEncrypted("enc:123456789")
+                .address("Cucuta")
+                .documentLookupHash("hash-99999999")
+                .phoneLookupHash("hash-123456789")
+                .active(true)
+                .isDefault(true)
+                .build();
+    }
+
+    // -- Supplier factory methods --
+
+    public static Supplier createSupplier() {
+        return Supplier.builder()
+                .id(1L)
+                .tenantId(TENANT_ID)
+                .name("Distribuciones San Fernando")
+                .documentEncrypted("enc:900000000")
+                .phoneEncrypted("enc:3115550000")
+                .email("ventas@sanfernando.com")
+                .address("Calle 5 # 8-90")
+                .contactName("Carlos Ruiz")
+                .documentLookupHash("hash-doc")
+                .active(true)
+                .build();
+    }
+
+    public static Supplier createInactiveSupplier() {
+        Supplier supplier = createSupplier();
+        supplier.setActive(false);
+        return supplier;
+    }
+
+    public static Supplier createDefaultSupplier() {
+        return Supplier.builder()
+                .id(2L)
+                .tenantId(TENANT_ID)
+                .name("Proveedor Principal")
+                .documentEncrypted("enc:900001111")
+                .phoneEncrypted("enc:3110001111")
+                .email("proveedor@mibombay.com")
+                .address("Cucuta")
+                .contactName("Proveedor Principal")
+                .documentLookupHash("hash-default-doc")
+                .phoneLookupHash("hash-default-phone")
+                .isDefault(true)
+                .active(true)
+                .build();
+    }
+
+    public static SupplierDTO createSupplierDTO() {
+        return SupplierDTO.builder()
+                .id(1L)
+                .name("Distribuciones San Fernando")
+                .document("900000000")
+                .documentMasked("90******00")
+                .phone("3115550000")
+                .phoneMasked("31******00")
+                .email("ventas@sanfernando.com")
+                .address("Calle 5 # 8-90")
+                .contactName("Carlos Ruiz")
+                .active(true)
+                .build();
+    }
+
+    public static SupplierDTO createNewSupplierDTO() {
+        return SupplierDTO.builder()
+                .name("Inversiones La Esmeralda")
+                .document("800111222")
+                .phone("3001234567")
+                .email("contacto@esmeralda.com")
+                .address("Avenida 3 # 1-20")
+                .contactName("Maria Lopez")
+                .active(true)
+                .build();
+    }
+
+    public static Sale createSale(java.util.List<com.josegregoppdev.mibombay.model.sale.SaleDetail> details) {
+        return Sale.builder()
+                .id(1L)
+                .tenantId(TENANT_ID)
+                .saleDate(LocalDateTime.now())
+                .total(new BigDecimal("12.0000"))
+                .state(com.josegregoppdev.mibombay.model.sale.SaleState.CONFIRMADA)
+                .cashier(createCashier())
+                .details(details != null ? details : new ArrayList<>())
+                .build();
+    }
+
+    // -- Movement factory methods --
+
+    public static Movement createMovement() {
+        return Movement.builder()
+                .id(1L)
+                .tenantId(TENANT_ID)
+                .type(MovementType.SALE)
+                .date(LocalDateTime.now())
+                .ingredientId(1L)
+                .previousStock(new BigDecimal("50"))
+                .newStock(new BigDecimal("49"))
+                .quantity(new BigDecimal("1"))
+                .referenceId(1L)
+                .userId(2L)
+                .build();
+    }
+
+    public static Movement createMovementForProduct() {
+        return Movement.builder()
+                .id(2L)
+                .tenantId(TENANT_ID)
+                .type(MovementType.SALE)
+                .date(LocalDateTime.now())
+                .productId(2L)
+                .previousStock(new BigDecimal("100"))
+                .newStock(new BigDecimal("99"))
+                .quantity(new BigDecimal("1"))
+                .referenceId(1L)
+                .userId(2L)
+                .build();
+    }
+
+    public static MovementDTO createMovementDTO() {
+        return MovementDTO.builder()
+                .id(1L)
+                .tenantId(TENANT_ID)
+                .type(MovementType.SALE)
+                .typeDisplayName("Sale")
+                .date(LocalDateTime.now())
+                .ingredientId(1L)
+                .ingredientName("Beef")
+                .previousStock(new BigDecimal("50"))
+                .newStock(new BigDecimal("49"))
+                .quantity(new BigDecimal("1"))
+                .referenceId(1L)
+                .userId(2L)
+                .userName("Cashier My Restaurant")
+                .build();
+    }
+
+    // -- Purchase factory methods --
+
+    public static PurchaseDetailDTO createPurchaseDetailDTOForIngredient() {
+        return PurchaseDetailDTO.builder()
+                .ingredientId(1L)
+                .quantity(new BigDecimal("10"))
+                .unitCost(new BigDecimal("14.0000"))
+                .totalCost(new BigDecimal("140.0000"))
+                .build();
+    }
+
+    public static PurchaseDetailDTO createPurchaseDetailDTOForProduct() {
+        return PurchaseDetailDTO.builder()
+                .productId(2L)
+                .quantity(new BigDecimal("20"))
+                .unitCost(new BigDecimal("0.9000"))
+                .totalCost(new BigDecimal("18.0000"))
+                .build();
+    }
+
+    public static PurchaseCartSubmissionDTO createPurchaseCartSubmissionDTO() {
+        java.util.List<PurchaseDetailDTO> items = new ArrayList<>();
+        items.add(createPurchaseDetailDTOForIngredient());
+        items.add(createPurchaseDetailDTOForProduct());
+        PurchaseCartSubmissionDTO dto = new PurchaseCartSubmissionDTO();
+        dto.setItems(items);
+        dto.setSupplierId(2L);
+        dto.setPurchaseDate(java.time.LocalDate.now());
+        dto.setObservations("Weekly restock");
+        return dto;
+    }
+
+    public static Purchase createPurchase() {
+        PurchaseDetail detail = PurchaseDetail.builder()
+                .id(1L)
+                .ingredientId(1L)
+                .itemName("Beef")
+                .quantity(new BigDecimal("10"))
+                .unitCost(new BigDecimal("14.0000"))
+                .totalCost(new BigDecimal("140.0000"))
+                .previousStock(new BigDecimal("50"))
+                .previousUnitCost(new BigDecimal("15.5000"))
+                .build();
+
+        Purchase purchase = Purchase.builder()
+                .id(1L)
+                .tenantId(TENANT_ID)
+                .supplierId(2L)
+                .supplierName("Proveedor Principal")
+                .purchaseDate(LocalDateTime.now())
+                .total(new BigDecimal("140.0000"))
+                .userId(1L)
+                .observations("Weekly restock")
+                .active(true)
+                .build();
+        detail.setPurchase(purchase);
+        purchase.setDetails(new ArrayList<>(List.of(detail)));
+        return purchase;
+    }
+
+    public static Purchase createCancelledPurchase() {
+        Purchase purchase = createPurchase();
+        purchase.setActive(false);
+        return purchase;
+    }
+
+    public static Purchase createPurchaseWithOldDate() {
+        Purchase purchase = createPurchase();
+        purchase.setPurchaseDate(java.time.LocalDateTime.now().minusHours(30));
+        return purchase;
+    }
+
+    public static PurchaseDTO createPurchaseDTO() {
+        return PurchaseDTO.builder()
+                .id(1L)
+                .supplierId(2L)
+                .supplierName("Proveedor Principal")
+                .purchaseDate(LocalDateTime.now())
+                .total(new BigDecimal("140.0000"))
+                .userId(1L)
+                .userName("John Doe")
+                .observations("Weekly restock")
+                .active(true)
                 .build();
     }
 }

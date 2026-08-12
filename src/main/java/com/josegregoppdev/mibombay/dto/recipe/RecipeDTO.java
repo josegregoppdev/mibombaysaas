@@ -1,5 +1,6 @@
 package com.josegregoppdev.mibombay.dto.recipe;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -36,5 +37,5 @@ public class RecipeDTO {
     private Boolean active;
 
     @Builder.Default
-    private List<RecipeDetailDTO> details = new ArrayList<>();
+    private List<@Valid RecipeDetailDTO> details = new ArrayList<>();
 }

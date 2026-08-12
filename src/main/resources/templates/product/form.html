@@ -119,6 +119,31 @@
                         </div>
                     </div>
 
+                    <!-- Stock (SIN_RECETA only) -->
+                    <div class="card border-0 shadow-sm mb-4" id="stockCard" style="display:none">
+                        <div class="card-body p-4">
+                            <h5 class="card-title"><i class="bi bi-box-seam me-2"></i>Inventory</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="currentStock">Current stock</label>
+                                    <input type="number" step="0.0001" min="0" max="99999999.9999"
+                                           class="form-control" id="currentStock" th:field="*{currentStock}"
+                                           th:classappend="${#fields.hasErrors('currentStock')} ? 'is-invalid'"
+                                           placeholder="0">
+                                    <div class="invalid-feedback" th:each="err : ${#fields.errors('currentStock')}" th:text="${err}">Error</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="minimumStock">Minimum stock</label>
+                                    <input type="number" step="0.0001" min="0" max="99999999.9999"
+                                           class="form-control" id="minimumStock" th:field="*{minimumStock}"
+                                           th:classappend="${#fields.hasErrors('minimumStock')} ? 'is-invalid'"
+                                           placeholder="0">
+                                    <div class="invalid-feedback" th:each="err : ${#fields.errors('minimumStock')}" th:text="${err}">Error</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg"></i>
@@ -135,12 +160,13 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script th:src="@{/js/app.js}"></script>
-    <script th:inline="javascript">
+        <script th:inline="javascript">
         document.addEventListener('DOMContentLoaded', function() {
             var pt = document.getElementById('productType');
             var rs = document.getElementById('recipeSection');
             var ucs = document.getElementById('unitCostSection');
             var rcs = document.getElementById('recipeCostSection');
+            var sc = document.getElementById('stockCard');
             var recipe = document.getElementById('recipeId');
             var uc = document.getElementById('unitCost');
             var sp = document.getElementById('sellingPrice');
@@ -151,7 +177,8 @@
                 var t = pt.value;
                 rs.style.display = (t === 'CON_RECETA' || t === 'ADICIONAL') ? '' : 'none';
                 ucs.style.display = (t === 'SIN_RECETA' || t === 'ADICIONAL') ? '' : 'none';
-                recipe.required = t === 'CON_RECETA';
+                sc.style.display = (t === 'SIN_RECETA') ? '' : 'none';
+                recipe.required = (t === 'CON_RECETA' || t === 'ADICIONAL');
                 updateMargin();
             }
 

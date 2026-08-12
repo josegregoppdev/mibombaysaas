@@ -1,0 +1,116 @@
+# PROJECT AGENTS — MiBombay (Current State)
+
+## What is MiBombay?
+A multi-tenant SaaS for restaurant management. Restaurants manage their menu (ingredients, recipes, products, combos) and sell through a POS (Point of Sale). Many restaurants can use the same system, each with its own data.
+
+## Tech Stack
+- Java 21, Spring Boot 4.1.0, Maven
+- Spring MVC + Thymeleaf (server-side HTML)
+- Spring Security, Spring Data JPA, Bean Validation
+- MySQL, Lombok, MapStruct 1.6.3
+- Bootstrap 5.3 + Bootstrap Icons
+- JUnit 5 + Mockito (142 tests pass)
+
+## Layers (how the code is organized)
+Controller → Service → Repository → Entity / Database
+- Controller: receives requests, calls the service, returns a view.
+- Service: business logic, mutations, persistence.
+- Repository: data access (Spring Data JPA).
+- Entity: JPA entity (no validations, JPA only).
+- DTO: data transfer object (validations here).
+- MapStruct: maps Entity ↔ DTO.
+- Lombok: reduces boilerplate.
+
+## Roles
+- SUPER_ADMIN: manages the platform (sees all companies).
+- ADMIN: manages a restaurant (creates ingredients, recipes, products, combos).
+- CASHIER: sells through the POS (cannot change ingredients/recipes/products).
+
+## What is DONE (modules)
+1. Registration: restaurant owner creates company → system creates admin + cashier.
+2. Ingredients: CRUD with 9 categories, stock tracking.
+3. Recipes: ingredients + quantities, auto-calculated production cost.
+4. Products: CON_RECETA (with recipe), SIN_RECETA (without recipe), ADICIONAL (add-ons).
+5. Combos: groups products sold together at a single price.
+6. POS: full-screen with sidebar, JS-managed cart, hold/confirm, mobile drawer.
+7. Recipe exclusions in POS: cashier unchecks ingredients, saved per-sale in "notes".
+8. Recipe edit button: on products with recipe and combos.
+9. Add-on (ADICIONAL) button: on products with recipe, opens a modal with a list of add-ons.
+10. Amount received / change calculation for cash payments.
+11. Observation field: cashier writes notes per cart item (e.g., "cut in half").
+12. Sales history and detail view.
+13. Mobile: cart is a drawer opened by a floating button.
+
+## What is PENDING (not done yet)
+- Tables (rooms, availability).
+- Inventory management.
+- Suppliers and purchases.
+- Cash register and closing (CierreCaja).
+- X and Z reports.
+- PDF receipt generation.
+- Returns (devoluciones).
+- Customers, kitchen, deliveries.
+
+## Rules (conventions)
+1. The controller NEVER calls the repository. It calls the service only.
+2. Business logic lives in the service layer, not in the controller.
+3. The view (Thymeleaf) ALWAYS works with DTOs, never with JPA entities.
+4. Services return DTOs to the controller.
+5. Validations are in DTOs, not in entities.
+6. Entities use JPA annotations only (no validations).
+7. Use Lombok on entities/DTOs (@Data, @Builder).
+8. Use MapStruct for Entity ↔ DTO mapping.
+9. Tests use TestDataFactory for test objects.
+10. Multi-tenant: every entity has tenantId. Filtered by TenantFilter.
+11. Security: Spring Security, BCrypt-12, CSRF, OWASP Top 10.
+
+## Test summary (142 tests)
+- ProductServiceTest: 20
+- ComboServiceTest: 15
+- IngredientServiceTest: 15
+- RecipeServiceTest: 14
+- ProductControllerTest: 13
+- RecipeControllerTest: 13
+- ComboControllerTest: 12
+- IngredientControllerTest: 13
+- LoginControllerTest: 6
+- UserServiceTest: 4
+- PasswordGeneratorServiceTest: 8
+- CustomUserDetailsServiceTest: 7
+- CompanyServiceTest: 9
+- CompanyRegistrationControllerTest: 4
+- DashboardControllerTest: 4 (missing on disk)
+- AdminControllerTest: 2 (missing on disk)
+- PasswordChangeControllerTest: 4 (missing on disk)
+- LandingControllerTest: 1
+- MibombayApplicationTests: 1
+
+## Frontend design (POS)
+- Dark blue (#0B2545) + amber (#F4A261) accent.
+- Cart: right-side panel on desktop, drawer on mobile (floating button opens it).
+- Cart row: product name, price, qty controls, edit-recipe button, add-on button, delete button.
+- Edit-recipe button: opens a modal with recipe ingredients as checkboxes.
+- Add-on button (+): opens a modal with a flat list of ADICIONAL products.
+- Observation textarea in the recipe modal (for notes like "cut in half").
+- Payment: amount received input + change calculation.
+- Add-ons go to the cart as separate lines.
+
+## Mobile POS (phone)
+- Products panel takes full screen.
+- Cart is hidden off-screen.
+- Floating action button (bottom-right) opens the cart as a drawer (right side, 88% width).
+- Backdrop dims the products.
+- Close via X button or tapping the backdrop.
+
+## Key files
+- src/main/java/.../controller/sale/SaleController.java — POS, on-hold, history
+- src/main/java/.../service/sale/SaleService.java — sale business logic
+- src/main/java/.../service/product/ProductService.java — product logic + recipe data for POS
+- src/main/resources/templates/sale/pos.html — the POS page (JS cart, modals, mobile drawer)
+- src/main/resources/templates/fragments/sidebar.html — sidebar
+- src/main/resources/static/css/styles.css — design tokens + sd- design system
+
+## How to run
+- ./mvnw spring-boot:run (needs MySQL configured)
+- ./mvnw test (runs all 142 tests)
+- Demo: subdomain 1, admin demo@mibombay.com / demo1234

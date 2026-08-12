@@ -1,5 +1,6 @@
 package com.josegregoppdev.mibombay.dto.combo;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -47,5 +48,5 @@ public class ComboDTO {
     private Boolean active;
 
     @Builder.Default
-    private List<ComboDetailDTO> details = new ArrayList<>();
+    private List<@Valid ComboDetailDTO> details = new ArrayList<>();
 }

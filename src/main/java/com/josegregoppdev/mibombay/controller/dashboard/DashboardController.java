@@ -1,9 +1,11 @@
 package com.josegregoppdev.mibombay.controller.dashboard;
 
+import com.josegregoppdev.mibombay.common.tenant.TenantContext;
+import com.josegregoppdev.mibombay.dto.company.CompanyDTOResponse;
+import com.josegregoppdev.mibombay.dto.user.UserDTOResponse;
 import com.josegregoppdev.mibombay.model.user.Role;
-import com.josegregoppdev.mibombay.model.user.User;
-import com.josegregoppdev.mibombay.repository.company.CompanyRepository;
-import com.josegregoppdev.mibombay.repository.user.UserRepository;
+import com.josegregoppdev.mibombay.service.company.CompanyService;
+import com.josegregoppdev.mibombay.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -17,30 +19,29 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequiredArgsConstructor
 public class DashboardController {
 
-    private final UserRepository userRepository;
-    private final CompanyRepository companyRepository;
+    private final UserService userService;
+    private final CompanyService companyService;
 
     @GetMapping
     public String dashboard(Authentication authentication,
                             @RequestParam(required = false) String passwordChanged,
                             Model model) {
         String email = authentication.getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalStateException("User not found"));
+        UserDTOResponse userDto = userService.getUserByEmail(email);
 
-        if (user.getMustChangePassword()) {
+        if (Boolean.TRUE.equals(userDto.getMustChangePassword())) {
             return "redirect:/change-password";
         }
 
-        if (user.getRole() == Role.SUPER_ADMIN) {
+        if (Role.SUPER_ADMIN.name().equals(userDto.getRole())) {
             return "redirect:/admin/dashboard";
         }
 
-        var company = companyRepository.findByTenantId(user.getTenantId())
-                .orElseThrow(() -> new IllegalStateException("Company not found"));
+        String tenantId = TenantContext.get();
+        CompanyDTOResponse companyDto = companyService.getCompanyByTenantId(tenantId);
 
-        model.addAttribute("user", user);
-        model.addAttribute("company", company);
+        model.addAttribute("user", userDto);
+        model.addAttribute("company", companyDto);
 
         if (passwordChanged != null) {
             model.addAttribute("message", "Password changed successfully");

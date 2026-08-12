@@ -42,6 +42,9 @@ com.josegregoppdev.mibombay
 │   ├── recipe/                # Recipe, RecipeDetail
 │   ├── product/               # Product, ProductType (enum), ProductCategory (enum)
 │   ├── combo/                 # Combo, ComboDetail
+│   ├── customer/              # Customer (DNI/phone encrypted)
+│   ├── supplier/              # Supplier (DNI/phone encrypted)
+│   ├── purchase/              # Purchase, PurchaseDetail
 │   └── sale/                  # Sale, SaleDetail, SaleState (enum), PaymentMethod (enum)
 ├── dto/                       # DTOs with validations
 │   ├── company/               # CompanyDTORequest, CompanyDTOResponse
@@ -50,6 +53,9 @@ com.josegregoppdev.mibombay
 │   ├── recipe/                # RecipeDTO, RecipeDetailDTO
 │   ├── product/               # ProductDTO
 │   ├── combo/                 # ComboDTO, ComboDetailDTO
+│   ├── customer/              # CustomerDTO
+│   ├── supplier/              # SupplierDTO
+│   ├── purchase/              # PurchaseDTO, PurchaseDetailDTO, PurchaseCartSubmissionDTO
 │   └── sale/                  # SaleDTO, SaleDetailDTO, CartSubmissionDTO, IngredientOptionDTO, PosRecipeDataDTO
 ├── mapper/                    # MapStruct Mappers
 │   ├── company/               # CompanyMapper
@@ -58,6 +64,8 @@ com.josegregoppdev.mibombay
 │   ├── recipe/                # RecipeMapper
 │   ├── product/               # ProductMapper
 │   ├── combo/                 # ComboMapper
+│   ├── customer/              # CustomerMapper
+│   ├── supplier/              # SupplierMapper
 │   └── sale/                  # SaleMapper
 ├── repository/                # Spring Data JPA repositories
 │   ├── user/                  # UserRepository
@@ -66,14 +74,21 @@ com.josegregoppdev.mibombay
 │   ├── recipe/                # RecipeRepository
 │   ├── product/               # ProductRepository
 │   ├── combo/                 # ComboRepository
+│   ├── customer/              # CustomerRepository
+│   ├── supplier/              # SupplierRepository
+│   ├── purchase/              # PurchaseRepository, PurchaseDetailRepository
 │   └── sale/                  # SaleRepository
 ├── service/                   # business logic
 │   ├── user/                  # CustomUserDetailsService, PasswordGeneratorService
-│   ├── company/               # CompanyRegistrationService
+│   ├── company/               # CompanyService
 │   ├── ingredient/            # IngredientService
 │   ├── recipe/                # RecipeService
 │   ├── product/               # ProductService
 │   ├── combo/                 # ComboService
+│   ├── inventory/             # InventarioService
+│   ├── movement/              # MovementService (read-only)
+│   ├── customer/              # CustomerService
+│   ├── supplier/              # SupplierService
 │   └── sale/                  # SaleService
 ├── controller/                # web controllers
 │   ├── landing/               # LandingController
@@ -85,6 +100,10 @@ com.josegregoppdev.mibombay
 │   ├── recipe/                # RecipeController
 │   ├── product/               # ProductController
 │   ├── combo/                 # ComboController
+│   ├── movement/              # MovementController (inventory movement report)
+│   ├── customer/              # CustomerController
+│   ├── supplier/              # SupplierController
+│   ├── purchase/              # PurchaseController (registers purchases, cancellation)
 │   └── sale/                  # SaleController (POS, on-hold, history)
 └── config/                    # Spring configurations
     ├── SecurityConfig.java
@@ -163,25 +182,30 @@ Real properties files are in `.gitignore`.
 
 | Class | Tests |
 |---|---|
-| `CompanyRegistrationServiceTest` | 7 |
+| `CompanyServiceTest` | 9 |
 | `PasswordGeneratorServiceTest` | 8 |
 | `CustomUserDetailsServiceTest` | 7 |
+| `UserServiceTest` | 4 |
 | `IngredientServiceTest` | 15 |
 | `RecipeServiceTest` | 14 |
-| `ProductServiceTest` | 19 |
-| `ComboServiceTest` | 14 |
+| `ProductServiceTest` | 21 |
+| `ComboServiceTest` | 15 |
+| `InventarioServiceTest` | 16 |
+| `MovementServiceTest` | 10 |
+| `CustomerServiceTest` | 6 |
+| `SupplierServiceTest` | 13 |
+| `PurchaseServiceTest` | 14 |
 | `LandingControllerTest` | 1 |
-| `LoginControllerTest` | 6 |
-| `PasswordChangeControllerTest` | 4 |
-| `DashboardControllerTest` | 4 |
 | `CompanyRegistrationControllerTest` | 4 |
-| `AdminControllerTest` | 2 |
 | `IngredientControllerTest` | 13 |
 | `RecipeControllerTest` | 13 |
 | `ProductControllerTest` | 13 |
-| `ComboControllerTest` | 12 |
+| `ComboControllerTest` | 13 |
+| `MovementControllerTest` | 3 |
+| `SupplierControllerTest` | 13 |
+| `PurchaseControllerTest` | 10 |
 | `MibombayApplicationTests` | 1 |
-| Total | 142 |
+| **Total** | **236** |
 
 ```bash
 ./mvnw test
@@ -272,6 +296,7 @@ The `thymeleaf-restaurant` skill is the primary guide — it references HTMX and
 
 - Use Lombok annotations on entities/DTOs to reduce boilerplate
 - **DTOs**: `CompanyDTORequest`/`CompanyDTOResponse` for company, `UserDTORequest`/`UserDTOResponse` for user. The rest use simple `@RequestParam` without DTO
+- **Spring MVC + DTOs and thin controllers**: This project uses Spring MVC. The form (Thymeleaf view) ALWAYS works with DTOs, never with JPA entities. Services return DTOs to the controller. The controller calls services, never repositories. **Business logic (validation rules, entity mutations, persistence operations) lives in the service layer**, not in the controller. The controller only does presentation: form binding, input validation that compares form fields, calling the service, handling service exceptions, and returning the view.
 - **MapStruct**: `@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)` in interfaces inside `mapper/`
 - **Entities**: no Javax/Jakarta validations, JPA annotations only
 - **Validations**: in DTOs, not in entities
@@ -282,7 +307,7 @@ The `thymeleaf-restaurant` skill is the primary guide — it references HTMX and
 
 ## Next Module
 
-**Tables** module (tables, rooms, availability management). See `plan-mesas.md` when created.
+**Tables** module (tables, rooms, availability management). See `plan-mesas.md` when created. Purchases module (Compras) is complete.
 
 ## Additional Conventions
 
@@ -293,11 +318,19 @@ The `thymeleaf-restaurant` skill is the primary guide — it references HTMX and
 - **Responsive sidebar**: Offcanvas on mobile (<768px), inline on desktop (≥768px). Hamburger button in authenticated navbar
 - **State toggle**: single method `toggleIngredientActiveStatus` that flips `active`. Button always visible in list (red if active, green if inactive)
 - **Product types**: `ProductType` enum (CON_RECETA, SIN_RECETA, ADICIONAL) — single Product entity differentiated by type
-- **Product-Recipe relationship**: optional `@ManyToOne` — CON_RECETA requires recipe, SIN_RECETA has none, ADICIONAL is optional
+- **Product-Recipe relationship**: CON_RECETA requires recipe, SIN_RECETA has none, ADICIONAL requires recipe (mandatory for inventory control)
+- **Product stock**: `Product` has `currentStock` and `minimumStock` (BigDecimal) for SIN_RECETA products
 - **Product categories**: `ProductCategory` enum (FOOD, DRINKS, DESSERTS, SIDES, COMBOS, OTHERS)
 - **Combo**: groups products sold together. `ComboDetail` links to Product with quantity. Total cost = sum of product costs × quantities
+- **Adiciones en POS**: el cajero hace click en `+` de la fila del carrito (solo productos con receta y combos). Se abre un modal con search + grid de TODOS los productos activos (cualquier `ProductType`). Click en un producto → se agrega como add-on indentado bajo el padre. Los add-ons se guardan como `SaleDetail` separados. `parentIdx` es UI-only, no se persiste en DB.
 - **Sale states**: `SaleState` enum (EN_ESPERA, CONFIRMADA, ANULADA). Confirmed sales are immutable
 - **Payment methods**: `PaymentMethod` enum (EFECTIVO, DATAFONO, TRANSFERENCIA)
 - **POS**: embedded in the dashboard layout (navbar + sidebar visible) at `/sale/pos`. **JS-managed cart** (client-side array) — products and quantities are held in a JavaScript array and submitted as a single hidden form on charge/hold. Products frozen at sale time (historical snapshot): on submit, `SaleService.createSaleFromCart` re-reads `sellingPrice`/`unitCost` from the DB and snapshots them into `SaleDetail`. On-hold sales can be resumed by storing the prefilled cart in the HTTP session and reading it back on `/sale/pos`.
 - **Recipe exclusions in POS**: per-sale only. Saved in `SaleDetailDTO.notes` as `"Without: ingredient1, ingredient2"`. The global `Recipe`/`RecipeDetail` entities are never modified by the POS.
 - **Recipe-Product cost sync**: when a recipe is updated, all linked products automatically get their `unitCost` updated via `ProductService.syncProductCostsForRecipe()`
+- **Inventory**: `InventarioService` is the only service allowed to modify stock. Every stock change creates a `Movement` (types `SALE`, `PURCHASE`, `RETURN`) in the same transaction. Consumed by `SaleService.confirmSale()` and `PurchaseService.createPurchaseFromCart()`.
+- **Purchases**: registers ingredient/SIN_RECETA purchases from suppliers into stock. `PurchaseService.createPurchaseFromCart` validates items, snapshots supplier name + unit prices, then `InventarioService.addStockForPurchase` increments stock and updates the previous unit cost (snapshot in `PurchaseDetail.previousUnitCost`); total = Σ quantity × unitPrice. Cancellation (`cancelPurchase`) only within **24 h** of `purchaseDate` (marked inactive, never deleted) and calls `InventarioService.revertPurchase` which restores previous stock/costs and logs `RETURN` movements.
+- **Sale inventory consumption**: Product `CON_RECETA`/`ADICIONAL` → decrements recipe ingredients. Product `SIN_RECETA` → decrements product stock. Combo → expands into products and applies same rules. Exclusions in `"Without: ..."` are not consumed.
+- **Negative inventory**: controlled by `TenantConfiguration.allowNegativeInventory`. If false, sale fails when stock insufficient. If true, stock can go negative.
+- **Customer**: `Customer` entity with AES-256-GCM encryption for DNI (`documentEncrypted`) and phone (`phoneEncrypted`). Lookup via HMAC-SHA256 hashes (`documentLookupHash`, `phoneLookupHash`). Default customer `Consumidor Final` (DNI: 99999999) auto-created per tenant. Cannot be deactivated.
+- **Supplier**: `Supplier` entity with AES-256-GCM encryption for document (`documentEncrypted`) and phone (`phoneEncrypted`), same encryption + lookup-hash scheme as Customer. Default supplier `Proveedor Principal` (NIT: 900001111) auto-created per tenant. Cannot be deactivated; only name/address editable. List shows masked values (`documentMasked`, `phoneMasked`); edit form pre-fills decrypted values for re-encryption on save.

@@ -1,10 +1,8 @@
 package com.josegregoppdev.mibombay.controller.auth;
 
-import com.josegregoppdev.mibombay.model.user.User;
-import com.josegregoppdev.mibombay.repository.user.UserRepository;
+import com.josegregoppdev.mibombay.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,15 +10,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.time.LocalDateTime;
-
 @Controller
 @RequestMapping("/change-password")
 @RequiredArgsConstructor
 public class PasswordChangeController {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
     @GetMapping
     public String showForm() {
@@ -37,19 +32,13 @@ public class PasswordChangeController {
             return "change-password";
         }
 
-        if (newPassword.length() < 8) {
-            model.addAttribute("error", "The password must be at least 8 characters");
+        String email = authentication.getName();
+        try {
+            userService.changePassword(email, newPassword);
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage());
             return "change-password";
         }
-
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalStateException("User not found"));
-
-        user.setPasswordHash(passwordEncoder.encode(newPassword));
-        user.setMustChangePassword(false);
-        user.setLastPasswordChange(LocalDateTime.now());
-        userRepository.save(user);
 
         return "redirect:/dashboard?passwordChanged=true";
     }

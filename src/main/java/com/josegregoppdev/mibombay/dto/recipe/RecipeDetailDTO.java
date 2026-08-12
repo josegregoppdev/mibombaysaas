@@ -1,6 +1,7 @@
 package com.josegregoppdev.mibombay.dto.recipe;
 
 import com.josegregoppdev.mibombay.model.ingredient.UnitOfMeasure;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.*;
 

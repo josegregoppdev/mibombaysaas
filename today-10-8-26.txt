@@ -1,0 +1,103 @@
+# Today — 2026-08-10
+
+Session log: Inventory movements on sale + ADICIONAL recipe enforcement + TenantConfiguration preserved.
+
+## Objective
+- Record inventory movements (ingredients + SIN_RECETA products) when a sale is confirmed in the POS.
+- Make ADICIONAL products require a recipe (mandatory for inventory control).
+- Preserve TenantConfiguration for future system rules.
+- Fix tenant isolation in SaleService.
+
+## Important Details
+- Java 21, Spring Boot 4.1.0, Thymeleaf, Bootstrap 5.3, MySQL, MapStruct, Lombok.
+- User communicates in English (B1 level), prefers Spanish for quick questions.
+- User reversed decision to remove TenantConfiguration: "mejor dejemos por el momento tenant_configurations".
+- User confirmed ADICIONAL must have recipe, with demo recipes for Extra Cheese and Extra Lettuce.
+- Inventory consumption follows master spec Section 11: InventarioService is the only service that modifies stock.
+
+## Work State
+### Completed
+
+- **Product entity**: Added `currentStock` and `minimumStock` (BigDecimal, default ZERO) to `Product.java`.
+- **ProductDTO**: Added `currentStock` and `minimumStock` with `@PositiveOrZero` + `@Digits(8,4)` validation.
+- **ProductService**: ADICIONAL now requires recipe (throws if `recipeId` null). Stock defaults on create. Stock preserved on update if null.
+- **Repositories**: Added `findByTenantIdAndIdIn(String tenantId, Collection<Long> ids)` to `IngredientRepository` and `ProductRepository`.
+- **InventarioService** (NEW): `consumeForSale(Sale)` — the only service allowed to modify stock. Creates `Movement` records of type `SALE` for every ingredient and SIN_RECETA product affected. Handles:
+  - CON_RECETA/ADICIONAL: decrements recipe ingredients.
+  - SIN_RECETA: decrements product stock.
+  - Combo expansion: decomposes into products and applies same rules.
+  - Exclusions: `"Without: ingredient1, ingredient2"` skips excluded ingredients.
+  - Negative inventory: controlled by `TenantConfiguration.allowNegativeInventory`.
+  - Transactional: all in same transaction as sale confirmation.
+- **SaleService.confirmSale()**: Now calls `inventarioService.consumeForSale(sale)` after setting state CONFIRMADA and before save. All in one transaction.
+- **SaleService.createSaleFromCart()**: Fixed `findById` → `findByIdAndTenantId` for products, combos, and cashier. Added tenant validation for cashier.
+- **InitialDataConfig**: 
+  - `createDemoRecipes`: Now idempotent (each recipe guarded by `existsByCodeAndTenantId`). Added EXQ-001 (Extra Cheese: 1 unit cheese) and EXL-001 (Extra Lettuce: 0.020 kg lettuce).
+  - `createDemoProducts`: Restructured to be idempotent. PROD-006/007 created with recipes. PROD-004/005 created with stock.
+  - Added `ensureAddonRecipesLinked()`: repairs existing demo products to link recipes.
+  - Added `ensureSIN_RECETAStock()`: adds stock to existing SIN_RECETA products if missing.
+- **product/form.html**: Added stock card (currentStock + minimumStock) visible only for SIN_RECETA. Recipe section now required for ADICIONAL.
+- **product/list.html**: Added Stock column to products table.
+- **TestDataFactory**: Added `createProductSinReceta()`, `createProductWithRecipe()`, `createComboWithDetails()`, `createSale()` helpers.
+- **InventarioServiceTest** (NEW, 11 tests):
+  - `consumeForSale_productWithRecipe_decrementsIngredientsAndCreatesMovement`
+  - `consumeForSale_productSinReceta_decrementsProductStockAndCreatesMovement`
+  - `consumeForSale_combo_expandsProductsAndConsumesAll`
+  - `consumeForSale_excludedIngredient_notConsumed`
+  - `consumeForSale_negativeNotAllowed_throwsAndDoesNotSave`
+  - `consumeForSale_negativeAllowed_allowsNegativeStock`
+  - `consumeForSale_adicionalWithRecipe_consumesIngredients`
+  - `consumeForSale_adicionalWithoutRecipe_throws`
+  - `consumeForSale_multipleSaleDetails_aggregatesSameIngredient`
+  - `consumeForSale_saleWithNoDetails_doesNothing`
+  - `consumeForSale_productNotFound_throws`
+- **ProductServiceTest**: Added `createNewProduct_adicionalWithoutRecipe_throwsException`.
+- **Tests**: 161 passing (150 previous + 11 InventarioServiceTest). `MibombayApplicationTests` excluded (requires MySQL).
+- **AGENTS.md**: Updated test table (161), ADICIONAL requires recipe, product stock, inventory conventions, project structure.
+- **README.md**: Updated test count (161), features, ADICIONAL description.
+
+### Active
+- (none)
+
+### Blocked
+- (none)
+
+## Next Move
+1. Next planned module is **Tables** (tables, rooms, availability).
+2. Could add `InventarioService.addStock()` for purchases/returns (Phase 4 of movement module plan).
+
+## Relevant Files
+- `src/main/java/com/josegregoppdev/mibombay/service/inventory/InventarioService.java` — NEW: core inventory consumption logic.
+- `src/main/java/com/josegregoppdev/mibombay/service/sale/SaleService.java` — integrates InventarioService, fixes tenant isolation.
+- `src/main/java/com/josegregoppdev/mibombay/model/product/Product.java` — added currentStock, minimumStock.
+- `src/main/java/com/josegregoppdev/mibombay/dto/product/ProductDTO.java` — added currentStock, minimumStock.
+- `src/main/java/com/josegregoppdev/mibombay/service/product/ProductService.java` — ADICIONAL requires recipe, stock defaults.
+- `src/main/java/com/josegregoppdev/mibombay/repository/ingredient/IngredientRepository.java` — added findByTenantIdAndIdIn.
+- `src/main/java/com/josegregoppdev/mibombay/repository/product/ProductRepository.java` — added findByTenantIdAndIdIn.
+- `src/main/java/com/josegregoppdev/mibombay/config/InitialDataConfig.java` — idempotent recipes, Extra Cheese/Lettuce, stock, repair logic.
+- `src/main/resources/templates/product/form.html` — stock fields, recipe required for ADICIONAL.
+- `src/main/resources/templates/product/list.html` — stock column.
+- `src/test/java/com/josegregoppdev/mibombay/service/inventory/InventarioServiceTest.java` — NEW: 11 tests.
+- `src/test/java/com/josegregoppdev/mibombay/testdata/TestDataFactory.java` — new helpers.
+
+## Test summary
+| Class | Tests |
+|---|---|
+| `CompanyServiceTest` | 9 |
+| `PasswordGeneratorServiceTest` | 8 |
+| `CustomUserDetailsServiceTest` | 7 |
+| `UserServiceTest` | 4 |
+| `IngredientServiceTest` | 15 |
+| `RecipeServiceTest` | 14 |
+| `ProductServiceTest` | 21 |
+| `ComboServiceTest` | 15 |
+| `InventarioServiceTest` | 11 |
+| `LandingControllerTest` | 1 |
+| `LoginControllerTest` | 6 |
+| `CompanyRegistrationControllerTest` | 4 |
+| `IngredientControllerTest` | 13 |
+| `RecipeControllerTest` | 13 |
+| `ProductControllerTest` | 13 |
+| `ComboControllerTest` | 13 |
+| `MibombayApplicationTests` | 1 |
+| **Total** | **161** |

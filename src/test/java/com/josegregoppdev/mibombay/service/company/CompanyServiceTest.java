@@ -9,12 +9,17 @@ import com.josegregoppdev.mibombay.model.user.User;
 import com.josegregoppdev.mibombay.repository.company.CompanyRepository;
 import com.josegregoppdev.mibombay.repository.user.UserRepository;
 import com.josegregoppdev.mibombay.service.user.PasswordGeneratorService;
+import com.josegregoppdev.mibombay.service.configuration.TenantConfigurationService;
+import com.josegregoppdev.mibombay.service.customer.CustomerService;
+import com.josegregoppdev.mibombay.service.supplier.SupplierService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Optional;
 
 import static com.josegregoppdev.mibombay.testdata.TestDataFactory.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,7 +29,9 @@ import static org.mockito.Mockito.*;
 import org.mockito.ArgumentCaptor;
 
 @ExtendWith(MockitoExtension.class)
-class CompanyRegistrationServiceTest {
+class CompanyServiceTest {
+
+    private static final String TENANT_ID = "tnt_test1234567890123456789012345678";
 
     @Mock
     private CompanyRepository companyRepository;
@@ -41,8 +48,17 @@ class CompanyRegistrationServiceTest {
     @Mock
     private CompanyMapper companyMapper;
 
+    @Mock
+    private TenantConfigurationService tenantConfigurationService;
+
+    @Mock
+    private CustomerService customerService;
+
+    @Mock
+    private SupplierService supplierService;
+
     @InjectMocks
-    private CompanyRegistrationService service;
+    private CompanyService service;
 
     @Test
     void register_createsAdminAndCashierSuccessfully() {
@@ -163,5 +179,33 @@ class CompanyRegistrationServiceTest {
         service.register(dto);
 
         verify(passwordEncoder).encode(dto.getManagerDocument());
+    }
+
+    @Test
+    void getCompanyByTenantId_returnsCompanyDTO() {
+        Company company = createCompany();
+        CompanyDTOResponse dto = CompanyDTOResponse.builder()
+                .name(company.getName())
+                .email(company.getEmail())
+                .phone(company.getPhone())
+                .address(company.getAddress())
+                .build();
+        when(companyRepository.findByTenantId(TENANT_ID)).thenReturn(Optional.of(company));
+        when(companyMapper.toResponse(company)).thenReturn(dto);
+
+        CompanyDTOResponse result = service.getCompanyByTenantId(TENANT_ID);
+
+        assertNotNull(result);
+        assertEquals(company.getName(), result.getName());
+        assertEquals(company.getEmail(), result.getEmail());
+    }
+
+    @Test
+    void getCompanyByTenantId_companyNotFound_throwsException() {
+        when(companyRepository.findByTenantId(TENANT_ID)).thenReturn(Optional.empty());
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> service.getCompanyByTenantId(TENANT_ID));
+        assertTrue(ex.getMessage().contains("Company not found"));
     }
 }

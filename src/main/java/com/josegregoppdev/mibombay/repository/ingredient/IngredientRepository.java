@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -19,7 +21,11 @@ public interface IngredientRepository extends JpaRepository<Ingredient, Long> {
 
     Page<Ingredient> findByTenantIdAndActiveTrue(String tenantId, Pageable pageable);
 
+    List<Ingredient> findByTenantIdAndActiveTrueOrderByNameAsc(String tenantId);
+
     Optional<Ingredient> findByIdAndTenantId(Long id, String tenantId);
+
+    List<Ingredient> findByTenantIdAndIdIn(String tenantId, Collection<Long> ids);
 
     Optional<Ingredient> findByCodeAndTenantId(String code, String tenantId);
 

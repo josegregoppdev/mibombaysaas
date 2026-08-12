@@ -170,6 +170,22 @@ class ProductServiceTest {
     }
 
     @Test
+    void createNewProduct_adicionalWithoutRecipe_throwsException() {
+        ProductDTO dto = createAddonProductDTO();
+        when(productRepository.existsByCodeAndTenantId(dto.getCode(), TENANT_ID)).thenReturn(false);
+        when(productRepository.existsByNameAndTenantId(dto.getName(), TENANT_ID)).thenReturn(false);
+        Product product = Product.builder()
+                .productType(ProductType.ADICIONAL)
+                .tenantId(TENANT_ID)
+                .build();
+        when(productMapper.toEntity(dto)).thenReturn(product);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> productService.createNewProduct(dto, TENANT_ID));
+        assertTrue(ex.getMessage().contains("recipe"));
+    }
+
+    @Test
     void createNewProduct_duplicateCode_throwsException() {
         ProductDTO dto = createProductDTO();
         when(productRepository.existsByCodeAndTenantId(dto.getCode(), TENANT_ID)).thenReturn(true);
@@ -328,5 +344,40 @@ class ProductServiceTest {
         assertNotNull(result);
         assertTrue(result.getProductIngredients().isEmpty());
         assertTrue(result.getComboProductIds().isEmpty());
+    }
+
+    @Test
+    void getPosProducts_excludesAdicional() {
+        Product conReceta = createProduct();
+        Product sinReceta = createProductWithoutRecipe();
+        Product adicional = Product.builder()
+                .id(4L)
+                .tenantId(TENANT_ID)
+                .code("PROD-ADD")
+                .name("Extra Cheese")
+                .category(ProductCategory.OTHERS)
+                .productType(ProductType.ADICIONAL)
+                .sellingPrice(new BigDecimal("2.0000"))
+                .unitCost(new BigDecimal("1.0000"))
+                .active(true)
+                .build();
+
+        Page<Product> page = new PageImpl<>(List.of(conReceta, sinReceta, adicional));
+        when(productRepository.findByTenantIdAndActiveTrue(eq(TENANT_ID), any(Pageable.class)))
+                .thenReturn(page);
+        when(productMapper.toDto(any(Product.class))).thenReturn(ProductDTO.builder().build());
+
+        Page<ProductDTO> result = productService.getPosProducts(TENANT_ID);
+
+        assertNotNull(result);
+        assertEquals(2, result.getTotalElements());
+        assertEquals(2, result.getContent().size());
+
+        ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
+        verify(productMapper, times(2)).toDto(captor.capture());
+        List<Product> mapped = captor.getAllValues();
+        assertTrue(mapped.contains(conReceta));
+        assertTrue(mapped.contains(sinReceta));
+        assertFalse(mapped.contains(adicional));
     }
 }

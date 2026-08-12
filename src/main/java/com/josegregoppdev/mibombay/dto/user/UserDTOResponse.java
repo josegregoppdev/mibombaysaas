@@ -15,4 +15,5 @@ public class UserDTOResponse {
     private String email;
     private String fullName;
     private String role;
+    private Boolean mustChangePassword;
 }

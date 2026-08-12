@@ -31,6 +31,9 @@
         .sd-pos-item-price { font-size: 0.85rem; font-weight: 700; color: var(--mb-blue-700); }
         .sd-pos-item-badge { position: absolute; top: 5px; right: 5px; font-size: 0.55rem; background: var(--mb-amber-500); color: #fff; padding: 0.08rem 0.4rem; border-radius: 8px; font-weight: 700; letter-spacing: 0.03em; }
         .sd-pos-item.combo { border-left: 3px solid var(--mb-amber-500); }
+        .sd-pos-item-plus { position: absolute; top: 5px; left: 5px; width: 24px; height: 24px; border-radius: 50%; background: var(--mb-amber-500); color: #fff; border: none; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2; transition: all 0.12s; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+        .sd-pos-item-plus:hover { background: #e0913a; transform: scale(1.15); }
+        .sd-pos-item-plus:active { transform: scale(0.9); }
 
         /* Cart panel */
         .sd-pos-cart { width: 340px; background: var(--mb-blue-900); color: #E8ECF1; display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; }
@@ -92,6 +95,21 @@
         .sd-pos-btn-hold { width: 100%; padding: 0.5rem; border-radius: 8px; font-size: 0.82rem; font-weight: 600; background: transparent; border: 1.5px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.7); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.35rem; min-height: 42px; margin-bottom: 0.5rem; transition: all 0.15s; }
         .sd-pos-btn-hold:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.3); color: #fff; }
 
+        /* Amount received + change */
+        .sd-pos-received { margin-top: 0.4rem; margin-bottom: 0.5rem; padding: 0.5rem 0.6rem; background: rgba(255,255,255,0.04); border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); }
+        .sd-pos-received-label { font-size: 0.72rem; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.3rem; }
+        .sd-pos-received-input-wrap { display: flex; align-items: center; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; padding: 0 0.5rem; }
+        .sd-pos-received-input-wrap:focus-within { border-color: var(--mb-amber-500); }
+        .sd-pos-received-prefix { color: rgba(255,255,255,0.5); font-weight: 600; margin-right: 0.3rem; }
+        .sd-pos-received-input { flex: 1; background: transparent; border: none; color: #fff; font-size: 0.95rem; font-weight: 600; padding: 0.4rem 0; outline: none; min-width: 0; }
+        .sd-pos-received-input::placeholder { color: rgba(255,255,255,0.3); }
+        .sd-pos-received-input:read-only { color: rgba(255,255,255,0.5); cursor: not-allowed; }
+        .sd-pos-change-row { display: flex; align-items: baseline; justify-content: space-between; margin-top: 0.5rem; padding-top: 0.4rem; border-top: 1px dashed rgba(255,255,255,0.12); }
+        .sd-pos-change-label { font-size: 0.72rem; color: rgba(255,255,255,0.5); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+        .sd-pos-change-val { font-size: 1.1rem; font-weight: 700; color: #fff; }
+        .sd-pos-change-val.negative { color: var(--mb-error); }
+        .sd-pos-change-val.warn { color: var(--mb-amber-500); }
+
         /* Recipe edit modal */
         .sd-recipe-modal { background: var(--mb-blue-900); color: #E8ECF1; border: 1px solid rgba(255,255,255,0.1); }
         .sd-recipe-modal .modal-header { border-bottom: 1px solid rgba(255,255,255,0.1); }
@@ -116,8 +134,53 @@
         .sd-recipe-tree-leaf-connector { display: inline-block; min-width: 1.2rem; }
         .sd-recipe-tree-empty-leaf { color: rgba(255,255,255,0.45); font-style: italic; font-size: 0.82rem; padding: 0.15rem 0 0.15rem 1.2rem; }
 
-        .sd-pos-cart-fab { display: none; }
+        /* Inline add-on tree (in cart rows) */
+        .sd-addon-tree { margin-top: 0.4rem; padding: 0.4rem 0.5rem; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.06); }
+        .sd-addon-tree-label { font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.55); margin-bottom: 0.3rem; }
+        .sd-addon-tree-list { list-style: none; padding-left: 1rem; margin: 0; border-left: 1px solid rgba(255,255,255,0.1); }
+        .sd-addon-tree-item { padding: 0.2rem 0; font-size: 0.78rem; color: #fff; }
+        .sd-addon-tree-product-name { font-weight: 600; color: var(--mb-amber-500); margin: 0.15rem 0; }
+        .sd-addon-tree-sublist { list-style: none; padding-left: 1rem; margin: 0; border-left: 1px solid rgba(255,255,255,0.08); }
+        .sd-addon-tree-subitem { padding: 0.15rem 0; font-size: 0.75rem; }
 
+        .sd-recipe-observation { margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid rgba(255,255,255,0.1); }
+        .sd-recipe-observation-label { font-size: 0.78rem; font-weight: 600; color: rgba(255,255,255,0.6); margin-bottom: 0.35rem; }
+        .sd-recipe-observation-input { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; color: #fff; padding: 0.5rem 0.6rem; font-size: 0.85rem; resize: vertical; min-height: 60px; font-family: inherit; }
+        .sd-recipe-observation-input::placeholder { color: rgba(255,255,255,0.3); }
+        .sd-recipe-observation-input:focus { outline: none; border-color: var(--mb-amber-400); }
+
+        /* Add-on modal */
+        .sd-addon-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.4rem; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .sd-addon-row:last-child { border-bottom: none; }
+        .sd-addon-row-info { flex: 1; min-width: 0; }
+        .sd-addon-row-name { font-size: 0.88rem; font-weight: 600; color: #fff; }
+        .sd-addon-row-price { font-size: 0.78rem; color: var(--mb-amber-500); font-weight: 600; }
+        .sd-addon-row-add { background: var(--mb-success); border: none; color: #fff; border-radius: 6px; padding: 0.35rem 0.7rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; min-width: 70px; justify-content: center; transition: all 0.15s; }
+        .sd-addon-row-add:hover { background: #249486; }
+        .sd-addon-row-add.added { background: #2A9D8F; pointer-events: none; }
+        .sd-addon-empty { text-align: center; color: rgba(255,255,255,0.5); font-style: italic; padding: 1.5rem 1rem; font-size: 0.9rem; }
+        .sd-pos-cart-row-addon { background: none; border: none; color: var(--mb-amber-500); font-size: 0.95rem; cursor: pointer; padding: 0.15rem 0.3rem; margin-left: 0.25rem; border-radius: 4px; }
+        .sd-pos-cart-row-addon:hover { background: rgba(244,162,97,0.15); }
+
+        /* Add-on modal — search + grid */
+        .sd-addon-search { padding: 0 0 0.5rem; position: relative; }
+        .sd-addon-search i { position: absolute; left: 0.7rem; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3); font-size: 0.85rem; pointer-events: none; }
+        .sd-addon-search-input { width: 100%; padding: 0.45rem 0.7rem 0.45rem 2.1rem; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; color: #fff; font-size: 0.85rem; }
+        .sd-addon-search-input::placeholder { color: rgba(255,255,255,0.3); }
+        .sd-addon-search-input:focus { outline: none; border-color: var(--mb-amber-400); }
+        .sd-addon-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; max-height: 400px; overflow-y: auto; }
+        .sd-addon-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0.6rem; text-align: center; cursor: pointer; transition: all 0.12s; display: flex; flex-direction: column; align-items: center; gap: 0.2rem; }
+        .sd-addon-card:hover { border-color: var(--mb-amber-400); background: rgba(244,162,97,0.08); transform: translateY(-1px); }
+        .sd-addon-card:active { transform: scale(0.96); }
+        .sd-addon-card-icon { font-size: 1.3rem; }
+        .sd-addon-card-name { font-size: 0.75rem; font-weight: 600; color: #fff; line-height: 1.1; }
+        .sd-addon-card-price { font-size: 0.72rem; color: var(--mb-amber-500); font-weight: 700; }
+        .sd-addon-card-type { font-size: 0.55rem; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.05em; }
+        .sd-addon-empty { text-align: center; color: rgba(255,255,255,0.5); font-style: italic; padding: 1.5rem 1rem; font-size: 0.9rem; }
+        .sd-pos-cart-row-addon { background: none; border: none; color: var(--mb-amber-500); font-size: 0.95rem; cursor: pointer; padding: 0.15rem 0.3rem; margin-left: 0.25rem; border-radius: 4px; }
+        .sd-pos-cart-row-addon:hover { background: rgba(244,162,97,0.15); }
+
+        .sd-pos-cart-fab { display: none; }
         @media (max-width: 767.98px) {
             .sd-pos-page { height: auto; min-height: 0; }
             .sd-pos-layout { flex-direction: column; overflow: visible; }
@@ -296,6 +359,19 @@
                                     </button>
                                 </div>
 
+                                <div class="sd-pos-received" id="receivedSection" style="display:none">
+                                    <div class="sd-pos-received-label">Amount received</div>
+                                    <div class="sd-pos-received-input-wrap">
+                                        <span class="sd-pos-received-prefix">$</span>
+                                        <input type="number" min="0" step="0.01" class="sd-pos-received-input"
+                                               id="amountReceivedInput" placeholder="0.00" autocomplete="off">
+                                    </div>
+                                    <div class="sd-pos-change-row">
+                                        <span class="sd-pos-change-label">Change</span>
+                                        <span class="sd-pos-change-val" id="changeVal">$0</span>
+                                    </div>
+                                </div>
+
                                 <button type="button" class="sd-pos-btn-hold" id="holdBtn">
                                     <i class="bi bi-pause-circle"></i>Hold Sale
                                 </button>
@@ -313,6 +389,7 @@
                     <div id="formFields"></div>
                     <input type="hidden" name="paymentMethod" id="formPaymentMethod" value="">
                     <input type="hidden" name="observations" id="formObservations" value="">
+                    <input type="hidden" name="amountReceived" id="formAmountReceived" value="">
                 </form>
                 <form id="holdForm" th:action="@{/sale/pos/hold}" method="post" style="display:none">
                     <div id="holdFormFields"></div>
@@ -335,6 +412,21 @@
                     </div>
                 </div>
 
+                <div class="modal fade" id="adicionModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+                        <div class="modal-content sd-recipe-modal">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="adicionModalTitle">Add add-ons</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="adicionModalBody"></div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="sd-pos-cart-backdrop" id="cartBackdrop"></div>
                 <button type="button" class="sd-pos-cart-fab" id="cartFab" aria-label="Open cart">
                     <i class="bi bi-cart3"></i>
@@ -350,15 +442,19 @@
         var cart = [];
         var selectedMetodo = null;
         var recipeData = /*[[${recipeData}]]*/ {productIngredients: {}, comboProductIds: {}};
+        var posAddOnProducts = /*[[${posAddOnProducts}]]*/ [];
+        var adicionModalEl = document.getElementById('adicionModal');
+        var adicionModal = adicionModalEl && window.bootstrap ? new bootstrap.Modal(adicionModalEl) : null;
+        var adicionTargetIdx = -1;
 
         // Prefill from resume
         var prefill = /*[[${prefillCart}]]*/ null;
         if (prefill && Array.isArray(prefill)) {
             prefill.forEach(function(item) {
                 if (item.productId) {
-                    cart.push({type: 'product', id: item.productId, name: item.productName, price: item.salePrice, quantity: item.quantity, excludedIngredients: []});
+                    cart.push({type: 'product', id: item.productId, name: item.productName, price: item.salePrice, quantity: item.quantity, excludedIngredients: [], observation: '', parentIdx: -1});
                 } else if (item.comboId) {
-                    cart.push({type: 'combo', id: item.comboId, name: item.comboName, price: item.salePrice, quantity: item.quantity, excludedIngredients: []});
+                    cart.push({type: 'combo', id: item.comboId, name: item.comboName, price: item.salePrice, quantity: item.quantity, excludedIngredients: [], observation: '', parentIdx: -1});
                 }
             });
         }
@@ -413,24 +509,43 @@
             });
         }
 
-        function addToCart(type, id, name, price) {
-            var existing = cart.find(function(i) { return i.type === type && i.id === id; });
+        function addToCart(type, id, name, price, parentIdx) {
+            if (parentIdx === undefined) parentIdx = -1;
+            var existing = cart.find(function(i) { return i.type === type && i.id === id && i.parentIdx === parentIdx; });
             if (existing) {
                 existing.quantity++;
             } else {
-                cart.push({type: type, id: id, name: name, price: price, quantity: 1, excludedIngredients: []});
+                cart.push({type: type, id: id, name: name, price: price, quantity: 1, excludedIngredients: [], observation: '', parentIdx: parentIdx});
             }
             render();
         }
 
         function changeQty(idx, delta) {
             cart[idx].quantity += delta;
-            if (cart[idx].quantity <= 0) cart.splice(idx, 1);
+            if (cart[idx].quantity <= 0) {
+                if (cart[idx].parentIdx === -1) {
+                    for (var i = cart.length - 1; i >= 0; i--) {
+                        if (cart[i].parentIdx === idx) cart.splice(i, 1);
+                    }
+                }
+                cart.splice(idx, 1);
+                cart.forEach(function(item) {
+                    if (item.parentIdx > idx) item.parentIdx--;
+                });
+            }
             render();
         }
 
         function removeItem(idx) {
+            if (cart[idx] && cart[idx].parentIdx === -1) {
+                for (var i = cart.length - 1; i >= 0; i--) {
+                    if (cart[i].parentIdx === idx) cart.splice(i, 1);
+                }
+            }
             cart.splice(idx, 1);
+            cart.forEach(function(item) {
+                if (item.parentIdx > idx) item.parentIdx--;
+            });
             render();
         }
 
@@ -458,20 +573,38 @@
 
             if (cart.length === 0) {
                 empty.style.display = '';
-                items.querySelectorAll('.sd-pos-cart-row').forEach(function(el) { el.remove(); });
+                items.querySelectorAll('.sd-pos-cart-row, .sd-recipe-tree-list').forEach(function(el) { el.remove(); });
                 footer.style.display = 'none';
                 return;
             }
 
             empty.style.display = 'none';
             footer.style.display = '';
-            items.querySelectorAll('.sd-pos-cart-row').forEach(function(el) { el.remove(); });
+            items.querySelectorAll('.sd-pos-cart-row, .sd-recipe-tree-list').forEach(function(el) { el.remove(); });
 
+            // Render: first all parents, then their add-ons indented
+            var parentIndices = [];
             cart.forEach(function(item, i) {
+                if (item.parentIdx === -1) parentIndices.push(i);
+            });
+
+            // Also collect orphaned add-ons (parentIdx references removed parent)
+            var validParentIndices = new Set(parentIndices);
+            cart.forEach(function(item, i) {
+                if (item.parentIdx !== -1 && !validParentIndices.has(item.parentIdx)) {
+                    parentIndices.push(i); // render as top-level
+                }
+            });
+
+            parentIndices.forEach(function(i) {
+                var item = cart[i];
                 var row = document.createElement('div');
                 row.className = 'sd-pos-cart-row';
-                var editBtnHtml = canEditRecipe(item)
+                var editBtnHtml = canEditRecipe(item) && item.parentIdx === -1
                     ? '<button type="button" class="sd-pos-cart-row-edit" data-act="edit-recipe" data-idx="' + i + '" title="Edit recipe"><i class="bi bi-list-check"></i></button>'
+                    : '';
+                var addOnBtnHtml = canEditRecipe(item) && item.parentIdx === -1
+                    ? '<button type="button" class="sd-pos-cart-row-addon" data-act="open-adicion" data-idx="' + i + '" title="Add add-ons"><i class="bi bi-plus-circle"></i></button>'
                     : '';
                 var excludedHtml = '';
                 if (item.excludedIngredients && item.excludedIngredients.length > 0) {
@@ -481,10 +614,19 @@
                         '<button type="button" class="sd-pos-cart-row-excluded-clear" data-act="clear-excluded" data-idx="' + i + '" title="Clear exclusions">&times;</button>' +
                         '</div>';
                 }
+                var observationHtml = '';
+                if (item.observation && item.observation.length > 0) {
+                    observationHtml = '<div class="sd-pos-cart-row-excluded">' +
+                        '<i class="bi bi-chat-left-text"></i>' +
+                        '<span>Note: ' + escapeHtml(item.observation) + '</span>' +
+                        '<button type="button" class="sd-pos-cart-row-excluded-clear" data-act="clear-observation" data-idx="' + i + '" title="Clear note">&times;</button>' +
+                        '</div>';
+                }
                 row.innerHTML =
                     '<div class="sd-pos-cart-row-name">' + escapeHtml(item.name) + '</div>' +
                     '<div class="sd-pos-cart-row-price">' + fmt(item.price) + ' each</div>' +
                     excludedHtml +
+                    observationHtml +
                     '<div class="sd-pos-cart-row-controls">' +
                         '<div class="sd-pos-qty-group">' +
                             '<button type="button" class="sd-pos-qty-btn" data-act="minus" data-idx="' + i + '">&minus;</button>' +
@@ -493,20 +635,58 @@
                         '</div>' +
                         '<div style="display:flex;align-items:center;gap:0.25rem">' +
                             '<span class="sd-pos-cart-row-sub">' + fmt(item.quantity * item.price) + '</span>' +
+                            addOnBtnHtml +
                             editBtnHtml +
                             '<button type="button" class="sd-pos-cart-row-del" data-act="del" data-idx="' + i + '">&times;</button>' +
                         '</div>' +
                     '</div>';
                 items.appendChild(row);
+
+                // Render add-ons as tree (like recipe tree)
+                var addons = [];
+                cart.forEach(function(c, ci) {
+                    if (c.parentIdx === i) addons.push({idx: ci, item: c});
+                });
+                if (addons.length > 0) {
+                    var treeUl = document.createElement('ul');
+                    treeUl.className = 'sd-recipe-tree-list';
+                    treeUl.style.paddingLeft = '1.2rem';
+                    treeUl.style.margin = '0.2rem 0 0.3rem 0';
+                    addons.forEach(function(a, ai) {
+                        var isLast = ai === addons.length - 1;
+                        var connector = isLast ? '\u2514\u2500' : '\u251C\u2500';
+                        var leafConn = isLast ? '\u00a0\u00a0' : '\u2502\u00a0';
+                        var li = document.createElement('li');
+                        li.className = 'sd-recipe-tree-product';
+                        li.style.padding = '0.2rem 0';
+                        li.innerHTML =
+                            '<span class="sd-recipe-tree-connector" style="font-size:0.72rem">' + connector + '</span>' +
+                            '<div style="display:inline-flex;align-items:center;gap:0.4rem;flex:1;vertical-align:middle">' +
+                                '<span style="color:#fff;font-size:0.78rem;font-weight:500">' + escapeHtml(a.item.name) + '</span>' +
+                                '<span style="color:rgba(255,255,255,0.5);font-size:0.7rem">' + fmt(a.item.price) + '</span>' +
+                                '<div class="sd-pos-qty-group" style="margin-left:auto">' +
+                                    '<button type="button" class="sd-pos-qty-btn" data-act="minus" data-idx="' + a.idx + '">&minus;</button>' +
+                                    '<span class="sd-pos-qty-val">' + a.item.quantity + '</span>' +
+                                    '<button type="button" class="sd-pos-qty-btn" data-act="plus" data-idx="' + a.idx + '">+</button>' +
+                                '</div>' +
+                                '<span style="font-size:0.8rem;font-weight:600;color:#fff">' + fmt(a.item.quantity * a.item.price) + '</span>' +
+                                '<button type="button" class="sd-pos-cart-row-del" data-act="del" data-idx="' + a.idx + '">&times;</button>' +
+                            '</div>';
+                        treeUl.appendChild(li);
+                    });
+                    items.appendChild(treeUl);
+                }
             });
 
             var total = getTotal();
             totalVal.textContent = fmt(total);
             chargeLabel.textContent = 'CHARGE ' + fmt(total);
-            chargeBtn.disabled = !selectedMetodo;
+            var cashValid = selectedMetodo !== 'EFECTIVO' || getReceivedValue() >= total;
+            chargeBtn.disabled = !selectedMetodo || !cashValid;
+            updateChange();
         }
 
-        // Product click → add
+        // Product click → add to cart
         document.getElementById('productGrid').addEventListener('click', function(e) {
             var item = e.target.closest('.sd-pos-item');
             if (!item) return;
@@ -525,6 +705,8 @@
             else if (btn.dataset.act === 'del') removeItem(idx);
             else if (btn.dataset.act === 'edit-recipe') openRecipeEditor(idx);
             else if (btn.dataset.act === 'clear-excluded') { cart[idx].excludedIngredients = []; render(); }
+            else if (btn.dataset.act === 'clear-observation') { cart[idx].observation = ''; render(); }
+            else if (btn.dataset.act === 'open-adicion') openAdicionModal(idx);
         });
 
         // Clear
@@ -558,8 +740,66 @@
                 document.querySelectorAll('.sd-pos-pago-opt').forEach(function(b) { b.classList.remove('selected'); });
                 this.classList.add('selected');
                 selectedMetodo = this.dataset.metodo;
+                onPaymentMethodChanged();
                 render();
             });
+        });
+
+        // Amount received / change
+        function getReceivedValue() {
+            var input = document.getElementById('amountReceivedInput');
+            if (!input || input.readOnly) return parseFloat(input.value || '0') || 0;
+            var v = parseFloat(input.value);
+            return isNaN(v) ? 0 : v;
+        }
+
+        function updateChange() {
+            var total = getTotal();
+            var received = getReceivedValue();
+            var change = received - total;
+            var changeEl = document.getElementById('changeVal');
+            if (selectedMetodo === 'EFECTIVO') {
+                if (received === 0) {
+                    changeEl.textContent = '$0';
+                    changeEl.className = 'sd-pos-change-val';
+                } else if (change < 0) {
+                    changeEl.textContent = '\u2212' + fmt(-change);
+                    changeEl.className = 'sd-pos-change-val negative';
+                } else {
+                    changeEl.textContent = fmt(change);
+                    changeEl.className = 'sd-pos-change-val';
+                }
+            } else {
+                changeEl.textContent = '$0';
+                changeEl.className = 'sd-pos-change-val';
+            }
+        }
+
+        function onPaymentMethodChanged() {
+            var section = document.getElementById('receivedSection');
+            var input = document.getElementById('amountReceivedInput');
+            if (!selectedMetodo) {
+                section.style.display = 'none';
+                input.value = '';
+                input.readOnly = false;
+                return;
+            }
+            section.style.display = '';
+            var total = getTotal();
+            if (selectedMetodo === 'EFECTIVO') {
+                input.readOnly = false;
+                input.placeholder = '0.00';
+                if (parseFloat(input.value) === total) input.value = '';
+            } else {
+                input.readOnly = true;
+                input.value = total > 0 ? total.toFixed(2) : '0.00';
+            }
+            updateChange();
+        }
+
+        document.getElementById('amountReceivedInput').addEventListener('input', function() {
+            updateChange();
+            render();
         });
 
         // Recipe editor
@@ -577,9 +817,17 @@
 
             var title = document.getElementById('recipeModalTitle');
             var body = document.getElementById('recipeModalBody');
-            title.textContent = item.name + ' — Edit recipe';
+            title.textContent = item.name + ' \u2014 Edit recipe';
 
             var excludedIds = (item.excludedIngredients || []).map(function(e) { return e.id; });
+            var observation = item.observation || '';
+
+            var observationHtml = '<div class="sd-recipe-observation">' +
+                '<div class="sd-recipe-observation-label">Observation (optional)</div>' +
+                '<textarea class="sd-recipe-observation-input" id="recipeObservation" rows="2" maxlength="200" placeholder="e.g., cut in half, no ice, extra hot">' +
+                escapeHtml(observation) +
+                '</textarea>' +
+                '</div>';
 
             if (item.type === 'product') {
                 var ings = getProductIngredients(item.id);
@@ -587,6 +835,7 @@
                 html += '<div class="sd-recipe-tree">';
                 html += renderProductBranch(item.name, ings, excludedIds);
                 html += '</div>';
+                html += observationHtml;
                 body.innerHTML = html;
             } else if (item.type === 'combo') {
                 var groups = getComboAllProducts(item.id);
@@ -600,6 +849,7 @@
                 });
                 html += '</ul>';
                 html += '</div>';
+                html += observationHtml;
                 body.innerHTML = html;
             }
 
@@ -607,13 +857,13 @@
         }
 
         function renderComboProductNode(group, excludedIds, isLast) {
-            var connector = isLast ? '└─' : '├─';
+            var connector = isLast ? '\u2514\u2500' : '\u251C\u2500';
             var html = '<li class="sd-recipe-tree-product">';
             html += '<div class="sd-recipe-tree-product-name"><span class="sd-recipe-tree-connector">' + connector + '</span> <i class="bi bi-box"></i> ' + escapeHtml(group.name) + '</div>';
             if (group.ingredients.length > 0) {
                 html += '<ul class="sd-recipe-tree-leaves">';
                 group.ingredients.forEach(function(ing, j) {
-                    var leafConnector = isLast ? '&nbsp;&nbsp;' : '│&nbsp;';
+                    var leafConnector = isLast ? '&nbsp;&nbsp;' : '\u2502&nbsp;';
                     var checked = excludedIds.indexOf(ing.id) === -1;
                     html += '<li class="sd-recipe-tree-leaf">';
                     html += '<span class="sd-recipe-tree-connector sd-recipe-tree-leaf-connector">' + leafConnector + '</span>';
@@ -663,7 +913,10 @@
                     excluded.push({id: parseInt(cb.dataset.ingId), name: cb.dataset.ingName});
                 }
             });
+            var obsEl = document.getElementById('recipeObservation');
+            var observation = obsEl ? obsEl.value.trim() : '';
             cart[editingCartIdx].excludedIngredients = excluded;
+            cart[editingCartIdx].observation = observation;
             editingCartIdx = -1;
             if (recipeModal) recipeModal.hide();
             render();
@@ -671,6 +924,84 @@
 
         var recipeSaveBtn = document.getElementById('recipeModalSave');
         if (recipeSaveBtn) recipeSaveBtn.addEventListener('click', saveRecipeEditor);
+
+        // Adicion modal — search + grid of ALL products
+        function openAdicionModal(cartIdx) {
+            if (!posAddOnProducts || posAddOnProducts.length === 0) {
+                alert('No products available');
+                return;
+            }
+
+            var item = cart[cartIdx];
+            if (!item) return;
+
+            var titleEl = document.getElementById('adicionModalTitle');
+            var body = document.getElementById('adicionModalBody');
+            titleEl.textContent = 'Add add-on \u2014 ' + item.name;
+
+            var html = '<div class="sd-addon-search">';
+            html += '<i class="bi bi-search"></i>';
+            html += '<input type="text" class="sd-addon-search-input" id="addonSearchInput" placeholder="Search products..." autofocus>';
+            html += '</div>';
+            html += '<div class="sd-addon-grid" id="addonGrid">';
+
+            posAddOnProducts.forEach(function(p) {
+                var icon = 'bi-box';
+                if (p.productType === 'CON_RECETA') icon = 'bi-egg-fried';
+                else if (p.productType === 'SIN_RECETA') icon = 'bi-cup-straw';
+                else if (p.productType === 'ADICIONAL') icon = 'bi-plus-circle';
+
+                html += '<div class="sd-addon-card" data-product-id="' + p.id + '" data-product-name="' + escapeHtml(p.name) + '" data-product-price="' + p.sellingPrice + '" data-parent-idx="' + cartIdx + '" data-search="' + escapeHtml(p.name).toLowerCase() + '">';
+                html += '<div class="sd-addon-card-icon"><i class="bi ' + icon + '"></i></div>';
+                html += '<div class="sd-addon-card-name">' + escapeHtml(p.name) + '</div>';
+                html += '<div class="sd-addon-card-price">' + fmt(p.sellingPrice) + '</div>';
+                html += '<div class="sd-addon-card-type">' + escapeHtml(p.productType) + '</div>';
+                html += '</div>';
+            });
+
+            html += '</div>';
+
+            body.innerHTML = html;
+            if (adicionModal) adicionModal.show();
+
+            // Search filter
+            var searchInput = document.getElementById('addonSearchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    var q = this.value.toLowerCase();
+                    body.querySelectorAll('.sd-addon-card').forEach(function(card) {
+                        card.style.display = (card.dataset.search || '').includes(q) ? '' : 'none';
+                    });
+                });
+                setTimeout(function() { searchInput.focus(); }, 200);
+            }
+        }
+
+        document.getElementById('adicionModalBody').addEventListener('click', function(e) {
+            var card = e.target.closest('.sd-addon-card');
+            if (!card) return;
+
+            var productId = parseInt(card.dataset.productId);
+            var productName = card.dataset.productName;
+            var productPrice = parseFloat(card.dataset.productPrice);
+            var parentIdx = parseInt(card.dataset.parentIdx);
+
+            // Make sure the parent is in the cart
+            if (parentIdx < 0 || !cart[parentIdx]) {
+                var existingParent = cart.find(function(c) { return c.type === 'product' && c.id === productId && c.parentIdx === -1; });
+                if (existingParent) parentIdx = cart.indexOf(existingParent);
+            }
+
+            addToCart('product', productId, productName, productPrice, parentIdx);
+
+            // Flash animation on the card
+            card.style.background = 'rgba(42,157,143,0.3)';
+            card.style.borderColor = 'var(--mb-success)';
+            setTimeout(function() {
+                card.style.background = '';
+                card.style.borderColor = '';
+            }, 400);
+        });
 
         // Build form fields from cart
         function buildFormFields(containerId) {
@@ -697,6 +1028,12 @@
                     notesInput.value = 'Without: ' + names;
                     container.appendChild(notesInput);
                 }
+
+                var obsInput = document.createElement('input');
+                obsInput.type = 'hidden';
+                obsInput.name = 'items[' + i + '].observation';
+                obsInput.value = item.observation || '';
+                container.appendChild(obsInput);
             });
         }
 
@@ -704,9 +1041,16 @@
         document.getElementById('chargeBtn').addEventListener('click', function() {
             if (cart.length === 0) { alert('Cart is empty'); return; }
             if (!selectedMetodo) { alert('Select a payment method'); return; }
+            var total = getTotal();
+            var received = getReceivedValue();
+            if (selectedMetodo === 'EFECTIVO' && received < total) {
+                alert('Amount received must be at least the total');
+                return;
+            }
             buildFormFields('formFields');
             document.getElementById('formPaymentMethod').value = selectedMetodo;
             document.getElementById('formObservations').value = document.getElementById('notesInput').value;
+            document.getElementById('formAmountReceived').value = received.toFixed(2);
             document.getElementById('saleForm').submit();
         });
 

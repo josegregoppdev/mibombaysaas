@@ -25,7 +25,7 @@ public class SaleDetail {
     @Column(name = "product_id")
     private Long productId;
 
-    @Column(name = "product_name", nullable = false, length = 150)
+    @Column(name = "product_name", length = 150)
     private String productName;
 
     @Column(name = "combo_id")
@@ -48,4 +48,7 @@ public class SaleDetail {
 
     @Column(length = 200)
     private String notes;
+
+    @Column(length = 200)
+    private String observation;
 }

@@ -235,4 +235,23 @@ class ComboServiceTest {
                 () -> comboService.toggleComboActiveStatus(99L, TENANT_ID));
         assertTrue(ex.getMessage().contains("not found"));
     }
+
+    @Test
+    void getPosCombos_returnsOnlyActiveCombos() {
+        Combo active = createCombo();
+        Combo inactive = createInactiveCombo();
+        Page<Combo> page = new PageImpl<>(List.of(active, inactive));
+        when(comboRepository.findByTenantId(eq(TENANT_ID), any(Pageable.class))).thenReturn(page);
+        when(comboMapper.toDto(any(Combo.class))).thenReturn(ComboDTO.builder().build());
+
+        Page<ComboDTO> result = comboService.getPosCombos(TENANT_ID);
+
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        assertEquals(1, result.getContent().size());
+
+        ArgumentCaptor<Combo> captor = ArgumentCaptor.forClass(Combo.class);
+        verify(comboMapper, times(1)).toDto(captor.capture());
+        assertEquals(active, captor.getValue());
+    }
 }

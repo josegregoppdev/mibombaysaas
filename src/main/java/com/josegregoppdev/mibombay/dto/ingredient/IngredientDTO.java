@@ -2,6 +2,7 @@ package com.josegregoppdev.mibombay.dto.ingredient;
 
 import com.josegregoppdev.mibombay.model.ingredient.Category;
 import com.josegregoppdev.mibombay.model.ingredient.UnitOfMeasure;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;

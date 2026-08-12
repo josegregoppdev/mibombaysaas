@@ -87,6 +87,7 @@
                                         <th>Recipe</th>
                                         <th>Price</th>
                                         <th>Cost</th>
+                                        <th>Stock</th>
                                         <th>Status</th>
                                         <th class="text-end">Actions</th>
                                     </tr>
@@ -104,6 +105,7 @@
                                         <td th:text="${prod.recipeName ?: '\u2014'}">Recipe</td>
                                         <td th:text="${prod.sellingPrice}">0.00</td>
                                         <td th:text="${prod.unitCost}">0.00</td>
+                                        <td th:text="${prod.currentStock}">0</td>
                                         <td>
                                             <span th:if="${prod.active}" class="badge bg-success">Active</span>
                                             <span th:unless="${prod.active}" class="badge bg-danger">Inactive</span>
@@ -123,7 +125,7 @@
                                         </td>
                                     </tr>
                                     <tr th:if="${page.totalElements == 0}">
-                                        <td colspan="9" class="mb-empty">
+                                        <td colspan="10" class="mb-empty">
                                             <i class="bi bi-inbox"></i>
                                             <p class="fw-medium mt-2">No products registered</p>
                                         </td>

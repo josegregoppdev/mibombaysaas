@@ -12,6 +12,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class IngredientService {
@@ -38,6 +40,12 @@ public class IngredientService {
     public Page<IngredientDTO> getPaginatedActiveIngredients(String tenantId, Pageable pageable) {
         return ingredientRepository.findByTenantIdAndActiveTrue(tenantId, pageable)
                 .map(ingredientMapper::toDto);
+    }
+
+    @Transactional(readOnly = true)
+    public List<IngredientDTO> getAllActiveIngredientsFlat(String tenantId) {
+        return ingredientRepository.findByTenantIdAndActiveTrueOrderByNameAsc(tenantId)
+                .stream().map(ingredientMapper::toDto).toList();
     }
 
     @Transactional(readOnly = true)

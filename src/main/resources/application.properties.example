@@ -34,3 +34,8 @@ spring.thymeleaf.cache=false
 # --- Logging ---
 # DEBUG en dev para ver qué hace Spring Security; WARN en prod
 logging.level.org.springframework.security=DEBUG
+
+# --- Encryption ---
+# AES-256 key for customer sensitive data (Base64, must decode to exactly 32 bytes)
+# Generate with: openssl rand -base64 32
+mibombay.security.customer-encryption-key=CHANGE_ME_BASE64_32_BYTES_KEY

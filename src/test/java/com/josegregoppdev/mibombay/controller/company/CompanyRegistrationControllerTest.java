@@ -2,7 +2,7 @@ package com.josegregoppdev.mibombay.controller.company;
 
 import com.josegregoppdev.mibombay.dto.company.CompanyDTORequest;
 import com.josegregoppdev.mibombay.dto.company.CompanyDTOResponse;
-import com.josegregoppdev.mibombay.service.company.CompanyRegistrationService;
+import com.josegregoppdev.mibombay.service.company.CompanyService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 class CompanyRegistrationControllerTest {
 
     @Mock
-    private CompanyRegistrationService companyRegistrationService;
+    private CompanyService companyService;
 
     @InjectMocks
     private CompanyRegistrationController controller;
@@ -38,7 +38,7 @@ class CompanyRegistrationControllerTest {
     @Test
     void processRegistration_success_returnsSuccessView() {
         CompanyDTOResponse result = createCompanyDTOResponse();
-        when(companyRegistrationService.register(any())).thenReturn(result);
+        when(companyService.register(any())).thenReturn(result);
 
         Model model = new ExtendedModelMap();
         BindingResult bindingResult = mock(BindingResult.class);
@@ -61,7 +61,7 @@ class CompanyRegistrationControllerTest {
 
     @Test
     void processRegistration_withException_returnsRegistrationViewWithError() {
-        when(companyRegistrationService.register(any()))
+        when(companyService.register(any()))
                 .thenThrow(new IllegalArgumentException("The subdomain is already in use"));
 
         Model model = new ExtendedModelMap();

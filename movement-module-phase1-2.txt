@@ -1,0 +1,159 @@
+# Movement Module — Phase 1 + Phase 2 Summary (2026-08-08)
+
+## What is this module?
+
+The Movement (movimiento) module tracks every change to inventory (ingredients and products). When a sale is confirmed, stock is decremented and a Movement record is created. When a purchase arrives, stock is incremented and another Movement record is created. Movements are immutable historical records (never edited or deleted).
+
+The master spec (Section 11 of mibombay.md) describes this module as: "Movement is a historical/audit entity, not the entity that modifies stock. It records what happened with inventory and preserves the previous and new stock."
+
+## What was built in Phase 1 (today)
+
+### New files (6 files, all in English)
+
+1. `model/movement/MovementType.java` — Enum with 6 values: PURCHASE, SALE, SHRINKAGE, ADJUSTMENT, INITIAL_STOCK, RETURN. Each has a `displayName` for UI rendering.
+
+2. `model/movement/Movement.java` — JPA entity with fields:
+   - `id`, `tenantId` (multi-tenant)
+   - `type` (MovementType enum, stored as STRING)
+   - `date` (LocalDateTime)
+   - `ingredientId` (nullable Long — set when the movement is for an ingredient)
+   - `productId` (nullable Long — set when the movement is for a product SIN_RECETA)
+   - `previousStock` (BigDecimal) — the stock BEFORE the movement
+   - `newStock` (BigDecimal) — the stock AFTER the movement
+   - `quantity` (BigDecimal) — the amount moved
+   - `referenceId` (nullable Long — links to sale, purchase, etc.)
+   - `observations` (String, optional)
+   - `userId` (Long — who performed the movement)
+   - Inherits `createdAt`/`updatedAt` from `AuditableEntity`
+   - Indexes: `tenant_id`, `(tenant_id, type, date)`, `ingredient_id`, `product_id`
+
+3. `repository/movement/MovementRepository.java` — Spring Data JPA with methods:
+   - `findByTenantId` (paginated)
+   - `findByTenantIdAndType` (paginated, filtered by type)
+   - `findByTenantIdAndIngredientId` (list)
+   - `findByTenantIdAndProductId` (list)
+   - `findByTenantIdAndDateBetween` (list, for date range queries)
+   - `findByTenantIdAndReferenceId` (paginated, for sale/purchase history)
+
+4. `dto/movement/MovementDTO.java` — DTO with all entity fields plus display fields: `ingredientName`, `productName`, `userName`, `typeDisplayName`.
+
+5. `mapper/movement/MovementMapper.java` — MapStruct mapper: `toDto`, `toEntity`. Uses `@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)`.
+
+6. `service/movement/MovementService.java` — Service with read-only methods:
+   - `getMovimientosByTenant` (paginated)
+   - `getMovimientosByTenantAndType` (filtered by type)
+   - `getHistorialByIngredient` (list of movements for one ingredient)
+   - `getHistorialByProduct` (list of movements for one product)
+   - `getMovimientosByDateRange` (list of movements in a date range)
+   - `getMovimientosByReferencia` (paginated, for sale/purchase history)
+   - All methods are `@Transactional(readOnly = true)`. Write methods (creating movements) will be added in Phase 3.
+
+### Database
+The table `movements` is created automatically by Hibernate (`ddl-auto: update`). Indexes are also created automatically.
+
+### No changes to existing files in Phase 1.
+
+## What was built in Phase 2 (today)
+
+### New files (5 files)
+
+1. `model/configuration/TenantConfiguration.java` — JPA entity with fields:
+   - `id`, `tenantId` (unique per tenant — one configuration per restaurant)
+   - `allowNegativeInventory` (Boolean, default `true` — per the master spec: "permitirInventarioNegativo es verdadero por defecto")
+   - Inherits `createdAt`/`updatedAt` from `AuditableEntity`
+   - Unique index on `tenant_id`
+
+2. `repository/configuration/TenantConfigurationRepository.java` — Repository:
+   - `findByTenantId` (returns Optional)
+   - `existsByTenantId`
+
+3. `dto/configuration/TenantConfigurationDTO.java` — DTO: `id`, `tenantId`, `allowNegativeInventory`, `createdAt`, `updatedAt`.
+
+4. `mapper/configuration/TenantConfigurationMapper.java` — MapStruct mapper: `toDto`, `toEntity`.
+
+5. `service/configuration/TenantConfigurationService.java` — Service with:
+   - `getByTenantId(tenantId)` — returns the configuration. If it doesn't exist yet, creates one automatically with `allowNegativeInventory = true` (per the master spec). This is the only method the rest of the system should call.
+   - `update(tenantId, dto)` — updates the configuration. Throws `IllegalArgumentException` if the configuration doesn't exist (it should be created at tenant registration time).
+
+### Modified files (2 files)
+
+6. `service/company/CompanyService.java` — after creating the Company, Admin, and Cashier in `register()`, calls `tenantConfigurationService.getByTenantId(tenantId)` to ensure the TenantConfiguration exists (it will create one automatically if it doesn't). This follows the master spec: "La configuración se crea automáticamente al crear el tenant."
+
+7. `config/InitialDataConfig.java` — after creating the demo restaurant (and all demo data), calls `tenantConfigurationService.getByTenantId(tenantId)` to ensure the demo restaurant also has a TenantConfiguration. This covers both new registrations and the pre-existing demo restaurant.
+
+8. `test/.../CompanyServiceTest.java` — added a `@Mock TenantConfigurationService` field so the existing tests continue to pass (the CompanyService now depends on TenantConfigurationService).
+
+### Database
+The table `tenant_configurations` is created automatically by Hibernate. Unique index on `tenant_id` is also created automatically.
+
+### Tests
+Total: **150 tests** (unchanged from before Phase 1+2). The existing tests pass because the new TenantConfigurationService is mocked in the CompanyServiceTest.
+
+## How the pieces fit together (Phase 1 + Phase 2 + future phases)
+
+```
+Phase 1: Movement + MovementType + Repository + DTO + Mapper + Service (DONE)
+    ↓
+Phase 2: TenantConfiguration + Repository + DTO + Mapper + Service (DONE)
+    ↓
+Phase 3: InventarioService (uses Phase 1 + Phase 2 + MovementService + TenantConfigurationService)
+    ↓
+Phase 4: Integrate with SaleService.confirmSale (calls InventarioService)
+    ↓
+Phase 5: Report movements (controller + frontend)
+```
+
+Phase 3 (next) will:
+- Create `InventarioService` with `consumeForSale(sale, userId)` and `addStock(...)`.
+- `consumeForSale` will decrement stock (from `Ingredient.currentStock` or `Product.unitCost`) and create a `Movement` of type SALE.
+- It will check `TenantConfigurationService.getByTenantId(tenantId)` to read `allowNegativeInventory`.
+- If `allowNegativeInventory = false` and stock would go negative, it throws `IllegalArgumentException`.
+- All in the same `@Transactional` (stock update + movement creation are atomic).
+
+## Key design decisions
+
+1. **English naming**: All entity names, fields, enum values, and package names are in English (`Movement`, `MovementType`, `TenantConfiguration`, etc.). This follows the project convention (ingredient, product, recipe, combo, sale, movement, configuration).
+
+2. **No JPA relationships from Movement to Ingredient/Product**: Movement uses nullable Long FK columns (`ingredientId`, `productId`) instead of `@ManyToOne`. This keeps the entity simple and avoids lazy-loading issues. The InventarioService will validate that exactly one is set.
+
+3. **Movements are immutable**: No `active` flag, no soft-delete. Once created, movements are never modified or deleted (per the master spec Section 11.2).
+
+4. **Lazy creation of TenantConfiguration**: `TenantConfigurationService.getByTenantId` creates a default configuration if it doesn't exist. This covers: (a) new companies (created in `CompanyService.register`), (b) the demo restaurant (created in `InitialDataConfig`), and (c) any existing tenants that were created before this feature was added.
+
+5. **InventarioService is the only entity that modifies stock**: Per the master spec, no other entity or service can change `currentStock`. The InventarioService is the single point of control for stock modifications, and every modification creates a Movement record in the same transaction.
+
+## Files affected total (Phase 1 + Phase 2)
+
+**New files (11):**
+- `model/movement/MovementType.java`
+- `model/movement/Movement.java`
+- `repository/movement/MovementRepository.java`
+- `dto/movement/MovementDTO.java`
+- `mapper/movement/MovementMapper.java`
+- `service/movement/MovementService.java`
+- `model/configuration/TenantConfiguration.java`
+- `repository/configuration/TenantConfigurationRepository.java`
+- `dto/configuration/TenantConfigurationDTO.java`
+- `mapper/configuration/TenantConfigurationMapper.java`
+- `service/configuration/TenantConfigurationService.java`
+
+**Modified files (3):**
+- `service/company/CompanyService.java` (added TenantConfigurationService injection + auto-create in register)
+- `config/InitialDataConfig.java` (added TenantConfigurationService injection + create for demo restaurant)
+- `test/.../CompanyServiceTest.java` (added @Mock TenantConfigurationService)
+
+**Database tables (auto-created by Hibernate):**
+- `movements` (with indexes)
+- `tenant_configurations` (with unique index on tenant_id)
+
+## Test count: 150 (unchanged)
+
+## What's next (Phase 3 — InventarioService)
+
+The InventarioService is the core of the inventory system. It will:
+1. Be the **only** service that modifies `Ingredient.currentStock` or `Product.unitCost`.
+2. Create a `Movement` record (via `MovementService`) in the same transaction as every stock change.
+3. Check `TenantConfigurationService.getByTenantId(tenantId)` to read `allowNegativeInventory`.
+4. If `allowNegativeInventory = false` and stock would go negative, throw `IllegalArgumentException`.
+5. Be called by `SaleService.confirmSale` when a sale is confirmed.
+6. Also handle `addStock` for purchases, returns, adjustments, etc.

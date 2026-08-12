@@ -2,6 +2,11 @@ package com.josegregoppdev.mibombay.dto.sale;
 
 import com.josegregoppdev.mibombay.model.sale.PaymentMethod;
 import com.josegregoppdev.mibombay.model.sale.SaleState;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,10 +25,15 @@ public class SaleDTO {
 
     private Long id;
 
+    @NotNull(message = "The sale date is required")
     private LocalDateTime saleDate;
 
+    @NotNull(message = "The total is required")
+    @PositiveOrZero(message = "The total cannot be negative")
+    @Digits(integer = 8, fraction = 4, message = "Maximum 8 integer digits and 4 decimals")
     private BigDecimal total;
 
+    @NotNull(message = "The sale state is required")
     private SaleState state;
 
     private PaymentMethod paymentMethod;
@@ -32,8 +42,13 @@ public class SaleDTO {
 
     private String cashierName;
 
+    @Size(max = 500)
     private String observations;
 
+    @PositiveOrZero(message = "The amount received cannot be negative")
+    @Digits(integer = 8, fraction = 4, message = "Maximum 8 integer digits and 4 decimals")
+    private BigDecimal amountReceived;
+
     @Builder.Default
-    private List<SaleDetailDTO> details = new ArrayList<>();
+    private List<@Valid SaleDetailDTO> details = new ArrayList<>();
 }
