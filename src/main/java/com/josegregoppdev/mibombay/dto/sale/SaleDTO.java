@@ -42,6 +42,10 @@ public class SaleDTO {
 
     private String cashierName;
 
+    private Long customerId;
+
+    private String customerName;
+
     @Size(max = 500)
     private String observations;
 

@@ -641,6 +641,7 @@ public class TestDataFactory {
         dto.setItems(items);
         dto.setSupplierId(2L);
         dto.setPurchaseDate(java.time.LocalDate.now());
+        dto.setInvoiceNumber("INV-1001");
         dto.setObservations("Weekly restock");
         return dto;
     }
@@ -663,6 +664,7 @@ public class TestDataFactory {
                 .supplierId(2L)
                 .supplierName("Proveedor Principal")
                 .purchaseDate(LocalDateTime.now())
+                .invoiceNumber("INV-1001")
                 .total(new BigDecimal("140.0000"))
                 .userId(1L)
                 .observations("Weekly restock")
@@ -691,6 +693,7 @@ public class TestDataFactory {
                 .supplierId(2L)
                 .supplierName("Proveedor Principal")
                 .purchaseDate(LocalDateTime.now())
+                .invoiceNumber("INV-1001")
                 .total(new BigDecimal("140.0000"))
                 .userId(1L)
                 .userName("John Doe")

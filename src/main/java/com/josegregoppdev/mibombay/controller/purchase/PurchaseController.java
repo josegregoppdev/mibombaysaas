@@ -38,14 +38,16 @@ public class PurchaseController {
 
     @GetMapping
     public String list(@RequestParam(required = false) String supplierName,
+                       @RequestParam(required = false) String invoiceNumber,
                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
                        @RequestParam(required = false) Boolean active,
                        @PageableDefault(size = 20, sort = "purchaseDate", direction = Sort.Direction.DESC)
                        Pageable pageable, Model model) {
         model.addAttribute("page", purchaseService.getPaginatedPurchases(
-                tenantId(), supplierName, from, to, active, pageable));
+                tenantId(), supplierName, invoiceNumber, from, to, active, pageable));
         model.addAttribute("supplierName", supplierName);
+        model.addAttribute("invoiceNumber", invoiceNumber);
         model.addAttribute("from", from);
         model.addAttribute("to", to);
         model.addAttribute("active", active);
@@ -73,7 +75,8 @@ public class PurchaseController {
             Long userId = getCurrentUserId();
             PurchaseDTO purchase = purchaseService.createPurchaseFromCart(
                     cart, tenantId(), userId, submission.getSupplierId(),
-                    submission.getObservations(), submission.getPurchaseDate());
+                    submission.getObservations(), submission.getPurchaseDate(),
+                    submission.getInvoiceNumber());
             redirectAttributes.addFlashAttribute("message",
                     "Purchase registered successfully (#" + purchase.getId() + ")");
             return "redirect:/purchase/" + purchase.getId();

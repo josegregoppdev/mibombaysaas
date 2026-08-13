@@ -11,6 +11,7 @@ import com.josegregoppdev.mibombay.model.sale.SaleDetail;
 import com.josegregoppdev.mibombay.model.sale.SaleState;
 import com.josegregoppdev.mibombay.model.user.User;
 import com.josegregoppdev.mibombay.repository.combo.ComboRepository;
+import com.josegregoppdev.mibombay.repository.customer.CustomerRepository;
 import com.josegregoppdev.mibombay.repository.product.ProductRepository;
 import com.josegregoppdev.mibombay.repository.sale.SaleRepository;
 import com.josegregoppdev.mibombay.repository.user.UserRepository;
@@ -36,6 +37,7 @@ public class SaleService {
     private final ProductRepository productRepository;
     private final ComboRepository comboRepository;
     private final UserRepository userRepository;
+    private final CustomerRepository customerRepository;
     private final InventarioService inventarioService;
 
     @Transactional(readOnly = true)
@@ -57,6 +59,10 @@ public class SaleService {
         SaleDTO dto = saleMapper.toDto(sale);
         dto.setDetails(mapDetailsToDto(sale));
         dto.setCashierName(sale.getCashier().getFullName());
+        if (sale.getCustomerId() != null) {
+            customerRepository.findByIdAndTenantId(sale.getCustomerId(), tenantId)
+                    .ifPresent(c -> dto.setCustomerName(c.getFullName()));
+        }
         return dto;
     }
 
@@ -74,7 +80,7 @@ public class SaleService {
 
     @Transactional
     public SaleDTO createSaleFromCart(List<SaleDetailDTO> cartItems, String tenantId, Long cashierId,
-                                      String observations, BigDecimal amountReceived) {
+                                      String observations, BigDecimal amountReceived, Long customerId) {
         if (cartItems == null || cartItems.isEmpty()) {
             throw new IllegalArgumentException("Cannot create an empty sale");
         }
@@ -90,6 +96,7 @@ public class SaleService {
                 .saleDate(LocalDateTime.now())
                 .state(SaleState.EN_ESPERA)
                 .cashier(cashier)
+                .customerId(customerId)
                 .observations(observations)
                 .amountReceived(amountReceived)
                 .details(new ArrayList<>())
@@ -183,6 +190,10 @@ public class SaleService {
         if (sale.getCashier() != null) {
             dto.setCashierId(sale.getCashier().getId());
             dto.setCashierName(sale.getCashier().getFullName());
+        }
+        if (sale.getCustomerId() != null) {
+            customerRepository.findByIdAndTenantId(sale.getCustomerId(), sale.getTenantId())
+                    .ifPresent(c -> dto.setCustomerName(c.getFullName()));
         }
         return dto;
     }

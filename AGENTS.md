@@ -194,7 +194,7 @@ Real properties files are in `.gitignore`.
 | `MovementServiceTest` | 10 |
 | `CustomerServiceTest` | 6 |
 | `SupplierServiceTest` | 13 |
-| `PurchaseServiceTest` | 14 |
+| `PurchaseServiceTest` | 16 |
 | `LandingControllerTest` | 1 |
 | `CompanyRegistrationControllerTest` | 4 |
 | `IngredientControllerTest` | 13 |
@@ -205,7 +205,7 @@ Real properties files are in `.gitignore`.
 | `SupplierControllerTest` | 13 |
 | `PurchaseControllerTest` | 10 |
 | `MibombayApplicationTests` | 1 |
-| **Total** | **236** |
+| **Total** | **238** |
 
 ```bash
 ./mvnw test
@@ -329,7 +329,7 @@ The `thymeleaf-restaurant` skill is the primary guide — it references HTMX and
 - **Recipe exclusions in POS**: per-sale only. Saved in `SaleDetailDTO.notes` as `"Without: ingredient1, ingredient2"`. The global `Recipe`/`RecipeDetail` entities are never modified by the POS.
 - **Recipe-Product cost sync**: when a recipe is updated, all linked products automatically get their `unitCost` updated via `ProductService.syncProductCostsForRecipe()`
 - **Inventory**: `InventarioService` is the only service allowed to modify stock. Every stock change creates a `Movement` (types `SALE`, `PURCHASE`, `RETURN`) in the same transaction. Consumed by `SaleService.confirmSale()` and `PurchaseService.createPurchaseFromCart()`.
-- **Purchases**: registers ingredient/SIN_RECETA purchases from suppliers into stock. `PurchaseService.createPurchaseFromCart` validates items, snapshots supplier name + unit prices, then `InventarioService.addStockForPurchase` increments stock and updates the previous unit cost (snapshot in `PurchaseDetail.previousUnitCost`); total = Σ quantity × unitPrice. Cancellation (`cancelPurchase`) only within **24 h** of `purchaseDate` (marked inactive, never deleted) and calls `InventarioService.revertPurchase` which restores previous stock/costs and logs `RETURN` movements.
+- **Purchases**: registers ingredient/SIN_RECETA purchases from suppliers into stock. `PurchaseService.createPurchaseFromCart` validates items, snapshots supplier name + unit prices, then `InventarioService.addStockForPurchase` increments stock and updates the previous unit cost (snapshot in `PurchaseDetail.previousUnitCost`); total = Σ quantity × unitPrice. Each purchase requires an `invoiceNumber` (supplier invoice, unique per purchase is not enforced but recommended). Cancellation (`cancelPurchase`) only within **24 h** of `purchaseDate` (marked inactive, never deleted) and calls `InventarioService.revertPurchase` which restores previous stock/costs and logs `RETURN` movements.
 - **Sale inventory consumption**: Product `CON_RECETA`/`ADICIONAL` → decrements recipe ingredients. Product `SIN_RECETA` → decrements product stock. Combo → expands into products and applies same rules. Exclusions in `"Without: ..."` are not consumed.
 - **Negative inventory**: controlled by `TenantConfiguration.allowNegativeInventory`. If false, sale fails when stock insufficient. If true, stock can go negative.
 - **Customer**: `Customer` entity with AES-256-GCM encryption for DNI (`documentEncrypted`) and phone (`phoneEncrypted`). Lookup via HMAC-SHA256 hashes (`documentLookupHash`, `phoneLookupHash`). Default customer `Consumidor Final` (DNI: 99999999) auto-created per tenant. Cannot be deactivated.

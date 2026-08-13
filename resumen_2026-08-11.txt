@@ -1,0 +1,71 @@
+RESUMEN DE TRABAJO - MI BOMBAY
+Fecha: 11 de agosto de 2026
+==================================================
+
+1. MÓDULO COMPRAS (Compras) - COMPLETADO
+--------------------------------------------------
+Se construyó el módulo de Compras de inicio a fin, siguiendo la arquitectura
+por capas del proyecto (model / dto / mapper / repository / service / controller).
+
+Reglas de negocio definidas con el usuario:
+- Flujo directo: registrar compra = aplicar stock al instante.
+- Solo ingredientes y productos SIN_RECETA son comprables.
+- La compra NO se elimina nunca: se marca como inactiva (active = false).
+- La cancelación revierte todo (stock y costo unitario) registrando movimientos RETURN.
+- La cancelación solo es válida dentro de las 24 h posteriores al registro.
+
+Archivos principales:
+- model/purchase/Purchase.java, PurchaseDetail.java
+- dto/purchase/PurchaseDTO.java, PurchaseDetailDTO.java, PurchaseCartSubmissionDTO.java
+- mapper/purchase/PurchaseMapper.java
+- repository/purchase/PurchaseRepository.java, PurchaseDetailRepository.java
+- service/purchase/PurchaseService.java
+- service/inventory/InventarioService.java (addStockForPurchase, revertPurchase)
+- controller/purchase/PurchaseController.java (list, new, create, detail, cancel)
+- templates/purchase/list.html, new.html, detail.html
+- Security: /purchase/** restringido a ADMIN y SUPER_ADMIN
+- Sidebar actualizada con enlace "Purchases"
+
+Detalles técnicos:
+- PurchaseDetail: XOR entre ingredientId y productId (validado en @PrePersist/@PreUpdate).
+- Snapshots: previousStock y previousUnitCost en cada detalle para revertir la cancelación.
+- Total = suma (cantidad x precio unitario), escala 4 decimales, redondeo HALF_UP.
+- Movimientos: PURCHASE al registrar, RETURN al cancelar.
+- Paginación y filtros por proveedor, rango de fechas y estado activo.
+
+2. TESTS
+--------------------------------------------------
+Se escribieron y pasan en verde 236 pruebas (surefire):
+- PurchaseServiceTest: 14 tests (creación, validaciones, cancelación dentro/fuera de 24h, ya cancelada, no encontrada, paginación).
+- PurchaseControllerTest: 10 tests.
+- InventarioServiceTest: 16 tests (con las nuevas operaciones de compra/reversión).
+- TestDataFactory ampliado con factories de compras.
+
+Comando: ./mvnw test  ->  BUILD SUCCESS (236 ejecutados, 0 fallos, 0 errores)
+
+3. AGENTS.md ACTUALIZADO
+--------------------------------------------------
+- Estructura del proyecto: agregados model/dto/mapper/repository/service/controller de purchase.
+- Tabla de tests actualizada (totales y nuevas clases).
+- Convecciones: nota sobre Inventory/Purchases y cancelación en 24 h.
+- Sección "Next Module" actualizada (Compras completo, siguiente: Mesas).
+
+4. OBSERVACIÓN: ZONA HORARIA EN BASE DE DATOS
+--------------------------------------------------
+Se detectó un desplazamiento de +5 horas (UTC) en todas las columnas de tiempo
+al inspeccionar la base de datos directamente.
+
+Causa: el JDBC URL usa serverTimezone=UTC mientras el servidor/JVM corren en
+America/Bogota (UTC-5). Los LocalDateTime se guardan como UTC, por eso:
+  - purchase_date elegida 2026-08-11 00:00 (local) aparece como 2026-08-11 05:00:00.
+  - created_at/updated_at aparecen 5 h adelantadas respecto a la hora local.
+
+Impacto: es cosmético al leer la base con un cliente SQL. La aplicación hace el
+round-trip (lectura -> conversión) y muestra las fechas correctas en la UI,
+incluida la lógica de cancelación de 24 h. Pendiente de decisión: normalizar
+(por ejemplo connectionTimeZone=LOCAL o America/Bogota) si se quiere que la DB
+refleje la hora local tal cual.
+
+5. SIGUIENTE MÓDULO
+--------------------------------------------------
+Tables (mesas, salones y disponibilidad). Ver plan-mesas.md cuando se cree.

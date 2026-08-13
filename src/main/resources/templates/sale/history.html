@@ -50,6 +50,7 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Date</th>
+                                    <th>Customer</th>
                                     <th>Cashier</th>
                                     <th>Payment</th>
                                     <th class="sa-cell-right">Total</th>
@@ -61,6 +62,7 @@
                                 <tr th:each="s : ${page.content}" class="sd-table-row">
                                     <td th:text="${s.id}">1</td>
                                     <td th:text="${#temporals.format(s.saleDate, 'dd/MM/yyyy HH:mm')}">01/01/2025</td>
+                                    <td th:text="${s.customerName ?: '\u2014'}">Customer</td>
                                     <td th:text="${s.cashierName}">Cashier</td>
                                     <td>
                                         <span class="sa-badge" th:classappend="${s.paymentMethod?.name() == 'EFECTIVO'} ? 'sa-badge--profit-mid' : (${s.paymentMethod?.name() == 'TRANSFERENCIA'} ? 'sa-badge--profit-high' : 'sa-badge--info')"
@@ -78,7 +80,7 @@
                                     </td>
                                 </tr>
                                 <tr th:if="${page == null or #lists.isEmpty(page.content)}">
-                                    <td colspan="7">
+                                    <td colspan="8">
                                         <div class="sd-empty">
                                             <div class="sd-empty-icon"><i class="bi bi-receipt"></i></div>
                                             <h3>No sales registered</h3>

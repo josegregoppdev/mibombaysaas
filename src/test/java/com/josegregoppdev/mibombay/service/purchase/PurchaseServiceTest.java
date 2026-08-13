@@ -61,7 +61,8 @@ class PurchaseServiceTest {
         PurchaseCartSubmissionDTO submission = createPurchaseCartSubmissionDTO();
         purchaseService.createPurchaseFromCart(
                 submission.getItems(), TENANT_ID, 1L, submission.getSupplierId(),
-                submission.getObservations(), submission.getPurchaseDate());
+                submission.getObservations(), submission.getPurchaseDate(),
+                submission.getInvoiceNumber());
 
         ArgumentCaptor<Purchase> captor = ArgumentCaptor.forClass(Purchase.class);
         verify(purchaseRepository).save(captor.capture());
@@ -70,6 +71,9 @@ class PurchaseServiceTest {
         assertEquals(2, saved.getDetails().size());
         assertEquals("Beef", saved.getDetails().get(0).getItemName());
         assertEquals("Proveedor Principal", saved.getSupplierName());
+        assertEquals("INV-1001", saved.getInvoiceNumber());
+        assertTrue(saved.getPurchaseDate().isAfter(java.time.LocalDateTime.now().minusSeconds(5)));
+        assertTrue(saved.getPurchaseDate().isBefore(java.time.LocalDateTime.now().plusSeconds(5)));
         verify(inventarioService).addStockForPurchase(saved);
     }
 
@@ -77,7 +81,7 @@ class PurchaseServiceTest {
     void createPurchaseFromCart_emptyCart_throws() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> purchaseService.createPurchaseFromCart(
-                        List.of(), TENANT_ID, 1L, 2L, null, java.time.LocalDate.now()));
+                        List.of(), TENANT_ID, 1L, 2L, null, java.time.LocalDate.now(), "INV-1001"));
         assertTrue(ex.getMessage().contains("empty"));
     }
 
@@ -85,7 +89,7 @@ class PurchaseServiceTest {
     void createPurchaseFromCart_nullCart_throws() {
         assertThrows(IllegalArgumentException.class,
                 () -> purchaseService.createPurchaseFromCart(
-                        null, TENANT_ID, 1L, 2L, null, java.time.LocalDate.now()));
+                        null, TENANT_ID, 1L, 2L, null, java.time.LocalDate.now(), "INV-1001"));
     }
 
     @Test
@@ -93,7 +97,29 @@ class PurchaseServiceTest {
         PurchaseCartSubmissionDTO submission = createPurchaseCartSubmissionDTO();
         assertThrows(IllegalArgumentException.class,
                 () -> purchaseService.createPurchaseFromCart(
-                        submission.getItems(), TENANT_ID, 1L, 2L, null, null));
+                        submission.getItems(), TENANT_ID, 1L, 2L, null, null, "INV-1001"));
+    }
+
+    @Test
+    void createPurchaseFromCart_blankInvoiceNumber_throws() {
+        PurchaseCartSubmissionDTO submission = createPurchaseCartSubmissionDTO();
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> purchaseService.createPurchaseFromCart(
+                        submission.getItems(), TENANT_ID, 1L, 2L, null,
+                        java.time.LocalDate.now(), "   "));
+        assertTrue(ex.getMessage().contains("invoice"));
+        verify(purchaseRepository, never()).save(any());
+    }
+
+    @Test
+    void createPurchaseFromCart_dateNotToday_throws() {
+        PurchaseCartSubmissionDTO submission = createPurchaseCartSubmissionDTO();
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> purchaseService.createPurchaseFromCart(
+                        submission.getItems(), TENANT_ID, 1L, 2L, null,
+                        java.time.LocalDate.now().minusDays(1), submission.getInvoiceNumber()));
+        assertTrue(ex.getMessage().contains("must be today"));
+        verify(purchaseRepository, never()).save(any());
     }
 
     @Test
@@ -103,7 +129,7 @@ class PurchaseServiceTest {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> purchaseService.createPurchaseFromCart(
                         submission.getItems(), TENANT_ID, 1L, submission.getSupplierId(),
-                        null, submission.getPurchaseDate()));
+                        null, submission.getPurchaseDate(), submission.getInvoiceNumber()));
         assertTrue(ex.getMessage().contains("Supplier not found"));
     }
 
@@ -117,7 +143,7 @@ class PurchaseServiceTest {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> purchaseService.createPurchaseFromCart(
                         submission.getItems(), TENANT_ID, 1L, submission.getSupplierId(),
-                        null, submission.getPurchaseDate()));
+                        null, submission.getPurchaseDate(), submission.getInvoiceNumber()));
         assertTrue(ex.getMessage().contains("Ingredient not found"));
     }
 
@@ -134,7 +160,7 @@ class PurchaseServiceTest {
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> purchaseService.createPurchaseFromCart(
-                        List.of(item), TENANT_ID, 1L, 2L, null, java.time.LocalDate.now()));
+                        List.of(item), TENANT_ID, 1L, 2L, null, java.time.LocalDate.now(), "INV-1001"));
         assertTrue(ex.getMessage().contains("inactive"));
     }
 
@@ -149,7 +175,7 @@ class PurchaseServiceTest {
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> purchaseService.createPurchaseFromCart(
-                        List.of(item), TENANT_ID, 1L, 2L, null, java.time.LocalDate.now()));
+                        List.of(item), TENANT_ID, 1L, 2L, null, java.time.LocalDate.now(), "INV-1001"));
         assertTrue(ex.getMessage().contains("ingredient or a product"));
     }
 
@@ -204,15 +230,15 @@ class PurchaseServiceTest {
 
     @Test
     void getPaginatedPurchases_callsRepositoryWithFilters() {
-        when(purchaseRepository.findByFilters(any(), any(), any(), any(), any(), any(Pageable.class)))
+        when(purchaseRepository.findByFilters(any(), any(), any(), any(), any(), any(), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(createPurchase())));
         when(purchaseMapper.toDto(any(Purchase.class))).thenReturn(createPurchaseDTO());
 
         var result = purchaseService.getPaginatedPurchases(
-                TENANT_ID, "Proveedor", null, null, true, PageRequest.of(0, 20));
+                TENANT_ID, "Proveedor", "INV-1", null, null, true, PageRequest.of(0, 20));
 
         assertEquals(1, result.getTotalElements());
         verify(purchaseRepository).findByFilters(
-                eq(TENANT_ID), eq("Proveedor"), eq(null), eq(null), eq(true), any(Pageable.class));
+                eq(TENANT_ID), eq("Proveedor"), eq("INV-1"), eq(null), eq(null), eq(true), any(Pageable.class));
     }
 }

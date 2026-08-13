@@ -21,12 +21,14 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
     @Query("""
             SELECT p FROM Purchase p WHERE p.tenantId = :tenantId
             AND (:supplierName IS NULL OR LOWER(p.supplierName) LIKE LOWER(CONCAT('%', :supplierName, '%')))
+            AND (:invoiceNumber IS NULL OR LOWER(p.invoiceNumber) LIKE LOWER(CONCAT('%', :invoiceNumber, '%')))
             AND (:from IS NULL OR p.purchaseDate >= :from)
             AND (:to IS NULL OR p.purchaseDate <= :to)
             AND (:active IS NULL OR p.active = :active)
             """)
     Page<Purchase> findByFilters(@Param("tenantId") String tenantId,
                                  @Param("supplierName") String supplierName,
+                                 @Param("invoiceNumber") String invoiceNumber,
                                  @Param("from") LocalDateTime from,
                                  @Param("to") LocalDateTime to,
                                  @Param("active") Boolean active,

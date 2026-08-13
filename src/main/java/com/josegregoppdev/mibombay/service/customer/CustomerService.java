@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -140,15 +141,40 @@ public class CustomerService {
     }
 
     @Transactional(readOnly = true)
-    public Customer getDefaultCustomer(String tenantId) {
-        return customerRepository.findByTenantIdAndIsDefaultTrue(tenantId)
+    public CustomerDTO getDefaultCustomer(String tenantId) {
+        Customer customer = customerRepository.findByTenantIdAndIsDefaultTrue(tenantId)
                 .orElseThrow(() -> new IllegalArgumentException("Default customer not found for tenant"));
+        return toDtoWithMask(customer);
     }
 
     @Transactional(readOnly = true)
-    public Customer getCustomerEntityById(Long id, String tenantId) {
-        return customerRepository.findByIdAndTenantId(id, tenantId)
+    public CustomerDTO getCustomerEntityById(Long id, String tenantId) {
+        Customer customer = customerRepository.findByIdAndTenantId(id, tenantId)
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+        return toDtoWithMask(customer);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CustomerDTO> searchActiveCustomers(String tenantId, String query) {
+        if (query == null || query.isBlank()) {
+            return customerRepository.findByTenantIdAndActiveTrue(tenantId).stream()
+                    .limit(10)
+                    .map(this::toDtoWithMask)
+                    .toList();
+        }
+        List<Customer> results = customerRepository.searchActiveByName(tenantId, query.trim());
+        if (results.size() >= 10) {
+            return results.stream().limit(10).map(this::toDtoWithMask).toList();
+        }
+        String trimmed = query.trim();
+        return customerRepository.findByTenantIdAndActiveTrue(tenantId).stream()
+                .filter(c -> {
+                    String doc = encryptionService.decrypt(c.getDocumentEncrypted());
+                    return doc != null && doc.contains(trimmed);
+                })
+                .limit(10)
+                .map(this::toDtoWithMask)
+                .toList();
     }
 
     private CustomerDTO toDtoWithMask(Customer customer) {

@@ -15,6 +15,8 @@ public class CartSubmissionDTO {
 
     private List<@Valid SaleDetailDTO> items = new ArrayList<>();
 
+    private Long customerId;
+
     private PaymentMethod paymentMethod;
 
     private String observations;

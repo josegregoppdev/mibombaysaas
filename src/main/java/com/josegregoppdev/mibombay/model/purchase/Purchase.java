@@ -37,6 +37,9 @@ public class Purchase extends AuditableEntity {
     @Column(name = "purchase_date", nullable = false)
     private LocalDateTime purchaseDate;
 
+    @Column(name = "invoice_number", nullable = false, length = 50)
+    private String invoiceNumber;
+
     @Column(nullable = false, precision = 12, scale = 4)
     @Builder.Default
     private BigDecimal total = BigDecimal.ZERO;

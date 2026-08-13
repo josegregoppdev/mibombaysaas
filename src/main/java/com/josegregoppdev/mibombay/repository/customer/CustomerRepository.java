@@ -42,4 +42,13 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
                                  Pageable pageable);
 
     List<Customer> findByTenantIdAndFullNameContainingIgnoreCase(String tenantId, String fullName);
+
+    @Query("""
+            SELECT c FROM Customer c WHERE c.tenantId = :tenantId AND c.active = true
+            AND LOWER(c.fullName) LIKE LOWER(CONCAT('%', :query, '%'))
+            ORDER BY c.fullName ASC
+            """)
+    List<Customer> searchActiveByName(@Param("tenantId") String tenantId, @Param("query") String query);
+
+    List<Customer> findByTenantIdAndActiveTrue(String tenantId);
 }

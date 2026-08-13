@@ -51,6 +51,14 @@
                         <div class="sd-info-value" th:text="${#temporals.format(purchase.purchaseDate, 'dd/MM/yyyy HH:mm')}">01/01/2025</div>
                     </div>
                     <div class="sd-info-card">
+                        <div class="sd-info-label">Invoice #</div>
+                        <div class="sd-info-value" th:text="${purchase.invoiceNumber ?: '\u2014'}">INV-001</div>
+                    </div>
+                    <div class="sd-info-card">
+                        <div class="sd-info-label">Cancel until</div>
+                        <div class="sd-info-value" th:text="${#temporals.format(purchase.purchaseDate.plusHours(24), 'dd/MM/yyyy HH:mm')}">02/01/2025 00:00</div>
+                    </div>
+                    <div class="sd-info-card">
                         <div class="sd-info-label">Registered by</div>
                         <div class="sd-info-value" th:text="${purchase.userName ?: '\u2014'}">User</div>
                     </div>
@@ -114,12 +122,17 @@
                 </div>
 
                 <div class="sd-form-actions sd-fade sd-fade--4">
-                    <form th:if="${purchase.active}" th:action="@{/purchase/{id}/cancel(id=${purchase.id})}" method="post"
+                    <form th:if="${purchase.active && #temporals.createNow().isBefore(purchase.purchaseDate.plusHours(24))}"
+                          th:action="@{/purchase/{id}/cancel(id=${purchase.id})}" method="post"
                           onsubmit="return confirm('Cancel this purchase? Stock and costs will be reverted.');">
                         <button type="submit" class="sd-btn sd-btn--danger">
                             <i class="bi bi-x-octagon"></i>Cancel Purchase
                         </button>
                     </form>
+                    <span th:if="${purchase.active && !#temporals.createNow().isBefore(purchase.purchaseDate.plusHours(24))}"
+                          class="badge rounded-pill text-bg-secondary mt-2">
+                        Cancellation window closed (24h)
+                    </span>
                     <a th:href="@{/purchase}" class="sd-btn sd-btn--outline">
                         <i class="bi bi-arrow-left"></i>Back to Purchases
                     </a>

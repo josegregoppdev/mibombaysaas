@@ -51,6 +51,10 @@
                         <div class="sd-info-value" th:text="${#temporals.format(sale.saleDate, 'dd/MM/yyyy HH:mm')}">01/01/2025</div>
                     </div>
                     <div class="sd-info-card">
+                        <div class="sd-info-label">Customer</div>
+                        <div class="sd-info-value" th:text="${sale.customerName ?: '\u2014'}">Customer</div>
+                    </div>
+                    <div class="sd-info-card">
                         <div class="sd-info-label">Payment</div>
                         <div class="sd-info-value">
                             <span class="sa-badge sa-badge--info" th:text="${sale.paymentMethod?.displayName ?: '\u2014'}">Cash</span>

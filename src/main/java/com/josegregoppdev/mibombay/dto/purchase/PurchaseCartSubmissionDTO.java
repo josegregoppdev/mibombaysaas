@@ -1,6 +1,7 @@
 package com.josegregoppdev.mibombay.dto.purchase;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,9 @@ public class PurchaseCartSubmissionDTO {
     private Long supplierId;
 
     private String observations;
+
+    @NotBlank(message = "The invoice number is required")
+    private String invoiceNumber;
 
     @NotNull(message = "The purchase date is required")
     private LocalDate purchaseDate;

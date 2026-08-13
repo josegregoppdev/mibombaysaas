@@ -50,6 +50,11 @@
                                        th:value="${supplierName}" placeholder="Search supplier">
                             </div>
                             <div class="sd-filter-field">
+                                <label class="sd-filter-label" for="filterInvoice"><i class="bi bi-receipt"></i>Invoice #</label>
+                                <input type="text" class="sd-filter-input" id="filterInvoice" name="invoiceNumber"
+                                       th:value="${invoiceNumber}" placeholder="Search invoice number">
+                            </div>
+                            <div class="sd-filter-field">
                                 <label class="sd-filter-label" for="filterFrom"><i class="bi bi-calendar2"></i>From</label>
                                 <input type="date" class="sd-filter-input" id="filterFrom" name="from" th:value="${from}">
                             </div>
@@ -80,6 +85,7 @@
                                     <tr>
                                         <th>#</th>
                                         <th>Date</th>
+                                        <th>Invoice #</th>
                                         <th>Supplier</th>
                                         <th>User</th>
                                         <th class="sa-cell-right">Total</th>
@@ -91,6 +97,7 @@
                                     <tr th:each="p : ${page.content}" class="sd-table-row">
                                         <td th:text="${p.id}">1</td>
                                         <td th:text="${#temporals.format(p.purchaseDate, 'dd/MM/yyyy HH:mm')}">01/01/2025</td>
+                                        <td th:text="${p.invoiceNumber ?: '\u2014'}">INV-001</td>
                                         <td th:text="${p.supplierName}">Supplier</td>
                                         <td th:text="${p.userName ?: '\u2014'}">User</td>
                                         <td class="sa-cell-right" th:text="'$' + ${#numbers.formatDecimal(p.total, 1, 2)}">$0.00</td>
@@ -105,7 +112,7 @@
                                         </td>
                                     </tr>
                                     <tr th:if="${page == null or #lists.isEmpty(page.content)}">
-                                        <td colspan="7">
+                                        <td colspan="8">
                                             <div class="sd-empty">
                                                 <div class="sd-empty-icon"><i class="bi bi-cart-check"></i></div>
                                                 <h3>No purchases registered</h3>
@@ -127,16 +134,16 @@
                             (<span th:text="${page.totalElements}">0</span> results)
                         </div>
                         <div class="sd-pagination-links">
-                            <a th:href="@{/purchase(page=${page.number - 1}, supplierName=${supplierName}, from=${from}, to=${to}, active=${active})}"
+                            <a th:href="@{/purchase(page=${page.number - 1}, supplierName=${supplierName}, invoiceNumber=${invoiceNumber}, from=${from}, to=${to}, active=${active})}"
                                class="sd-page-link" th:classappend="${page.first} ? 'sd-page-link--disabled' : ''">
                                 <i class="bi bi-chevron-left"></i>Prev
                             </a>
                             <span th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">
-                                <a th:href="@{/purchase(page=${i}, supplierName=${supplierName}, from=${from}, to=${to}, active=${active})}"
+                                <a th:href="@{/purchase(page=${i}, supplierName=${supplierName}, invoiceNumber=${invoiceNumber}, from=${from}, to=${to}, active=${active})}"
                                    class="sd-page-link" th:classappend="${i == page.number} ? 'sd-page-link--active' : ''"
                                    th:text="${i + 1}">1</a>
                             </span>
-                            <a th:href="@{/purchase(page=${page.number + 1}, supplierName=${supplierName}, from=${from}, to=${to}, active=${active})}"
+                            <a th:href="@{/purchase(page=${page.number + 1}, supplierName=${supplierName}, invoiceNumber=${invoiceNumber}, from=${from}, to=${to}, active=${active})}"
                                class="sd-page-link" th:classappend="${page.last} ? 'sd-page-link--disabled' : ''">
                                 Next <i class="bi bi-chevron-right"></i>
                             </a>

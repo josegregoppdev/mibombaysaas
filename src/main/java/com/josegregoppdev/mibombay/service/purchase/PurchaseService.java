@@ -46,10 +46,12 @@ public class PurchaseService {
 
     @Transactional(readOnly = true)
     public Page<PurchaseDTO> getPaginatedPurchases(String tenantId, String supplierName,
-                                                   LocalDate from, LocalDate to, Boolean active, Pageable pageable) {
+                                                   String invoiceNumber, LocalDate from, LocalDate to,
+                                                   Boolean active, Pageable pageable) {
         LocalDateTime fromDateTime = from != null ? from.atStartOfDay() : null;
         LocalDateTime toDateTime = to != null ? to.atTime(23, 59, 59) : null;
-        Page<PurchaseDTO> result = purchaseRepository.findByFilters(tenantId, supplierName, fromDateTime, toDateTime, active, pageable)
+        Page<PurchaseDTO> result = purchaseRepository.findByFilters(tenantId, supplierName, invoiceNumber,
+                        fromDateTime, toDateTime, active, pageable)
                 .map(this::mapToDtoWithDetails);
         resolveUserNames(result.getContent());
         return result;
@@ -66,12 +68,19 @@ public class PurchaseService {
 
     @Transactional
     public PurchaseDTO createPurchaseFromCart(List<PurchaseDetailDTO> cartItems, String tenantId, Long userId,
-                                              Long supplierId, String observations, LocalDate purchaseDate) {
+                                              Long supplierId, String observations, LocalDate purchaseDate,
+                                              String invoiceNumber) {
         if (cartItems == null || cartItems.isEmpty()) {
             throw new IllegalArgumentException("Cannot create an empty purchase");
         }
         if (purchaseDate == null) {
             throw new IllegalArgumentException("The purchase date is required");
+        }
+        if (!purchaseDate.equals(LocalDate.now())) {
+            throw new IllegalArgumentException("The purchase date must be today");
+        }
+        if (invoiceNumber == null || invoiceNumber.isBlank()) {
+            throw new IllegalArgumentException("The invoice number is required");
         }
 
         Supplier supplier = supplierRepository.findByIdAndTenantId(supplierId, tenantId)
@@ -81,7 +90,8 @@ public class PurchaseService {
                 .tenantId(tenantId)
                 .supplierId(supplier.getId())
                 .supplierName(supplier.getName())
-                .purchaseDate(purchaseDate.atStartOfDay())
+                .purchaseDate(LocalDateTime.now())
+                .invoiceNumber(invoiceNumber.trim())
                 .userId(userId)
                 .observations(observations)
                 .active(true)
@@ -149,7 +159,7 @@ public class PurchaseService {
         }
 
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime deadline = purchase.getPurchaseDate().plusDays(1);
+        LocalDateTime deadline = purchase.getPurchaseDate().plusHours(24);
         if (now.isAfter(deadline)) {
             throw new IllegalArgumentException(
                     "A purchase can only be cancelled within 24 hours of being registered");

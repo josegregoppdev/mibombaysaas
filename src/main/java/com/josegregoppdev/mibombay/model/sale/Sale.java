@@ -50,6 +50,9 @@ public class Sale extends AuditableEntity {
     @Column(length = 500)
     private String observations;
 
+    @Column(name = "customer_id")
+    private Long customerId;
+
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<SaleDetail> details = new ArrayList<>();

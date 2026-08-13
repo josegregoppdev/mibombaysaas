@@ -32,7 +32,7 @@
         .sd-pos-item-price { font-size: 0.85rem; font-weight: 700; color: var(--mb-blue-700); }
         .sd-pos-item-badge { position: absolute; top: 5px; right: 5px; font-size: 0.55rem; background: var(--mb-amber-500); color: #fff; padding: 0.08rem 0.4rem; border-radius: 8px; font-weight: 700; letter-spacing: 0.03em; }
 
-        .sd-pos-cart { width: 340px; background: var(--mb-blue-900); color: #E8ECF1; display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; }
+        .sd-pos-cart { width: 440px; background: var(--mb-blue-900); color: #E8ECF1; display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; }
         .sd-pos-cart-header { padding: 0.6rem 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
         .sd-pos-cart-header-title { display: flex; align-items: center; gap: 0.4rem; font-weight: 600; font-size: 0.88rem; color: #fff; }
         .sd-pos-cart-count { background: var(--mb-amber-500); color: #1A1A1A; border-radius: 12px; padding: 0.08rem 0.5rem; font-size: 0.7rem; font-weight: 700; min-width: 22px; text-align: center; }
@@ -58,6 +58,9 @@
         .sd-pos-qty-btn { width: 26px; height: 26px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; transition: all 0.15s; }
         .sd-pos-qty-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
         .sd-pos-qty-val { font-size: 0.8rem; font-weight: 600; color: #fff; min-width: 22px; text-align: center; }
+        .sd-pos-qty-input { width: 64px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #fff; font-size: 0.8rem; font-weight: 600; text-align: center; padding: 0.25rem 0.2rem; outline: none; min-width: 0; }
+        .sd-pos-qty-input:focus { border-color: var(--mb-amber-500); box-shadow: 0 0 0 0.15rem rgba(244,162,97,0.2); }
+        .sd-pos-qty-input::-webkit-outer-spin-button, .sd-pos-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; }
         .sd-pos-cart-row-sub { font-size: 0.82rem; font-weight: 600; color: #fff; min-width: 60px; text-align: right; }
         .sd-pos-cart-row-del { background: none; border: none; color: rgba(255,255,255,0.3); font-size: 0.95rem; cursor: pointer; padding: 0.1rem 0.15rem; }
         .sd-pos-cart-row-del:hover { color: var(--mb-error); }
@@ -77,6 +80,8 @@
             .sd-pos-layout { flex-direction: column; overflow: visible; }
             .sd-pos-products { flex: none; overflow: visible; }
             .sd-pos-grid { flex: none; overflow: visible; grid-template-columns: repeat(3, 1fr); }
+            .sd-pos-cart-row { display: flex; flex-direction: column; gap: 0.3rem; }
+            .sd-pos-cart-row-name { white-space: normal; overflow: visible; text-overflow: unset; }
             .sd-pos-cart {
                 position: fixed; top: var(--mb-nav-height); right: 0; bottom: 0;
                 width: 88%; max-width: 360px; height: auto; max-height: none;
@@ -102,7 +107,7 @@
         }
         @media (min-width: 1400px) {
             .sd-pos-grid { grid-template-columns: repeat(4, 1fr); }
-            .sd-pos-cart { width: 380px; }
+            .sd-pos-cart { width: 500px; }
         }
     </style>
 </head>
@@ -145,8 +150,14 @@
                         </select>
                     </div>
                     <div class="col-md-4">
+                        <label class="form-label mb-1" for="invoiceNumber">Invoice number *</label>
+                        <input type="text" class="form-control" id="invoiceNumber" maxlength="50"
+                               placeholder="Supplier invoice number">
+                    </div>
+                    <div class="col-md-4">
                         <label class="form-label mb-1" for="purchaseDate">Purchase date</label>
-                        <input type="date" class="form-control" id="purchaseDate" th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}">
+                        <input type="date" class="form-control" id="purchaseDate" readonly
+                               th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label mb-1" for="observations">Observations</label>
@@ -226,6 +237,7 @@
                     <div id="formFields"></div>
                     <input type="hidden" name="supplierId" id="formSupplierId" value="">
                     <input type="hidden" name="purchaseDate" id="formPurchaseDate" value="">
+                    <input type="hidden" name="invoiceNumber" id="formInvoiceNumber" value="">
                     <input type="hidden" name="observations" id="formObservations" value="">
                 </form>
 
@@ -336,7 +348,7 @@
                         '</div>' +
                         '<div class="sd-pos-qty-group">' +
                             '<button type="button" class="sd-pos-qty-btn" data-act="minus" data-idx="' + idx + '">&minus;</button>' +
-                            '<span class="sd-pos-qty-val">' + item.quantity + '</span>' +
+                            '<input type="number" min="0.0001" step="0.0001" class="sd-pos-qty-val sd-pos-qty-input" value="' + item.quantity + '" data-idx="' + idx + '" aria-label="Quantity">' +
                             '<button type="button" class="sd-pos-qty-btn" data-act="plus" data-idx="' + idx + '">+</button>' +
                         '</div>' +
                         '<span class="sd-pos-cart-row-sub">' + fmt(item.quantity * item.cost) + '</span>' +
@@ -350,6 +362,21 @@
                     var i = parseInt(this.dataset.idx);
                     if (!isNaN(i) && cart[i]) {
                         cart[i].cost = parseNum(this.value);
+                        updateTotals();
+                    }
+                });
+            });
+
+            items.querySelectorAll('.sd-pos-qty-input').forEach(function(input) {
+                input.addEventListener('input', function() {
+                    var i = parseInt(this.dataset.idx);
+                    if (!isNaN(i) && cart[i]) {
+                        var q = parseNum(this.value);
+                        if (!(q > 0)) {
+                            q = 1;
+                            this.value = q;
+                        }
+                        cart[i].quantity = q;
                         updateTotals();
                     }
                 });
@@ -369,6 +396,12 @@
             totalVal.textContent = fmt(total);
             registerLabel.textContent = 'REGISTER PURCHASE ' + fmt(total);
             if (fabTotal) fabTotal.textContent = fmt(total);
+            document.querySelectorAll('.sd-pos-cart-row').forEach(function(row, idx) {
+                var sub = row.querySelector('.sd-pos-cart-row-sub');
+                if (sub && cart[idx]) {
+                    sub.textContent = fmt(cart[idx].quantity * cart[idx].cost);
+                }
+            });
         }
 
         document.getElementById('itemGrid').addEventListener('click', function(e) {
@@ -401,11 +434,16 @@
             if (cart.length === 0) return;
 
             var supplierId = document.getElementById('supplierSelect').value;
+            var invoiceNumber = document.getElementById('invoiceNumber').value.trim();
             var purchaseDate = document.getElementById('purchaseDate').value;
             var observations = document.getElementById('observations').value;
 
             if (!supplierId) {
                 alert('Select a supplier');
+                return;
+            }
+            if (!invoiceNumber) {
+                alert('Enter the supplier invoice number');
                 return;
             }
             if (!purchaseDate) {
@@ -416,6 +454,11 @@
             var invalidCost = cart.some(function(i) { return i.cost <= 0; });
             if (invalidCost) {
                 alert('Every item must have a unit cost greater than zero');
+                return;
+            }
+            var invalidQty = cart.some(function(i) { return !(i.quantity > 0); });
+            if (invalidQty) {
+                alert('Every item must have a quantity greater than zero');
                 return;
             }
 
@@ -440,6 +483,7 @@
 
             document.getElementById('formSupplierId').value = supplierId;
             document.getElementById('formPurchaseDate').value = purchaseDate;
+            document.getElementById('formInvoiceNumber').value = invoiceNumber;
             document.getElementById('formObservations').value = observations;
             document.getElementById('purchaseForm').submit();
         });

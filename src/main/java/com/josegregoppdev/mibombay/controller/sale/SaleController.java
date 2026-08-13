@@ -2,11 +2,13 @@ package com.josegregoppdev.mibombay.controller.sale;
 
 import com.josegregoppdev.mibombay.common.tenant.TenantContext;
 import jakarta.validation.Valid;
+import com.josegregoppdev.mibombay.dto.customer.CustomerDTO;
 import com.josegregoppdev.mibombay.dto.sale.CartSubmissionDTO;
 import com.josegregoppdev.mibombay.dto.sale.SaleDTO;
 import com.josegregoppdev.mibombay.dto.sale.SaleDetailDTO;
 import com.josegregoppdev.mibombay.model.sale.PaymentMethod;
 import com.josegregoppdev.mibombay.service.combo.ComboService;
+import com.josegregoppdev.mibombay.service.customer.CustomerService;
 import com.josegregoppdev.mibombay.service.product.ProductService;
 import com.josegregoppdev.mibombay.service.sale.SaleService;
 import com.josegregoppdev.mibombay.service.user.UserService;
@@ -34,6 +36,7 @@ public class SaleController {
     private final ProductService productService;
     private final ComboService comboService;
     private final UserService userService;
+    private final CustomerService customerService;
 
     @GetMapping("/pos")
     public String showPOS(Model model, HttpSession session) {
@@ -42,6 +45,10 @@ public class SaleController {
         model.addAttribute("combos", comboService.getPosCombos(tenantId()));
         model.addAttribute("onHoldCount", saleService.getOnHoldSales(tenantId()).size());
         model.addAttribute("recipeData", productService.getRecipeDataForPos(tenantId()));
+
+        CustomerDTO defaultCustomer = customerService.getDefaultCustomer(tenantId());
+        model.addAttribute("defaultCustomerId", defaultCustomer.getId());
+        model.addAttribute("defaultCustomerName", defaultCustomer.getFullName());
 
         List<SaleDetailDTO> prefill = getPrefillCart(session);
         if (!prefill.isEmpty()) {
@@ -63,7 +70,8 @@ public class SaleController {
             }
 
             Long cashierId = getCurrentUserId();
-            SaleDTO sale = saleService.createSaleFromCart(cart, tenantId(), cashierId, submission.getObservations(), submission.getAmountReceived());
+            Long customerId = submission.getCustomerId();
+            SaleDTO sale = saleService.createSaleFromCart(cart, tenantId(), cashierId, submission.getObservations(), submission.getAmountReceived(), customerId);
             saleService.confirmSale(sale.getId(), submission.getPaymentMethod(), tenantId());
 
             redirectAttributes.addFlashAttribute("message", "Sale confirmed successfully");
@@ -84,7 +92,8 @@ public class SaleController {
             }
 
             Long cashierId = getCurrentUserId();
-            saleService.createSaleFromCart(cart, tenantId(), cashierId, submission.getObservations(), null);
+            Long customerId = submission.getCustomerId();
+            saleService.createSaleFromCart(cart, tenantId(), cashierId, submission.getObservations(), null, customerId);
 
             redirectAttributes.addFlashAttribute("message", "Sale put on hold");
         } catch (IllegalArgumentException e) {
@@ -146,6 +155,18 @@ public class SaleController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/sale/history";
         }
+    }
+
+    @GetMapping("/pos/customer/search")
+    @ResponseBody
+    public List<CustomerDTO> searchCustomers(@RequestParam(required = false) String q) {
+        return customerService.searchActiveCustomers(tenantId(), q);
+    }
+
+    @PostMapping("/pos/customer")
+    @ResponseBody
+    public CustomerDTO createCustomer(@RequestBody CustomerDTO dto) {
+        return customerService.createNewCustomer(dto, tenantId());
     }
 
     @SuppressWarnings("unchecked")

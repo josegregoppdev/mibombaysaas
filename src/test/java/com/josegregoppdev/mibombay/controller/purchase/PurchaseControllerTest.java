@@ -64,15 +64,16 @@ class PurchaseControllerTest {
         Pageable pageable = PageRequest.of(0, 20);
         PurchaseDTO dto = createPurchaseDTO();
         Page<PurchaseDTO> page = new PageImpl<>(List.of(dto));
-        when(purchaseService.getPaginatedPurchases(eq(TENANT_ID), isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
+        when(purchaseService.getPaginatedPurchases(eq(TENANT_ID), isNull(), isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
                 .thenReturn(page);
 
         Model model = new ExtendedModelMap();
-        String view = controller.list(null, null, null, null, pageable, model);
+        String view = controller.list(null, null, null, null, null, pageable, model);
 
         assertEquals("purchase/list", view);
         assertTrue(model.containsAttribute("page"));
         assertTrue(model.containsAttribute("supplierName"));
+        assertTrue(model.containsAttribute("invoiceNumber"));
         assertTrue(model.containsAttribute("from"));
         assertTrue(model.containsAttribute("to"));
         assertTrue(model.containsAttribute("active"));
@@ -83,14 +84,15 @@ class PurchaseControllerTest {
         Pageable pageable = PageRequest.of(0, 20);
         java.time.LocalDate from = java.time.LocalDate.of(2025, 1, 1);
         java.time.LocalDate to = java.time.LocalDate.of(2025, 12, 31);
-        when(purchaseService.getPaginatedPurchases(eq(TENANT_ID), eq("San"), eq(from), eq(to), eq(true), any(Pageable.class)))
+        when(purchaseService.getPaginatedPurchases(eq(TENANT_ID), eq("San"), eq("INV-1"), eq(from), eq(to), eq(true), any(Pageable.class)))
                 .thenReturn(Page.empty());
 
         Model model = new ExtendedModelMap();
-        String view = controller.list("San", from, to, true, pageable, model);
+        String view = controller.list("San", "INV-1", from, to, true, pageable, model);
 
         assertEquals("purchase/list", view);
         assertEquals("San", model.getAttribute("supplierName"));
+        assertEquals("INV-1", model.getAttribute("invoiceNumber"));
         assertEquals(from, model.getAttribute("from"));
         assertEquals(to, model.getAttribute("to"));
         assertEquals(true, model.getAttribute("active"));
@@ -118,7 +120,8 @@ class PurchaseControllerTest {
                 UserDTOResponse.builder().id(1L).build());
         PurchaseDTO dto = createPurchaseDTO();
         when(purchaseService.createPurchaseFromCart(eq(submission.getItems()), eq(TENANT_ID), eq(1L),
-                eq(submission.getSupplierId()), eq(submission.getObservations()), eq(submission.getPurchaseDate())))
+                eq(submission.getSupplierId()), eq(submission.getObservations()), eq(submission.getPurchaseDate()),
+                eq(submission.getInvoiceNumber())))
                 .thenReturn(dto);
 
         String view = controller.create(submission, mock(RedirectAttributes.class));
@@ -126,7 +129,8 @@ class PurchaseControllerTest {
         assertEquals("redirect:/purchase/1", view);
         verify(purchaseService).createPurchaseFromCart(
                 submission.getItems(), TENANT_ID, 1L, submission.getSupplierId(),
-                submission.getObservations(), submission.getPurchaseDate());
+                submission.getObservations(), submission.getPurchaseDate(),
+                submission.getInvoiceNumber());
     }
 
     @Test
@@ -138,7 +142,7 @@ class PurchaseControllerTest {
         String view = controller.create(submission, mock(RedirectAttributes.class));
 
         assertEquals("redirect:/purchase/new", view);
-        verify(purchaseService, never()).createPurchaseFromCart(any(), any(), any(), any(), any(), any());
+        verify(purchaseService, never()).createPurchaseFromCart(any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -148,7 +152,7 @@ class PurchaseControllerTest {
                 UserDTOResponse.builder().id(1L).build());
         doThrow(new IllegalArgumentException("Supplier not found"))
                 .when(purchaseService).createPurchaseFromCart(
-                        any(), any(), any(), any(), any(), any());
+                        any(), any(), any(), any(), any(), any(), any());
 
         String view = controller.create(submission, mock(RedirectAttributes.class));
 

@@ -24,6 +24,8 @@ public class PurchaseDTO {
 
     private LocalDateTime purchaseDate;
 
+    private String invoiceNumber;
+
     private BigDecimal total;
 
     private Long userId;

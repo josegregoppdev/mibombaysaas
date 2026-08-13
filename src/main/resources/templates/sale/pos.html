@@ -36,7 +36,7 @@
         .sd-pos-item-plus:active { transform: scale(0.9); }
 
         /* Cart panel */
-        .sd-pos-cart { width: 340px; background: var(--mb-blue-900); color: #E8ECF1; display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; }
+        .sd-pos-cart { width: 440px; background: var(--mb-blue-900); color: #E8ECF1; display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; }
         .sd-pos-cart-header { padding: 0.6rem 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
         .sd-pos-cart-header-title { display: flex; align-items: center; gap: 0.4rem; font-weight: 600; font-size: 0.88rem; color: #fff; }
         .sd-pos-cart-count { background: var(--mb-amber-500); color: #1A1A1A; border-radius: 12px; padding: 0.08rem 0.5rem; font-size: 0.7rem; font-weight: 700; min-width: 22px; text-align: center; }
@@ -59,6 +59,9 @@
         .sd-pos-qty-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; transition: all 0.15s; }
         .sd-pos-qty-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
         .sd-pos-qty-val { font-size: 0.8rem; font-weight: 600; color: #fff; min-width: 26px; text-align: center; }
+        .sd-pos-qty-input { width: 64px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #fff; font-size: 0.8rem; font-weight: 600; text-align: center; padding: 0.25rem 0.2rem; outline: none; min-width: 0; }
+        .sd-pos-qty-input:focus { border-color: var(--mb-amber-500); box-shadow: 0 0 0 0.15rem rgba(244,162,97,0.2); }
+        .sd-pos-qty-input::-webkit-outer-spin-button, .sd-pos-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; }
         .sd-pos-cart-row-sub { font-size: 0.85rem; font-weight: 600; color: #fff; }
         .sd-pos-cart-row-del { background: none; border: none; color: rgba(255,255,255,0.3); font-size: 1rem; cursor: pointer; padding: 0.15rem 0.25rem; margin-left: 0.25rem; }
         .sd-pos-cart-row-del:hover { color: var(--mb-error); }
@@ -66,6 +69,38 @@
         .sd-pos-cart-row-edit:hover { background: rgba(244,162,97,0.15); }
         .sd-pos-cart-row-excluded { font-size: 0.7rem; color: var(--mb-amber-500); margin-top: 0.3rem; display: flex; align-items: center; gap: 0.3rem; }
         .sd-pos-cart-row-excluded .sd-pos-cart-row-excluded-clear { background: none; border: none; color: rgba(255,255,255,0.35); font-size: 0.8rem; cursor: pointer; padding: 0; line-height: 1; }
+
+        .sd-pos-customer-bar { display: flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.85rem; background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 0.78rem; color: rgba(255,255,255,0.6); }
+        .sd-pos-customer-bar i { color: var(--mb-amber-500); font-size: 0.85rem; }
+        .sd-pos-customer-name { flex: 1; font-weight: 500; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sd-pos-customer-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 5px; color: rgba(255,255,255,0.5); padding: 0.2rem 0.4rem; font-size: 0.75rem; cursor: pointer; transition: all 0.15s; }
+        .sd-pos-customer-btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
+
+        .sd-customer-modal .modal-content { background: var(--mb-blue-900); color: #E8ECF1; border: 1px solid rgba(255,255,255,0.1); z-index: 2001; }
+        .sd-customer-modal .modal-backdrop { z-index: 1999; }
+        .sd-customer-modal .modal-header { border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sd-customer-modal .modal-footer { border-top: 1px solid rgba(255,255,255,0.1); }
+        .sd-customer-modal .modal-title { color: #fff; font-size: 1rem; }
+        .sd-customer-search { display: flex; gap: 0.4rem; margin-bottom: 0.6rem; }
+        .sd-customer-search input { flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #fff; padding: 0.5rem 0.7rem; font-size: 0.85rem; outline: none; }
+        .sd-customer-search input::placeholder { color: rgba(255,255,255,0.3); }
+        .sd-customer-search input:focus { border-color: var(--mb-amber-500); }
+        .sd-customer-list { max-height: 240px; overflow-y: auto; }
+        .sd-customer-item { display: flex; align-items: center; justify-content: space-between; padding: 0.55rem 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer; border-radius: 6px; transition: background 0.12s; }
+        .sd-customer-item:hover { background: rgba(255,255,255,0.06); }
+        .sd-customer-item-name { font-size: 0.88rem; font-weight: 500; color: #fff; }
+        .sd-customer-item-doc { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+        .sd-customer-item-default { font-size: 0.65rem; background: var(--mb-amber-500); color: #1A1A1A; padding: 0.08rem 0.4rem; border-radius: 8px; font-weight: 700; margin-left: 0.4rem; }
+        .sd-customer-empty { text-align: center; color: rgba(255,255,255,0.4); font-style: italic; padding: 1.2rem 1rem; font-size: 0.85rem; }
+        .sd-customer-create-btn { width: 100%; background: rgba(255,255,255,0.06); border: 1px dashed rgba(255,255,255,0.2); border-radius: 8px; color: rgba(255,255,255,0.6); padding: 0.6rem; font-size: 0.85rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.4rem; transition: all 0.15s; margin-top: 0.5rem; }
+        .sd-customer-create-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.3); }
+
+        .sd-customer-form { display: none; }
+        .sd-customer-form .form-label { font-size: 0.78rem; color: rgba(255,255,255,0.6); font-weight: 500; }
+        .sd-customer-form .form-control { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #fff; font-size: 0.85rem; padding: 0.5rem 0.7rem; }
+        .sd-customer-form .form-control:focus { background: rgba(255,255,255,0.08); border-color: var(--mb-amber-500); color: #fff; }
+        .sd-customer-form .form-control::placeholder { color: rgba(255,255,255,0.3); }
+        .sd-customer-form-actions { display: flex; gap: 0.5rem; margin-top: 0.8rem; }
         .sd-pos-cart-row-excluded .sd-pos-cart-row-excluded-clear:hover { color: var(--mb-error); }
 
         /* Cart footer */
@@ -187,6 +222,9 @@
             .sd-pos-products { flex: none; overflow: visible; }
             .sd-pos-grid { flex: none; overflow: visible; grid-template-columns: repeat(3, 1fr); }
 
+            .sd-pos-cart-row { display: flex; flex-direction: column; gap: 0.3rem; }
+            .sd-pos-cart-row-name { white-space: normal; overflow: visible; text-overflow: unset; }
+
             .sd-pos-cart {
                 position: fixed;
                 top: var(--mb-nav-height);
@@ -251,7 +289,7 @@
         }
         @media (min-width: 1400px) {
             .sd-pos-grid { grid-template-columns: repeat(4, 1fr); }
-            .sd-pos-cart { width: 380px; }
+            .sd-pos-cart { width: 500px; }
         }
     </style>
 </head>
@@ -311,6 +349,13 @@
 
                         <!-- Cart Panel -->
                         <div class="sd-pos-cart">
+                            <div class="sd-pos-customer-bar" id="customerBar">
+                                <i class="bi bi-person"></i>
+                                <span class="sd-pos-customer-name" id="customerDisplayName" th:text="${defaultCustomerName}">Consumidor Final</span>
+                                <button type="button" class="sd-pos-customer-btn" id="openCustomerModal" title="Change customer">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
                             <div class="sd-pos-cart-header">
                                 <div class="sd-pos-cart-header-title">
                                     <i class="bi bi-cart3"></i>
@@ -390,10 +435,12 @@
                     <input type="hidden" name="paymentMethod" id="formPaymentMethod" value="">
                     <input type="hidden" name="observations" id="formObservations" value="">
                     <input type="hidden" name="amountReceived" id="formAmountReceived" value="">
+                    <input type="hidden" name="customerId" id="formCustomerId" value="">
                 </form>
                 <form id="holdForm" th:action="@{/sale/pos/hold}" method="post" style="display:none">
                     <div id="holdFormFields"></div>
                     <input type="hidden" name="observations" id="holdFormObservations" value="">
+                    <input type="hidden" name="customerId" id="holdFormCustomerId" value="">
                 </form>
 
                 <div class="modal fade" id="recipeModal" tabindex="-1" aria-hidden="true">
@@ -427,6 +474,53 @@
                     </div>
                 </div>
 
+                <div class="modal fade sd-customer-modal" id="customerModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-sm">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Select Customer</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="customerSearchView">
+                                    <div class="sd-customer-search">
+                                        <input type="text" id="customerSearchInput" placeholder="Search by name or document..." autofocus>
+                                    </div>
+                                    <div class="sd-customer-list" id="customerList">
+                                        <div class="sd-customer-empty">Type to search customers</div>
+                                    </div>
+                                    <button type="button" class="sd-customer-create-btn" id="showCreateCustomer">
+                                        <i class="bi bi-plus-circle"></i>New Customer
+                                    </button>
+                                </div>
+                                <div id="customerCreateView" class="sd-customer-form">
+                                    <div class="mb-2">
+                                        <label class="form-label">Full name *</label>
+                                        <input type="text" class="form-control" id="newCustomerName" placeholder="Juan Pérez" maxlength="150">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Document *</label>
+                                        <input type="text" class="form-control" id="newCustomerDoc" placeholder="1234567890" maxlength="20">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Phone</label>
+                                        <input type="text" class="form-control" id="newCustomerPhone" placeholder="3001234567" maxlength="20">
+                                    </div>
+                                    <div class="sd-customer-form-actions">
+                                        <button type="button" class="btn btn-sm" style="background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15)" id="backToSearch">
+                                            <i class="bi bi-arrow-left"></i> Back
+                                        </button>
+                                        <button type="button" class="btn btn-sm" style="background:var(--mb-success);color:#fff;flex:1" id="saveNewCustomer">
+                                            <i class="bi bi-check-lg"></i> Save
+                                        </button>
+                                    </div>
+                                    <div id="customerFormError" class="mt-2" style="color:var(--mb-error);font-size:0.8rem;display:none"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="sd-pos-cart-backdrop" id="cartBackdrop"></div>
                 <button type="button" class="sd-pos-cart-fab" id="cartFab" aria-label="Open cart">
                     <i class="bi bi-cart3"></i>
@@ -438,6 +532,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <script th:inline="javascript">
         var cart = [];
         var selectedMetodo = null;
@@ -630,7 +726,7 @@
                     '<div class="sd-pos-cart-row-controls">' +
                         '<div class="sd-pos-qty-group">' +
                             '<button type="button" class="sd-pos-qty-btn" data-act="minus" data-idx="' + i + '">&minus;</button>' +
-                            '<span class="sd-pos-qty-val">' + item.quantity + '</span>' +
+                            '<input type="number" min="0.0001" step="0.0001" class="sd-pos-qty-val sd-pos-qty-input" value="' + item.quantity + '" data-idx="' + i + '" aria-label="Quantity">' +
                             '<button type="button" class="sd-pos-qty-btn" data-act="plus" data-idx="' + i + '">+</button>' +
                         '</div>' +
                         '<div style="display:flex;align-items:center;gap:0.25rem">' +
@@ -666,7 +762,7 @@
                                 '<span style="color:rgba(255,255,255,0.5);font-size:0.7rem">' + fmt(a.item.price) + '</span>' +
                                 '<div class="sd-pos-qty-group" style="margin-left:auto">' +
                                     '<button type="button" class="sd-pos-qty-btn" data-act="minus" data-idx="' + a.idx + '">&minus;</button>' +
-                                    '<span class="sd-pos-qty-val">' + a.item.quantity + '</span>' +
+                                    '<input type="number" min="0.0001" step="0.0001" class="sd-pos-qty-val sd-pos-qty-input" value="' + a.item.quantity + '" data-idx="' + a.idx + '" aria-label="Quantity">' +
                                     '<button type="button" class="sd-pos-qty-btn" data-act="plus" data-idx="' + a.idx + '">+</button>' +
                                 '</div>' +
                                 '<span style="font-size:0.8rem;font-weight:600;color:#fff">' + fmt(a.item.quantity * a.item.price) + '</span>' +
@@ -676,6 +772,18 @@
                     });
                     items.appendChild(treeUl);
                 }
+            });
+
+            items.querySelectorAll('.sd-pos-qty-input').forEach(function(input) {
+                input.addEventListener('input', function() {
+                    var idx = parseInt(this.dataset.idx);
+                    if (!isNaN(idx) && cart[idx]) {
+                        var q = parseNum(this.value);
+                        if (!(q > 0)) { q = 1; this.value = q; }
+                        cart[idx].quantity = q;
+                        render();
+                    }
+                });
             });
 
             var total = getTotal();
@@ -1051,6 +1159,7 @@
             document.getElementById('formPaymentMethod').value = selectedMetodo;
             document.getElementById('formObservations').value = document.getElementById('notesInput').value;
             document.getElementById('formAmountReceived').value = received.toFixed(2);
+            document.getElementById('formCustomerId').value = selectedCustomerId || '';
             document.getElementById('saleForm').submit();
         });
 
@@ -1059,7 +1168,110 @@
             if (cart.length === 0) { alert('Cart is empty'); return; }
             buildFormFields('holdFormFields');
             document.getElementById('holdFormObservations').value = document.getElementById('notesInput').value;
+            document.getElementById('holdFormCustomerId').value = selectedCustomerId || '';
             document.getElementById('holdForm').submit();
+        });
+
+        // --- Customer selector ---
+        var defaultCustomerId = /*[[${defaultCustomerId}]]*/ null;
+        var selectedCustomerId = defaultCustomerId;
+        var customerModalEl = document.getElementById('customerModal');
+        var customerModal = customerModalEl && window.bootstrap ? new bootstrap.Modal(customerModalEl) : null;
+        if (!customerModal) console.error('Customer modal not initialized:', customerModalEl, window.bootstrap);
+        var searchTimeout = null;
+
+        document.getElementById('openCustomerModal').addEventListener('click', function() {
+            document.getElementById('customerSearchInput').value = '';
+            document.getElementById('customerList').innerHTML = '<div class="sd-customer-empty">Type to search customers</div>';
+            document.getElementById('customerSearchView').style.display = 'block';
+            document.getElementById('customerCreateView').style.display = 'none';
+            document.getElementById('customerFormError').style.display = 'none';
+            if (customerModal) customerModal.show();
+        });
+
+        document.getElementById('customerSearchInput').addEventListener('input', function() {
+            var q = this.value.trim();
+            clearTimeout(searchTimeout);
+            if (q.length === 0) {
+                document.getElementById('customerList').innerHTML = '<div class="sd-customer-empty">Type to search customers</div>';
+                return;
+            }
+            searchTimeout = setTimeout(function() {
+                fetch('/sale/pos/customer/search?q=' + encodeURIComponent(q))
+                    .then(function(r) { return r.json(); })
+                    .then(function(customers) {
+                        var list = document.getElementById('customerList');
+                        if (customers.length === 0) {
+                            list.innerHTML = '<div class="sd-customer-empty">No customers found</div>';
+                            return;
+                        }
+                        list.innerHTML = customers.map(function(c) {
+                            var defaultBadge = c.default ? '<span class="sd-customer-item-default">Default</span>' : '';
+                            return '<div class="sd-customer-item" data-id="' + c.id + '" data-name="' + escapeHtml(c.fullName) + '">' +
+                                '<div><div class="sd-customer-item-name">' + escapeHtml(c.fullName) + defaultBadge + '</div>' +
+                                '<div class="sd-customer-item-doc">' + escapeHtml(c.documentMasked || '') + '</div></div>' +
+                                '</div>';
+                        }).join('');
+                    });
+            }, 250);
+        });
+
+        document.getElementById('customerList').addEventListener('click', function(e) {
+            var item = e.target.closest('.sd-customer-item');
+            if (!item) return;
+            selectCustomer(parseInt(item.dataset.id), item.dataset.name);
+        });
+
+        function selectCustomer(id, name) {
+            selectedCustomerId = id;
+            document.getElementById('customerDisplayName').textContent = name;
+            if (customerModal) customerModal.hide();
+        }
+
+        document.getElementById('showCreateCustomer').addEventListener('click', function() {
+            document.getElementById('customerSearchView').style.display = 'none';
+            document.getElementById('customerCreateView').style.display = 'block';
+            document.getElementById('customerFormError').style.display = 'none';
+            document.getElementById('newCustomerName').value = '';
+            document.getElementById('newCustomerDoc').value = '';
+            document.getElementById('newCustomerPhone').value = '';
+            document.getElementById('newCustomerName').focus();
+        });
+
+        document.getElementById('backToSearch').addEventListener('click', function() {
+            document.getElementById('customerSearchView').style.display = 'block';
+            document.getElementById('customerCreateView').style.display = 'none';
+            document.getElementById('customerFormError').style.display = 'none';
+        });
+
+        document.getElementById('saveNewCustomer').addEventListener('click', function() {
+            var name = document.getElementById('newCustomerName').value.trim();
+            var doc = document.getElementById('newCustomerDoc').value.trim();
+            var phone = document.getElementById('newCustomerPhone').value.trim();
+            var errEl = document.getElementById('customerFormError');
+
+            if (!name) { errEl.textContent = 'Name is required'; errEl.style.display = ''; return; }
+            if (!doc) { errEl.textContent = 'Document is required'; errEl.style.display = ''; return; }
+
+            fetch('/sale/pos/customer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [document.querySelector('meta[name="_csrf_header"]').content]: document.querySelector('meta[name="_csrf"]').content
+                },
+                body: JSON.stringify({fullName: name, document: doc, phone: phone || null})
+            })
+            .then(function(r) {
+                if (!r.ok) return r.json().then(function(e) { throw new Error(e.message || 'Error creating customer'); });
+                return r.json();
+            })
+            .then(function(c) {
+                selectCustomer(c.id, c.fullName);
+            })
+            .catch(function(err) {
+                errEl.textContent = err.message || 'Error creating customer';
+                errEl.style.display = '';
+            });
         });
 
         // Drawer controls (mobile)
